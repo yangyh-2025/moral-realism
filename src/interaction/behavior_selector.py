@@ -29,6 +29,14 @@ class BehaviorConstraint(Enum):
     PRIORITY_LOW = "priority_low"
     REQUIRES_MORAL_VALIDATION = "requires_moral_validation"
     REQUIRES_RESOURCE_CHECK = "requires_resource_check"
+    # Complex constraints for moral realism
+    PROHIBITED_FIRST_USE_FORCE = "prohibited_first_use_force"  # 禁止率先动武
+    PROHIBITED_UNREASONED_SANCTION = "prohibited_unreasoned_sanction"  # 禁止无理由制裁
+    PROHIBITED_TREATY_VIOLATION = "prohibited_treaty_violation"  # 禁止毁约
+    PROHIBITED_DOUBLE_STANDARD = "prohibited_double_standard"  # 禁止双重标准
+    REQUIRES_EQUAL_CONSULTATION = "requires_equal_consultation"  # 需要平等协商
+    REQUIRES_NORM_COMPLIANCE = "requires_norm_compliance"  # 需要遵守规范
+    ALLOW_IRRATIONAL = "allow_irrational"  # 允许非理性决策（昏庸型）
 
 
 @dataclass
@@ -363,6 +371,14 @@ class BehaviorSelector:
             if not moral_check["valid"]:
                 violated.extend(moral_check["reasons"])
 
+        # Validate complex constraints
+        complex_check = self._validate_complex_constraints(
+            agent, action_type, context
+        )
+        if not complex_check["valid"]:
+            violated.extend(complex_check["reasons"])
+        suggestions.extend(complex_check.get("suggestions", []))
+
         is_valid = len(violated) == 0
 
         reason = (
@@ -401,6 +417,208 @@ class BehaviorSelector:
                     )
 
         return {"valid": len(reasons) == 0, "reasons": reasons}
+
+    def _validate_complex_constraints(
+        self,
+        agent: Agent,
+        action_type: str,
+        context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        Validate complex leadership constraints for an action.
+
+        Args:
+            agent: The agent making the action.
+            action_type: The action type to validate.
+            context: Additional context including history and relationships.
+
+        Returns:
+            Dictionary with 'valid' bool and 'reasons' list.
+        """
+        reasons = []
+        suggestions = []
+
+        if agent.leadership_profile is None:
+            return {"valid": True, "reasons": [], "suggestions": []}
+
+        leadership_type = agent.leadership_profile.leadership_type.value
+        moral_standard = agent.leadership_profile.moral_standard
+
+        # 获取行为历史
+        action_history = context.get("action_history", [])
+        recent_actions = [a.get("action_type", "") for a in action_history[-10:]]
+
+        # 王道型（Wangdao）复杂约束
+        if leadership_type == "wangdao":
+            # 检查是否首次使用武力
+            if action_type in ["security_military", "military_escalation"]:
+                if "security_military" not in recent_actions and "military_escalation" not in recent_actions:
+                    reasons.append(
+                        "Wangdao leadership prohibits first use of force "
+                        "without UN authorization or clear self-defense"
+                    )
+                    suggestions.append("Consider diplomatic engagement or mediation instead")
+
+            # 检查制裁是否有充分理由
+            if action_type in ["economic_sanction", "tariff_adjustment"]:
+                justification = context.get("justification", "")
+                if not justification or len(justification) < 20:
+                    reasons.append(
+                        "Wangdao leadership requires clear and justified reasons for sanctions"
+                    )
+                    suggestions.append("Provide detailed justification for economic measures")
+
+            # 检查是否毁约
+            if action_type == "treaty_withdraw":
+                violation_count = recent_actions.count("treaty_withdraw")
+                if violation_count > 0:
+                    reasons.append(
+                        "Wangdao leadership prohibits treaty violations and "
+                        "withdrawal without compelling circumstances"
+                    )
+                    suggestions.append("Consider treaty renegotiation instead of withdrawal")
+
+            # 检查双重标准
+            if action_type in ["moral_judgement", "value_diplomacy"]:
+                inconsistent_with_history = self._check_double_standard(
+                    action_type, recent_actions, context
+                )
+                if inconsistent_with_history:
+                    reasons.append(
+                        "Wangdao leadership prohibits double standards in moral evaluations"
+                    )
+                    suggestions.append("Maintain consistent application of moral principles")
+
+        # 霸权型（Hegemon）复杂约束
+        elif leadership_type == "hegemon":
+            # 检查是否进行平等协商
+            if action_type in ["norm_reform", "org_reform"]:
+                is_equal_consultation = context.get("equal_consultation", False)
+                if not is_equal_consultation:
+                    suggestions.append(
+                        "Hegemon should include equal consultation with allies"
+                    )
+
+            # 检查规范执行中是否使用双重标准
+            if action_type in ["norm_proposal", "value_diplomacy"]:
+                has_double_standard = self._check_hegemon_double_standard(
+                    action_type, context
+                )
+                if has_double_standard and moral_standard > 0.5:
+                    reasons.append(
+                        "Use of double standards may undermine hegemonic legitimacy"
+                    )
+
+        # 强权型（Qiangquan）复杂约束
+        elif leadership_type == "qiangquan":
+            # 检查是否进行国际调停
+            if action_type == "security_mediation":
+                suggestions.append(
+                    "Qiangquan leadership should prioritize power over mediation"
+                )
+
+            # 检查是否提供公共产品
+            if action_type in ["public_goods_provision", "economic_aid"]:
+                if moral_standard < 0.3:
+                    suggestions.append(
+                        "Qiangquan leadership typically prioritizes self-interest over public goods"
+                    )
+
+            # 检查是否进行平等多边合作
+            if action_type in ["summit_host", "dispute_arbitration"]:
+                is_equal_multilateral = context.get("equal_multilateral", False)
+                if is_equal_multilateral:
+                    suggestions.append(
+                        "Qiangquan leadership should ensure unequal advantage in cooperation"
+                    )
+
+        # 昏庸型（Hunyong）复杂约束
+        elif leadership_type == "hunyong":
+            # 允许非理性决策，设置特殊标志
+            if action_type in ["no_action", "diplomatic_visit"]:
+                if len(recent_actions) > 5 and all(a == "no_action" for a in recent_actions[-3:]):
+                    suggestions.append(
+                        "Hunyong leadership may avoid necessary actions; consider decisive action"
+                    )
+
+        return {
+            "valid": len(reasons) == 0,
+            "reasons": reasons,
+            "suggestions": suggestions,
+        }
+
+    def _check_double_standard(
+        self,
+        action_type: str,
+        recent_actions: List[str],
+        context: Dict[str, Any],
+    ) -> bool:
+        """
+        Check if action demonstrates double standards for Wangdao leadership.
+
+        Args:
+            action_type: Current action type.
+            recent_actions: Recent action history.
+            context: Context including target relationships.
+
+        Returns:
+            True if double standard detected.
+        """
+        # Check for inconsistent treatment of allies vs non-allies
+        target_agent_id = context.get("target_agent_id", "")
+        if not target_agent_id:
+            return False
+
+        relationships = context.get("relationships", {})
+        target_relationship = relationships.get(target_agent_id, 0)
+
+        # If treating ally negatively and non-ally positively
+        if "moral_judgement" in action_type or "value_diplomacy" in action_type:
+            recent_targets = [
+                a.get("target_agent_id", "") for a in context.get("action_history", [])[-5:]
+            ]
+            # Check for pattern of inconsistent moral judgments
+            for prev_action in context.get("action_history", [])[-3:]:
+                prev_target = prev_action.get("target_agent_id", "")
+                prev_rel = relationships.get(prev_target, 0)
+                if abs(prev_rel - target_relationship) > 0.5:
+                    if prev_action.get("action_type", "") == action_type:
+                        return True
+
+        return False
+
+    def _check_hegemon_double_standard(
+        self,
+        action_type: str,
+        context: Dict[str, Any],
+    ) -> bool:
+        """
+        Check if hegemon is applying double standards in norm execution.
+
+        Args:
+            action_type: Current action type.
+            context: Context including past norm applications.
+
+        Returns:
+            True if double standard detected.
+        """
+        norm_history = context.get("norm_applications", [])
+
+        # Check if applying different standards to similar situations
+        if len(norm_history) < 2:
+            return False
+
+        recent_applications = norm_history[-5:]
+        situations = [a.get("situation_type", "") for a in recent_applications]
+        standards = [a.get("standard_applied", "") for a in recent_applications]
+
+        # Check for inconsistent standards for similar situations
+        for i, situation in enumerate(situations[:-1]):
+            if situation == situations[i + 1]:
+                if standards[i] != standards[i + 1]:
+                    return True
+
+        return False
 
     def get_prioritized_behaviors(
         self,

@@ -1,8 +1,18 @@
 """
-LLM Engine for the moral realism realism system.
+LLM（大语言模型）引擎模块
 
-This module provides the LLMConfig dataclass and LLMEngine class for
-interacting with LLM APIs, specifically SiliconFlow API.
+
+
+本模块提供LLMConfig数据类和LLMEngine类，用于：
+- 与LLM API交互（特别是硅流动SiliconFlow API）
+- 发送聊天完成请求
+- 执行函数调用以约束代理行为
+- 支持同步和异步调用
+- 支持流式输出
+
+主要类：
+- LLMConfig: LLM API连接配置（包括base_url、api_key、model等）
+- LLMEngine: LLM API交互引擎，提供各种调用方法
 """
 
 from dataclasses import dataclass, field
@@ -18,7 +28,19 @@ load_dotenv()
 
 @dataclass
 class LLMConfig:
-    """Configuration for LLM API connections."""
+    """
+    LLM（大语言模型）配置类
+
+    配置LLM API连接参数，可从环境变量中读取。
+
+    属性说明：
+    - base_url: API基础URL（默认从环境变量SILICONFLOW_BASE_URL读取）
+    - api_key: API密钥（默认从环境变量SILICONFLOW_API_KEY读取）
+    - model: 使用的模型名称（默认从环境变量SILICONFLOW_MODEL读取）
+    - temperature: 生成温度（0-1，控制随机性，默认0.7）
+    - max_tokens: 最大生成token数（默认2048）
+    - timeout: 请求超时时间（秒，默认60）
+    """
 
     base_url: str = field(
         default_factory=lambda: os.getenv(
@@ -42,7 +64,12 @@ class LLMConfig:
     )
 
     def validate(self) -> None:
-        """Validate the configuration."""
+        """
+        验证配置参数的有效性
+
+        Raises:
+            ValueError: 当任何必需参数未设置时抛出异常
+        """
         if not self.api_key:
             raise ValueError("SILICONFLOW_API_KEY must be set in environment variables")
         if not self.base_url:
@@ -52,19 +79,31 @@ class LLMConfig:
 
 
 class LLMEngine:
-    """Engine for interacting with LLM APIs."""
+    """
+    LLM（大语言模型）引擎类
+
+    用于与LLM API交互的引擎，提供同步和异步调用方法。
+
+    支持的方法：
+    - chat_completion: 同步聊天完成
+    - function_call: 函数调用（用于结构化输出）
+    - stream_chat_completion: 同步流式聊天完成
+    - async_chat_completion: 异步聊天完成
+    - async_stream_chat_completion: 异步流式聊天完成
+    """
 
     def __init__(self, config: Optional[LLMConfig] = None) -> None:
         """
-        Initialize the LLM engine.
+        初始化LLM引擎
 
         Args:
-            config: LLM configuration. If None, uses default from environment.
+            config: LLM配置对象，如果为None则使用环境变量中的默认配置
         """
         self.config = config or LLMConfig()
         self.config.validate()
 
         # Initialize OpenAI client (compatible with SiliconFlow API)
+        # 初始化OpenAI客户端（与SiliconFlow API兼容）
         self.client = OpenAI(
             base_url=self.config.base_url,
             api_key=self.config.api_key,
@@ -84,16 +123,21 @@ class LLMEngine:
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """
-        Send a chat completion request.
+        发送聊天完成请求（同步）
 
         Args:
-            messages: List of message dictionaries with 'role' and 'content'.
-            temperature: Override default temperature.
-            max_tokens: Override default max_tokens.
-            **kwargs: Additional parameters to pass to the API.
+            messages: 消息列表，每个消息包含'role'和'content'字段
+            temperature: 覆盖默认温度值
+            max_tokens: 覆盖默认最大token数
+            **kwargs: 传递给API的额外参数
 
         Returns:
-            Dictionary containing the response content and metadata.
+            包含响应内容和元数据的字典：
+            - content: 生成的文本内容
+            - model: 使用的模型
+            - finish_reason: 完成原因（如"stop"或"length"）
+            - usage: token使用统计
+            - raw_response: 原始API响应
         """
         response = self.client.chat.completions.create(
             model=self.config.model,
@@ -124,17 +168,25 @@ class LLMEngine:
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """
-        Perform a function call to constrain agent behavior.
+        执行函数调用以约束代理行为（同步）
+
+        此方法用于要求LLM按照预定义的函数schema输出结构化数据，
+        可用于控制代理的行为输出格式。
 
         Args:
-            messages: List of message dictionaries with 'role' and 'content'.
-            functions: List of function definitions for structured output.
-            temperature: Override default temperature.
-            max_tokens: Override default max_tokens.
-            **kwargs: Additional parameters to pass to the API.
+            messages: 消息列表
+            functions: 函数定义列表，用于结构化输出
+            temperature: 覆盖默认温度值
+            max_tokens: 覆盖默认最大token数
+            **kwargs: 传递给API的额外参数
 
         Returns:
-            Dictionary containing the function call result and metadata.
+            包含函数调用结果和元数据的字典：
+            - function_call: 函数调用对象
+            - model: 使用的模型
+            - finish_reason: 完成原因
+            - usage: token使用统计
+            - raw_response: 原始API响应
         """
         response = self.client.chat.completions.create(
             model=self.config.model,
@@ -169,16 +221,20 @@ class LLMEngine:
         **kwargs: Any,
     ) -> List[Dict[str, Any]]:
         """
-        Send a streaming chat completion request.
+        发送流式聊天完成请求（同步）
+
+        适合需要实时显示生成内容的场景。
 
         Args:
-            messages: List of message dictionaries with 'role' and 'content'.
-            temperature: Override default temperature.
-            max_tokens: Override default max_tokens.
-            **kwargs: Additional parameters to pass to the API.
+            messages: 消息列表
+            temperature: 覆盖默认温度值
+            max_tokens: 覆盖默认最大token数
+            **kwargs: 传递给API的额外参数
 
         Returns:
-            List of streaming response chunks.
+            流式响应块列表，每个块包含：
+            - content: 生成的文本块
+            - finish_reason: 完成原因
         """
         stream = self.client.chat.completions.create(
             model=self.config.model,
@@ -209,16 +265,16 @@ class LLMEngine:
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """
-        Send an async chat completion request.
+        发送异步聊天完成请求
 
         Args:
-            messages: List of message dictionaries with 'role' and 'content'.
-            temperature: Override default temperature.
-            max_tokens: Override default max_tokens.
-            **kwargs: Additional parameters to pass to the API.
+            messages: 消息列表
+            temperature: 覆盖默认温度值
+            max_tokens: 覆盖默认最大token数
+            **kwargs: 传递给API的额外参数
 
         Returns:
-            Dictionary containing the response content and metadata.
+            包含响应内容和元数据的字典（与chat_completion相同）
         """
         response = await self.async_client.chat.completions.create(
             model=self.config.model,
@@ -248,16 +304,16 @@ class LLMEngine:
         **kwargs: Any,
     ) -> AsyncGenerator[str, None]:
         """
-        Send an async streaming chat completion request.
+        发送异步流式聊天完成请求
 
         Args:
-            messages: List of message dictionaries with 'role' and 'content'.
-            temperature: Override default temperature.
-            max_tokens: Override default max_tokens.
-            **kwargs: Additional parameters to pass to the API.
+            messages: 消息列表
+            temperature: 覆盖默认温度值
+            max_tokens: 覆盖默认最大token数
+            **kwargs: 传递给API的额外参数
 
         Yields:
-            Streaming response chunks.
+            流式响应块的文本内容
         """
         stream = await self.async_client.chat.completions.create(
             model=self.config.model,

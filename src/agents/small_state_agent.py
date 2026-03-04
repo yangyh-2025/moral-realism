@@ -20,6 +20,18 @@ from src.models.capability import Capability
 logger = logging.getLogger(__name__)
 
 
+class SmallStateAction(Enum):
+    """Action types available to small states."""
+
+    ALIGN_FOLLOW = "align_follow"  # 结盟跟随
+    NEUTRAL_OBSERVE = "neutral_observe"  # 中立观望
+    SIDE_SELECTION = "side_selection"  # 选边站队
+    DEFECT_SWITCH = "defect_switch"  # 倒戈转向
+    NO_ALLIANCE_COALITION = "no_alliance_coalition"  # 不结盟联合
+    MEDIATION = "mediation"  # 大国间调停
+    COUNTER_RESPOND = "counter_respond"  # 反制/响应
+
+
 class StrategicStance(Enum):
     """Strategic stance of a small state toward great powers."""
 
