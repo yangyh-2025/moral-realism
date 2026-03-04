@@ -62,7 +62,7 @@ export const simulationAPI = {
     return response.json();
   },
 
-  async. configure(config: unknown) {
+  async configure(config: unknown) {
     const response = await fetchAPI('/api/v1/simulation/configure', {
       method: 'POST',
       body: JSON.stringify(config),
@@ -121,10 +121,10 @@ export const metricsAPI = {
 
   async getTrends(startRound: number = 0, endRound?: number) {
     const params = new URLSearchParams({
-      start_round: String(startRound),
+      start: String(startRound),
     });
     if (endRound !== undefined) {
-      params.append('end_round', String(endRound));
+      params.append('end', String(endRound));
     }
     const response = await fetchAPI(`/api/v1/metrics/trends?${params}`);
     return response.json();
@@ -146,31 +146,31 @@ export const metricsAPI = {
     return response.json();
   },
 
-  async.exportCSV(
+  async exportCSV(
     dataType: string,
     startRound: number = 0,
     endRound?: number,
   ): Promise<Blob> {
     const params = new URLSearchParams({
       data_type: dataType,
-      start_round: String(startRound),
+      start: String(startRound),
     });
     if (endRound !== undefined) {
-      params.append('end_round', String(endRound));
+      params.append('end', String(endRound));
     }
     const response = await fetchAPI(`/api/v1/metrics/export/csv?${params}`);
     return response.blob();
   },
 
-  async.exportJSON(
+  async exportJSON(
     startRound: number = 0,
     endRound?: number,
   ) {
     const params = new URLSearchParams({
-      start_round: String(startRound),
+      start: String(startRound),
     });
     if (endRound !== undefined) {
-      params.append('end_round', String(endRound));
+      params.append('end', String(endRound));
     }
     const response = await fetchAPI(`/api/v1/metrics/export/json?${params}`);
     return response.json();
@@ -240,23 +240,24 @@ export const systemicEventsAPI = {
 
   async getOrderEvolution(startRound: number, endRound?: number) {
     const params = new URLSearchParams({
-      start_round: String(startRound),
+      start: String(startRound),
     });
     if (endRound !== undefined) {
-      params.append('end_round', String(endRound));
+      params.append('end', String(endRound));
     }
     const response = await fetchAPI(`/api/v1/systemic/order-evolution?${params}`);
     return response.json();
   },
-    async exportEventsCSV(
+
+  async exportEventsCSV(
     startRound: number = 0,
     endRound?: number,
   ): Promise<Blob> {
     const params = new URLSearchParams({
-      start_round: String(startRound),
+      start: String(startRound),
     });
     if (endRound !== undefined) {
-      params.append('end_round', String(endRound));
+      params.append('end', String(endRound));
     }
     const response = await fetchAPI(`/api/v1/systemic/export/events?${params}`);
     return response.blob();
