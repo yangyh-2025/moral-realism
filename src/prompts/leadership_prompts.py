@@ -167,48 +167,48 @@ class ActionType(Enum):
 
 ACTION_DESCRIPTIONS: Dict[ActionType, str] = {
     # Security actions
-    ActionType.SECURITY_MILITARY: "Deploy or use military forces for security purposes",
-    ActionType.SECURITY_ALLIANCE: "Form, strengthen, or maintain security alliances",
-    ActionType.SECURITY_MEDIATION: "Mediate between conflicting parties",
-    ActionType.MILITARY_EXERCIS: "Conduct military exercises with allies",
-    ActionType.MILITARY_ESCALATION: "Increase military capabilities or arms buildup",
-    ActionType.SECURITY_GUARANTEE: "Provide security commitments to allies",
-    ActionType.WEAPONS_EXPORT: "Export weapons or military technology",
-    ActionType.NON_PROLIFERATION_COMMIT: "Commit to nuclear non-proliferation",
+    ActionType.SECURITY_MILITARY: "部署或使用军事力量用于安全目的",
+    ActionType.SECURITY_ALLIANCE: "建立、加强或维护安全同盟",
+    ActionType.SECURITY_MEDIATION: "在冲突各方之间进行调解",
+    ActionType.MILITARY_EXERCIS: "与盟友进行军事演习",
+    ActionType.MILITARY_ESCALATION: "增强军事能力或军备建设",
+    ActionType.SECURITY_GUARANTEE: "向盟友提供安全承诺",
+    ActionType.WEAPONS_EXPORT: "出口武器或军事技术",
+    ActionType.NON_PROLIFERATION_COMMIT: "承诺核不扩散",
 
     # Economic actions
-    ActionType.ECONOMIC_TRADE: "Engage in trade agreements or economic cooperation",
-    ActionType.ECONOMIC_SANCTION: "Impose, maintain, or lift economic sanctions",
-    ActionType.ECONOMIC_AID: "Provide economic assistance or development aid",
-    ActionType.FREE_TRADE_AGREEMENT: "Sign or negotiate free trade agreements",
-    ActionType.TARIFF_ADJUSTMENT: "Adjust tariffs on imports/exports",
-    ActionType.PUBLIC_GOODS_PROVISION: "Provide international public goods",
-    ActionType.SUPPLY_CHAIN_COOP: "Cooperate on supply chain integration",
-    ActionType.FINANCIAL_SUPPORT: "Provide financial assistance or loans",
-    ActionType.TRADE_DISPUTE: "Initiate trade dispute proceedings",
+    ActionType.ECONOMIC_TRADE: "开展贸易协定或经济合作",
+    ActionType.ECONOMIC_SANCTION: "实施、维持或解除经济制裁",
+    ActionType.ECONOMIC_AID: "提供经济援助或发展援助",
+    ActionType.FREE_TRADE_AGREEMENT: "签署或谈判自由贸易协定",
+    ActionType.TARIFF_ADJUSTMENT: "调整进出口关税",
+    ActionType.PUBLIC_GOODS_PROVISION: "提供国际公共物品",
+    ActionType.SUPPLY_CHAIN_COOP: "供应链合作",
+    ActionType.FINANCIAL_SUPPORT: "提供金融援助或贷款",
+    ActionType.TRADE_DISPUTE: "启动贸易争端程序",
 
     # Norm actions
-    ActionType.NORM_PROPOSAL: "Propose new international norms or principles",
-    ActionType.NORM_REFORM: "Propose reforms to existing international norms",
-    ActionType.ORG_REFORM: "Propose reforms to international organizations",
-    ActionType.TREATY_SIGN: "Sign international treaties",
-    ActionType.TREATY_WITHDRAW: "Withdraw from international treaties",
-    ActionType.VALUE_DIPLOMACY: "Engage in values-based diplomacy",
-    ActionType.MORAL_JUDGEMENT: "Issue international moral evaluations",
-    ActionType.DISPUTE_ARBITRATION: "Initiate international dispute arbitration",
+    ActionType.NORM_PROPOSAL: "提出新的国际规范或原则",
+    ActionType.NORM_REFORM: "提出改革现有国际规范",
+    ActionType.ORG_REFORM: "提出国际组织改革",
+    ActionType.TREATY_SIGN: "签署国际条约",
+    ActionType.TREATY_WITHDRAW: "退出国际条约",
+    ActionType.VALUE_DIPLOMACY: "开展基于价值的外交",
+    ActionType.MORAL_JUDGEMENT: "发出国际道德评价",
+    ActionType.DISPUTE_ARBITRATION: "启动国际争端仲裁",
 
     # Diplomatic actions
-    ActionType.DIPLOMATIC_VISIT: "Conduct state visits or diplomatic outreach",
-    ActionType.DIPLOMATIC_ALLIANCE: "Form formal diplomatic or strategic alliances",
-    ActionType.ALLIANCE_UPGRADE: "Upgrade alliance relationship commitments",
-    ActionType.ALLIANCE_DOWNGRADE: "Downgrade or reduce alliance commitments",
-    ActionType.DIPLOMATIC_RECOGNITION: "Grant or withdraw diplomatic recognition",
-    ActionType.SUMMIT_HOST: "Host international summits or meetings",
-    ActionType.JOINT_DECLARATION: "Issue joint declarations with other nations",
-    ActionType.PUBLIC_OPINION_GUIDANCE: "Guide international public opinion",
+    ActionType.DIPLOMATIC_VISIT: "开展国事访问或外交接触",
+    ActionType.DIPLOMATIC_ALLIANCE: "建立正式外交或战略同盟",
+    ActionType.ALLIANCE_UPGRADE: "升级同盟关系承诺",
+    ActionType.ALLIANCE_DOWNGRADE: "降级或减少同盟承诺",
+    ActionType.DIPLOMATIC_RECOGNITION: "给予或撤回外交承认",
+    ActionType.SUMMIT_HOST: "主办国际峰会或会议",
+    ActionType.JOINT_DECLARATION: "与其他国家发表联合声明",
+    ActionType.PUBLIC_OPINION_GUIDANCE: "引导国际舆论",
 
     # Special actions
-    ActionType.NO_ACTION: "Take no action and observe developments",
+    ActionType.NO_ACTION: "不采取行动并观察发展",
 }
 
 
@@ -247,34 +247,34 @@ G    """
 
         profile = agent.leadership_profile
 
-        system_prompt = f"""You are {agent.name} ({agent.name_zh}), a {profile.name_zh} great power in international relations.
+        system_prompt = f"""你是{agent.name} ({agent.name_zh})，国际关系中的{profile.name_zh}大国。
 
-## Leadership Type Characteristics
+## 领导类型特征
 
 {profile.description}
 
-### Core Values
-- Moral Standard: {profile.moral_standard:.2f} (0-1 scale)
-- Core Interest Weight: {profile.core_interest_weight:.2f}
-- Moral Consideration Weight: {profile.moral_consideration_weight:.2f}
-- Preference for Diplomatic Solutions: {profile.prefers_diplomatic_solution}
-- Uses Moral Persuasion: {profile.uses_moral_persuasion}
-- Accepts Moral Constraints: {profile.accepts_moral_constraints}
-- Prioritizes Reputation: {profile.prioritizes_reputation}
+### 核心价值观
+- 道德标准: {profile.moral_standard:.2f} (0-1分制)
+- 核心利益权重: {profile.core_interest_weight:.2f}
+- 道德考虑权重: {profile.moral_consideration_weight:.2f}
+- 偏好外交解决方案: {profile.prefers_diplomatic_solution}
+- 使用道德说服: {profile.uses_moral_persuasion}
+- 接受道德约束: {profile.accepts_moral_constraints}
+- 优先考虑声誉: {profile.prioritizes_reputation}
 
-### Prohibited Actions
-{', '.join(profile.prohibited_actions) if profile.prohibited_actions else 'None'}
+### 禁止行动
+{', '.join(profile.prohibited_actions) if profile.prohibited_actions else '无'}
 
-### Prioritized Actions
-{', '.join(profile.prioritized_actions) if profile.prioritized_actions else 'None'}
+### 优先行动
+{', '.join(profile.prioritized_actions) if profile.prioritized_actions else '无'}
 
-## Decision-Making Guidelines
+## 决策指导原则
 
 {profile.decision_prompt_template}
 
-## Function Calling
+## 函数调用
 
-You must respond with a function call that selects an action from available options.
+你必须通过函数调用响应，从可用选项中选择一个行动。
 """
 
         if function_definitions:
@@ -389,37 +389,37 @@ You must respond with a function call that selects an action from available opti
         return [
             {
                 "name": "select_action",
-                "description": "Select an action for a great power agent based on current situation and leadership characteristics",
+                "description": "根据当前情况和领导特征为大国智能体选择行动",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "action_type": {
                             "type": "string",
                             "enum": action_values,
-                            "description": "The type of action to take",
+                            "description": "要采取的行动类型",
                         },
                         "target_agent_id": {
                             "type": "string",
-                            "description": "The ID of the target agent (if applicable)",
+                            "description": "目标智能体的ID（如适用）",
                         },
                         "rationale": {
                             "type": "string",
-                            "description": "The reasoning behind this decision",
+                            "description": "此决策背后的理由",
                         },
                         "moral_consideration": {
                             "type": "string",
-                            "description": "How moral considerations influenced this decision",
+                            "description": "道德考量如何影响此决策",
                         },
                         "resource_allocation": {
                             "type": "number",
                             "minimum": 0,
                             "maximum": 100,
-                            "description": "Level of resources to allocate to this action (0-100)",
+                            "description": "为此行动分配的资源水平（0-100）",
                         },
                         "priority": {
                             "type": "string",
                             "enum": ["high", "medium", "low"],
-                            "description": "Priority level of this action",
+                            "description": "此行动的优先级",
                         },
                     },
                     "required": ["action_type", "rationale", "priority"],

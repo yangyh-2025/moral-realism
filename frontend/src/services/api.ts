@@ -211,3 +211,54 @@ export const checkpointsAPI = {
     return response.json();
   },
 };
+
+export const systemicEventsAPI = {
+  async getEvents(eventType?: string, roundId?: number) {
+    const params = new URLSearchParams();
+    if (eventType !== undefined) {
+      params.append('event_type', eventType);
+    }
+    if (roundId !== undefined) {
+      params.append('round_id', String(roundId));
+    }
+    const response = await fetchAPI(
+      `/api/v1/systemic/events${params.toString() ? '?' + params.toString() : ''}`
+    );
+    return response.json();
+  },
+
+  async getNorms(roundId?: number) {
+    const params = new URLSearchParams();
+    if (roundId !== undefined) {
+      params.append('round_id', String(roundId));
+    }
+    const response = await fetchAPI(
+      `/api/v1/systemic/norms${params.toString() ? '?' + params.toString() : ''}`
+    );
+    return response.json();
+  },
+
+  async getOrderEvolution(startRound: number, endRound?: number) {
+    const params = new URLSearchParams({
+      start_round: String(startRound),
+    });
+    if (endRound !== undefined) {
+      params.append('end_round', String(endRound));
+    }
+    const response = await fetchAPI(`/api/v1/systemic/order-evolution?${params}`);
+    return response.json();
+  },
+    async exportEventsCSV(
+    startRound: number = 0,
+    endRound?: number,
+  ): Promise<Blob> {
+    const params = new URLSearchParams({
+      start_round: String(startRound),
+    });
+    if (endRound !== undefined) {
+      params.append('end_round', String(endRound));
+    }
+    const response = await fetchAPI(`/api/v1/systemic/export/events?${params}`);
+    return response.blob();
+  },
+};

@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useStore } from '../store';
-import { metricsAPI, agentsAPI, checkpointsAPI, getWebSocketService, disconnectWebSocket } from '../services/api';
-import { simulationAPI, wsService } from '../services';
+import { metricsAPI, agentsAPI, checkpointsAPI, systemicEventsAPI } from '../services/api';
+import { simulationAPI, wsService, disconnectWebSocket } from '../services/websocket';
+import OrderTypeBadge from '../components/OrderTypeBadge';
 
 function Dashboard() {
   const {

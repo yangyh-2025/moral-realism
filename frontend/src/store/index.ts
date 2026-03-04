@@ -9,6 +9,8 @@ import type {
   LogEntry,
   ApiConfig,
   ControllerStatus,
+  Norm,
+  SystemicEvent,
 } from '../types';
 
 interface AppState {
@@ -35,8 +37,13 @@ interface AppState {
   logs: LogEntry[];
   logFilter: string | null;
 
+  // Systemic interaction data
+  systemicEvents: SystemicEvent[];
+  currentNorms: Norm[];
+  normsHistory: Map<number, Norm[]>;
+
   // UI state
-  currentView: 'dashboard' | 'configuration' | 'agents' | 'monitor';
+  currentView: 'dashboard' | 'configuration' | 'agents' | 'monitor' | 'system-analysis';
 
   // Actions
   setSimulationStatus: (status: SimulationStatus | null) => void;
@@ -54,8 +61,12 @@ interface AppState {
   addLog: (log: LogEntry) => void;
   clearLogs: () => void;
   setLogFilter: (filter: string | null) => void;
-  setCurrentView: (view: 'dashboard' | 'configuration' | 'agents' | 'monitor') => void;
+  setCurrentView: (view: 'dashboard' | 'configuration' | 'agents' | 'monitor' | 'system-analysis') => void;
   resetSimulation: () => void;
+  setSystemicEvents: (events: SystemicEvent[]) => void;
+  addSystemicEvent: (event: SystemicEvent) => void;
+  setCurrentNorms: (norms: Norm[]) => void;
+  updateNormsHistory: (round: number, norms: Norm[]) => void;
 }
 
 const defaultSimulationConfig: SimulationConfig = {
@@ -106,6 +117,9 @@ export const useStore = create<AppState>((set) => ({
   checkpoints: [],
   logs: [],
   logFilter: null,
+  systemicEvents: [],
+  currentNorms: [],
+  normsHistory: new Map(),
   currentView: 'dashboard',
 
   // Actions
@@ -152,5 +166,20 @@ export const useStore = create<AppState>((set) => ({
       currentMetrics: null,
       metricsHistory: [],
       logs: [],
+      systemicEvents: [],
+      currentNorms: [],
+      normsHistory: new Map(),
+    }),
+  setSystemicEvents: (events) => set({ systemicEvents: events }),
+  addSystemicEvent: (event) =>
+    set((state) => ({
+      systemicEvents: [...state.systemicEvents, event],
+    })),
+  setCurrentNorms: (norms) => set({ currentNorms: norms }),
+  updateNormsHistory: (round, norms) =>
+    set((state) => {
+      const newHistory = new Map(state.normsHistory);
+      newHistory.set(round, norms);
+      return { normsHistory: newHistory };
     }),
 }));

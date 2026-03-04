@@ -31,6 +31,7 @@ class RoundPhase(Enum):
     INTERACTION_EXECUTION = "interaction_execution"
     RULE_APPLICATION = "rule_application"
     METRICS_CALCULATION = "metrics_calculation"
+    SYSTEMIC_INTERACTION = "systemic_interaction"
     CLEANUP = "cleanup"
 
 
@@ -66,6 +67,14 @@ class RoundContext:
 
     # Metrics results
     metrics: Dict[str, Any] = field(default_factory=dict)
+
+    # Systemic interaction results
+    systemic_results: Dict[str, Any] = field(default_factory=dict)
+
+    # Persistence settings
+    persistence: bool = True
+    decision_persistence: bool = True
+    interaction_persistence: bool = True
 
     # Errors and warnings
     errors: List[str] = field(default_factory=list)
@@ -216,6 +225,7 @@ class RoundExecutor:
             self._phase_event_distribution(context, result)
             self._phase_agent_decision_making(context, result)
             self._phase_interaction_execution(context, result)
+            self._phase_systemic_interaction(context, result)
             self._phase_rule_application(context, result)
             self._phase_metrics_calculation(context, result)
             self._phase_cleanup(context, result)
@@ -644,6 +654,69 @@ class RoundExecutor:
             result.add_error(f"Metrics calculation failed: {e}")
             result.phases_failed[RoundPhase.METRICS_CALCULATION] = str(e)
 
+    def _phase_systemic_interaction(
+        self,
+        context: RoundContext,
+        result: RoundResult,
+    ) -> None:
+        """
+        Systemic interaction phase: Execute system-level interactions.
+
+        Args:
+            context: Round context.
+            result: Round result to update.
+        """
+        logger.debug(f"Phase {RoundPhase.SYSTEMIC_INTERACTION.value}")
+
+        try:
+            if context.systemic_interaction:
+                # Get great powers for systemic interactions
+                great_powers = [
+                    agent_id for agent_id, agent in context.agents.items()
+                    if hasattr(agent, 'agent_type') and agent.agent_type.value == "great_power"
+                ]
+
+                if great_powers:
+                    # Shape international order
+                    order_result = context.systemic_interaction.shape_international_order(
+                        context.round_number
+                    )
+
+                    # Evolve international norms
+                    norm_evolution = context.systemic_interaction.evolve_international_norms(
+                        context.round_number
+                    )
+
+                    # Simulate values competition
+                    values_competition = context.systemic_interaction.simulate_values_competition(
+                        context.round_number
+                    )
+
+                    # Store systemic results in context
+                    context.systemic_results = {
+                        "order_shape": order_result,
+                        "norm_evolution": norm_evolution,
+                        "values_competition": values_competition,
+                    }
+
+                    # Save systemic events if persistence enabled
+                    if context.data_storage and context.persistence:
+                        for event in context.systemic_interaction.get_systemic_events(limit=5):
+                            context.data_storage.save_systemic_event(
+                                event.to_dict() if hasattr(event, 'to_dict') else event,
+                                context.round_number
+                            )
+
+            if self._enable_detailed_logging:
+                logger.debug("Systemic interaction phase completed")
+
+            result.phases_completed.append(RoundPhase.SYSTEMIC_INTERACTION)
+            self._call_hooks(RoundPhase.SYSTEMIC_INTERACTION, context, result)
+
+        except Exception as e:
+            result.add_error(f"Systemic interaction failed: {e}")
+            result.phases_failed[RoundPhase.SYSTEMIC_INTERACTION] = str(e)
+
     def _phase_cleanup(
         self,
         context: RoundContext,
@@ -662,6 +735,24 @@ class RoundExecutor:
             # Copy context errors and warnings to result
             result.errors.extend(context.errors)
             result.warnings.extend(context.warnings)
+
+            # Save decision history if persistence enabled
+            if context.data_storage and context.persistence:
+                for agent_id, decision in context.decisions.items():
+                    context.data_storage.save_decision_history(
+                        agent_id,
+                        decision,
+                        context.round_number
+                    )
+
+            # Save interaction details if persistence enabled
+            if context.data_storage and context.ion_persistence:
+                for interaction in context.interactions:
+                    interaction_dict = interaction.to_dict() if hasattr(interaction, 'to_dict') else interaction
+                    context.data_storage.save_interaction_details(
+                        interaction_dict,
+                        context.round_number
+                    )
 
             if self._enable_detailed_logging:
                 logger.debug(f"Round cleanup completed")

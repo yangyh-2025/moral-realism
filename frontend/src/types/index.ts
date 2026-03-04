@@ -25,6 +25,13 @@ export enum ControllerStatus {
   ERROR = 'error',
 }
 
+export enum OrderType {
+  MULTIPOLAR = 'multipolar',
+  BIPOLAR = 'bipolar',
+  UNIPOLAR_HEGEMONIC = 'unipolar_hegemonic',
+  HIERARCHICAL = 'hierarchical',
+}
+
 export interface HardPowerConfig {
   military_capability: number;
   nuclear_capability: number;
@@ -161,4 +168,41 @@ export interface ApiConfig {
   model: string;
   base_url: string;
   timeout: number;
+}
+
+export interface Norm {
+  norm_id: string;
+  name: string;
+  name_zh: string;
+  description: string;
+  category: string;
+  strength: number;
+  origin_country: string;
+  adoption_level: number;
+}
+
+export interface SystemicEvent {
+  event_id: string;
+  event_type: string;
+  description: string;
+  description_zh: string;
+  participants: string[];
+  impact_level: number;
+  round: number;
+  timestamp: string;
+}
+
+export interface SystemicInteractionEvent {
+  event_type: string;
+  data: {
+    order_type?: string;
+    norms?: Norm[];
+    event?: SystemicEvent;
+    round?: number;
+    evolution?: {
+      round: number;
+      norms: Norm[];
+    }[];
+  };
+  timestamp: string;
 }
