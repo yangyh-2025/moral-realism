@@ -43,6 +43,24 @@ class HistoryEntry:
     content: str
     metadata: Dict[str, Any] = field(default_factory=dict)
 
+    def __init__(
+        self,
+        timestamp: datetime,
+        event_type: str,
+        content: str,
+        metadata: Dict[str, Any] = None,
+    ) -> None:
+        """Initialize history entry with automatic timestamp conversion."""
+        # Handle string timestamp conversion
+        if isinstance(timestamp, str):
+            from datetime import datetime as dt
+            self.timestamp = dt.fromisoformat(timestamp)
+        else:
+            self.timestamp = timestamp
+        self.event_type = event_type
+        self.content = content
+        self.metadata = metadata or {}
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return {

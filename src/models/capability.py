@@ -46,6 +46,10 @@ class HardPower:
     energy_access: float = 50.0  # Access to energy resources
     strategic_materials: float = 50.0  # Access to strategic materials
 
+    def __post_init__(self) -> None:
+        """Validate hard power values after initialization."""
+        self.validate()
+
     def validate(self) -> bool:
         """Validate hard power values are in acceptable ranges."""
         attrs = [
@@ -128,6 +132,10 @@ class SoftPower:
     # Institutional power
     un_influence: float = 50.0  # Influence in UN and international orgs
     institutional_leadership: float = 50.0  # Leadership in key institutions
+
+    def __post_init__(self) -> None:
+        """Validate soft power values after initialization."""
+        self.validate()
 
     def validate(self) -> bool:
         """Validate soft power values are in acceptable ranges."""

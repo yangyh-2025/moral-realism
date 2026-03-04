@@ -76,7 +76,7 @@ class TestLeadershipType:
         profile = get_leadership_profile(LeadershipType.QIANGQUAN)
         assert profile.moral_standard < 0.4
         assert profile.uses_moral_persuasion is False
-        assert profile.accepts_mverbal_constraints is False
+        assert profile.accepts_moral_constraints is False
         assert profile.core_interest_weight > 0.9
 
     def test_moral_standard_comparison(self) -> None:
@@ -113,8 +113,18 @@ class TestCapability:
         """Test hard power index calculation."""
         hard_power = HardPower(
             military_capability=90.0,
+            nuclear_capability=80.0,
+            conventional_forces=85.0,
+            force_projection=80.0,
             gdp_share=25.0,
+            economic_growth=5.0,
+            trade_volume=80.0,
+            financial_influence=85.0,
             technology_level=85.0,
+            military_technology=85.0,
+            innovation_capacity=80.0,
+            energy_access=85.0,
+            strategic_materials=80.0,
         )
         index = hard_power.get_hard_power_index()
         assert 0 <= index <= 100
@@ -137,9 +147,35 @@ class TestCapability:
 
     def test_capability_tier_determination(self) -> None:
         """Test capability tier determination."""
-        # Superpower
-        superpower_hard = HardPower(military_capability=95.0, gdp_share=25.0, technology_level=95.0)
-        superpower_soft = SoftPower(discourse_power=90.0, allies_count=30)
+        # Superpower - use values that produce combined index >= 80
+        superpower_hard = HardPower(
+            military_capability=95.0,
+            nuclear_capability=90.0,
+            conventional_forces=90.0,
+            force_projection=95.0,
+            gdp_share=25.0,
+            economic_growth=4.0,
+            trade_volume=90.0,
+            financial_influence=95.0,
+            technology_level=95.0,
+            military_technology=95.0,
+            innovation_capacity=90.0,
+            energy_access=95.0,
+            strategic_materials=90.0,
+        )
+        superpower_soft = SoftPower(
+            discourse_power=95.0,
+            narrative_control=90.0,
+            media_influence=90.0,
+            allies_count=30,
+            ally_strength=90.0,
+            network_position=85.0,
+            diplomatic_support=90.0,
+            moral_legitimacy=90.0,
+            cultural_influence=90.0,
+            un_influence=90.0,
+            institutional_leadership=90.0,
+        )
         superpower = Capability(
             agent_id="sp1",
             hard_power=superpower_hard,
@@ -147,9 +183,35 @@ class TestCapability:
         )
         assert superpower.get_tier() == CapabilityTier.T0_SUPERPOWER
 
-        # Small state
-        small_hard = HardPower(military_capability=10.0, gdp_share=0.5, technology_level=15.0)
-        small_soft = SoftPower(discourse_power=10.0, allies_count=2)
+        # Small state - use values that produce combined index < 25
+        small_hard = HardPower(
+            military_capability=10.0,
+            nuclear_capability=0.0,
+            conventional_forces=10.0,
+            force_projection=5.0,
+            gdp_share=0.5,
+            economic_growth=1.0,
+            trade_volume=10.0,
+            financial_influence=10.0,
+            technology_level=15.0,
+            military_technology=10.0,
+            innovation_capacity=10.0,
+            energy_access=15.0,
+            strategic_materials=15.0,
+        )
+        small_soft = SoftPower(
+            discourse_power=10.0,
+            narrative_control=10.0,
+            media_influence=10.0,
+            allies_count=2,
+            ally_strength=10.0,
+            network_position=10.0,
+            diplomatic_support=10.0,
+            moral_legitimacy=10.0,
+            cultural_influence=10.0,
+            un_influence=10.0,
+            institutional_leadership=10.0,
+        )
         small = Capability(agent_id="ss1", hard_power=small_hard, soft_power=small_soft)
         assert small.get_tier() == CapabilityTier.T4_SMALL
 
