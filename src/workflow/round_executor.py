@@ -746,7 +746,7 @@ class RoundExecutor:
                     )
 
             # Save interaction details if persistence enabled
-            if context.data_storage and context.ion_persistence:
+            if context.data_storage and context.interaction_persistence:
                 for interaction in context.interactions:
                     interaction_dict = interaction.to_dict() if hasattr(interaction, 'to_dict') else interaction
                     context.data_storage.save_interaction_details(

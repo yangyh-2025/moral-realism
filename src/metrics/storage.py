@@ -319,7 +319,7 @@ class DataStorage:
         ]
 
     def save_checkpoint(
-        selfserl,
+        self,
         simulation_state: Dict[str, Any],
         checkpoint_id: Optional[str] = None,
     ) -> Optional[str]:
@@ -355,7 +355,7 @@ class DataStorage:
             print(f"Error saving checkpoint {checkpoint_id}: {e}")
             return None
 
-    def load_checkpoint(selfserl, checkpoint_id: str) -> Optional[Dict[str, Any]]:
+    def load_checkpoint(self, checkpoint_id: str) -> Optional[Dict[str, Any]]:
         """
         Load a simulation checkpoint.
 
@@ -384,7 +384,7 @@ class DataStorage:
             return None
 
     def export_to_csv(
-        selfserl,
+        self,
         data_type: str,
         filepath: str,
         start_round: int = 0,
@@ -441,7 +441,7 @@ class DataStorage:
             print(f"Error exporting to CSV: {e}")
             return None
 
-    def export_time_series(selfserl, metric_name: str, filepath: str) -> Optional[str]:
+    def export_time_series(self, metric_name: str, filepath: str) -> Optional[str]:
         """
         Export a specific metric as a time series.
 
@@ -493,7 +493,7 @@ class DataStorage:
             print(f"Error exporting time series: {e}")
             return None
 
-    def _extract_metric_value(selfserl, data: Dict[str, Any], metric_name: str) -> Any:
+    def _extract_metric_value(self, data: Dict[str, Any], metric_name: str) -> Any:
         """
         Extract a metric value from nested data.
 
@@ -515,7 +515,7 @@ class DataStorage:
 
         return value
 
-    def get_latest_checkpoint(selfserl) -> Optional[str]:
+    def get_latest_checkpoint(self) -> Optional[str]:
         """
         Get most recent checkpoint ID.
 
@@ -538,7 +538,7 @@ class DataStorage:
             return latest.stem[len("checkpoint_"):]
         return latest.stem
 
-    def list_checkpoints(selfserl) -> List[str]:
+    def list_checkpoints(self) -> List[str]:
         """
         List all available checkpoints.
 
@@ -561,7 +561,7 @@ class DataStorage:
                 checkpoint_ids.append(stem)
         return checkpoint_ids
 
-    def get_round_metrics(selfserl, round_id: int) -> Optional[Dict[str, Any]]:
+    def get_round_metrics(self, round_id: int) -> Optional[Dict[str, Any]]:
         """
         Get metrics for a specific round.
 
@@ -585,7 +585,7 @@ class DataStorage:
             return None
 
     def get_agent_history(
-        selfserl,
+        self,
         agent_id: str,
         metric_type: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
@@ -650,7 +650,7 @@ class DataStorage:
         return history
 
     def get_system_trends(
-        selfserl,
+        self,
         start_round: int,
         end_round: Optional[int] = None,
     ) -> Dict[str, List[Dict[str, Any]]]:
@@ -712,7 +712,7 @@ class DataStorage:
 
         return trends
 
-    def clear_outputs(selfserl) -> None:
+    def clear_outputs(self) -> None:
         """Clear all output files (but keep checkpoints)."""
         outputs_dir = self.base_dir / "outputs"
         exports_dir = self.base_dir / "exports"
@@ -729,7 +729,7 @@ class DataStorage:
     # Decision History Persistence Methods
 
     def save_decision_history(
-        selfserl,
+        self,
         agent_id: str,
         decision: Dict[str, Any],
         round_id: int,
@@ -774,7 +774,7 @@ class DataStorage:
             return None
 
     def save_interaction_details(
-        selfserl,
+        self,
         interaction: Dict[str, Any],
         round_id: int,
     ) -> Optional[str]:
@@ -816,7 +816,7 @@ class DataStorage:
             return None
 
     def save_systemic_event(
-        selfserl,
+        self,
         event: Dict[str, Any],
         round_id: int,
     ) -> Optional[str]:
@@ -855,7 +855,7 @@ class DataStorage:
             return None
 
     def get_decision_history(
-        selfserl,
+        self,
         agent_id: Optional[str] = None,
         round_id: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
@@ -901,7 +901,7 @@ class DataStorage:
             return []
 
     def get_interaction_history(
-        selfserl,
+        self,
         agent_id: Optional[str] = None,
         round_id: Optional[int] = None,
         limit: Optional[int] = None,
@@ -959,7 +959,7 @@ class DataStorage:
             return []
 
     def get_systemic_events(
-        selfserl,
+        self,
         event_type: Optional[str] = None,
         round_id: Optional[int] = None,
     ) -> List[Dict[str, Any]]:

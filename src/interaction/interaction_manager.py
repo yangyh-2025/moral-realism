@@ -123,7 +123,7 @@ class InteractionStep:
     timestamp: datetime = field(default_factory=datetime.now)
     decisions: List[Dict[str, Any]] = field(default_factory=list)
     interactions: List[InteractionResult] = field(default_factory=list)
-    step_metadata: Dict[str] = Any] = field(default_factory=dict)
+    step_metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -801,7 +801,7 @@ class InteractionManager:
             result = InteractionResult(
                 interaction_id=self._generate_interaction_id(),
                 from_agent_id=agent_id,
-                "to_agent_id": "un_assembly",
+                to_agent_id="un_assembly",
                 interaction_type="un_voting",
                 action={
                     "vote": vote,

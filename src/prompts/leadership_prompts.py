@@ -124,7 +124,7 @@ class ActionType(Enum):
     SECURITY_MILITARY = "security_military"  # Military deployment/action
     SECURITY_ALLIANCE = "security_alliance"  # Form/maintain alliance
     SECURITY_MEDIATION = "security_mediation"  # Mediate conflict
-    MILITARY_EXERCIS = "military_exercise"  # Military exercises
+    MILITARY_EXERCISE = "military_exercise"  # Military exercises
     MILITARY_ESCALATION = "military_escalation"  # Arms buildup/escalation
     SECURITY_GUARANTEE = "security_guarantee"  # Security commitment
     WEAPONS_EXPORT = "weapons_export"  # Weapon sales/transfers
@@ -170,7 +170,7 @@ ACTION_DESCRIPTIONS: Dict[ActionType, str] = {
     ActionType.SECURITY_MILITARY: "部署或使用军事力量用于安全目的",
     ActionType.SECURITY_ALLIANCE: "建立、加强或维护安全同盟",
     ActionType.SECURITY_MEDIATION: "在冲突各方之间进行调解",
-    ActionType.MILITARY_EXERCIS: "与盟友进行军事演习",
+    ActionType.MILITARY_EXERCISE: "与盟友进行军事演习",
     ActionType.MILITARY_ESCALATION: "增强军事能力或军备建设",
     ActionType.SECURITY_GUARANTEE: "向盟友提供安全承诺",
     ActionType.WEAPONS_EXPORT: "出口武器或军事技术",
@@ -213,7 +213,7 @@ ACTION_DESCRIPTIONS: Dict[ActionType, str] = {
 
 
 class GreatPowerPromptBuilder:
-G    """
+    """
     大国代理提示词构建器
 
     构建包含领导类型档案、能力信息和上下文的系统提示词和用户提示词。
