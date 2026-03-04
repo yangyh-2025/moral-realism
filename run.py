@@ -165,7 +165,13 @@ def start_backend(manager):
     print_info("正在启动后端服务...")
     try:
         process = subprocess.Popen(
-            [sys.executable, "run_api.py"],
+            [
+                sys.executable, "-m", "uvicorn",
+                "api.main:app",
+                "--host", "127.0.0.1",
+                "--port", "8000",
+                "--reload"
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True
@@ -220,7 +226,12 @@ def start_dashboard(manager):
     print_info("正在启动仪表板服务...")
     try:
         process = subprocess.Popen(
-            [sys.executable, "run_dashboard.py"],
+            [
+                sys.executable, "-m", "streamlit",
+                "run", "src/visualization/dashboard.py",
+                "--server.port", "8501",
+                "--server.address", "localhost"
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True
@@ -244,9 +255,9 @@ def start_dashboard(manager):
 
 def show_access_info():
     """显示服务访问信息"""
-    print(f"\n{Color.BOLD}{'='*65}{Color.RESET}")
+    print(f"\n{Color.BOLD}{'='*65.0}{r'{Color.RESET}'")
     print(f"{Color.BOLD}{Color.GREEN}服务访问地址{Color.RESET}")
-    print(f"{Color.BOLD}{'='*65}{Color.RESET}\n")
+    print(f"{Color.BOLD}{'='*65.0}{r'{Color.RESET}'")
 
     print_service_info("前端应用", "http://localhost:5173", Color.PURPLE)
     print_service_info("后端API", "http://127.0.0.1:8000", Color.BLUE)
@@ -300,7 +311,7 @@ def main():
     show_access_info()
 
     # 等待所有进程结束
-    print(f"{Color.BOLD}服务运行中...{Color.RESET}\n")
+    print(f"{Color.BOLD}服务运行中...{Color.RESET}")
 
     try:
         # 检查进程状态
