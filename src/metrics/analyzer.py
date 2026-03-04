@@ -5,6 +5,7 @@ This module provides MetricsAnalyzer for analyzing trends,
 detecting patterns, and computing correlations in metric data.
 """
 
+import math
 import statistics
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
@@ -515,8 +516,8 @@ class MetricsAnalyzer:
             # Calculate covariance and standard deviations
             n = len(pairs)
             covariance = sum((x - mean_x) * (y - mean_y) for x, y in pairs) / n
-            std_x = statistics.stdev(x_values) if n > 1 else 0
-            std_y = statistics.stdev(y_values) if n > 1 else 0
+            std_x = math.sqrt(sum((x - mean_x) ** 2 for x in x_values) / n) if n > 0 else 0
+            std_y = math.sqrt(sum((y - mean_y) ** 2 for y in y_values) / n) if n > 0 else 0
 
             # Correlation
             if std_x * std_y == 0:

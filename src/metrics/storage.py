@@ -337,7 +337,7 @@ class DataStorage:
             checkpoint_id = f"checkpoint_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         try:
-            filepath = self.base_dir / "checkpoints" / f"{checkpoint_id}.json"
+            filepath = self.base_dir / "checkpoints" / f"checkpoint_{checkpoint_id}.json"
             save_data = {
                 "checkpoint_id": checkpoint_id,
                 "timestamp": datetime.now().isoformat(),
@@ -358,16 +358,16 @@ class DataStorage:
         Load a simulation checkpoint.
 
         Args:
-            checkpoint_id: Checkpoint ID (with or without .json extension).
+            checkpoint_id: Checkpoint ID (without .json extension).
 
         Returns:
             Checkpoint data dictionary, or None if not found.
         """
-        # Add .json extension if not present
-        if not checkpoint_id.endswith(".json"):
-            checkpoint_id = f"{checkpoint_id}.json"
+        # Remove .json extension if present
+        if checkpoint_id.endswith(".json"):
+            checkpoint_id = checkpoint_id[:-5]
 
-        filepath = self.base_dir / "checkpoints" / checkpoint_id
+        filepath = self.base_dir / "checkpoints" / f"checkpoint_{checkpoint_id}.json"
 
         try:
             if not filepath.exists():
@@ -533,6 +533,9 @@ class DataStorage:
 
         # Get most recent by modification time
         latest = max(checkpoint_files, key=lambda f: f.stat().st_mtime)
+        # Remove "checkpoint_" prefix from stem
+        if latest.stem.startswith("checkpoint_"):
+            return latest.stem[len("checkpoint_"):]
         return latest.stem
 
     def list_checkpoints(self) -> List[str]:
@@ -548,7 +551,15 @@ class DataStorage:
             return []
 
         checkpoint_files = sorted(checkpoints_dir.glob("checkpoint_*.json"))
-        return [f.stem for f in checkpoint_files]
+        # Remove "checkpoint_" prefix from each stem
+        checkpoint_ids = []
+        for f in checkpoint_files:
+            stem = f.stem
+            if stem.startswith("checkpoint_"):
+                checkpoint_ids.append(stem[len("checkpoint_"):])
+            else:
+                checkpoint_ids.append(stem)
+        return checkpoint_ids
 
     def get_round_metrics(self, round_id: int) -> Optional[Dict[str, Any]]:
         """
