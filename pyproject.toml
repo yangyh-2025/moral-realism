@@ -8,7 +8,7 @@ version = "0.3.0"
 description = "Moral Realism LLM-driven LLM-driven Agent-Based Modeling System"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = {text = "Apache-2.0"}
 authors = [
     {name = "Development Team"}
 ]

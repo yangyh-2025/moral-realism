@@ -2,7 +2,7 @@
 # Moral Realism LLM-Driven Agent-Based Modeling System
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.3.0-orange.svg)](pyproject.toml)
 
 ---
@@ -30,8 +30,11 @@
 This is an LLM-driven agent-based modeling system built based on Professor Yan Xuetong's theory from "Moral, Political Leadership, and International Order".
 
 ### 版本信息
-- **当前版本**: v0.3.0
-- **Python要求**: >= 3.10
+| 属性 | 值 |
+|------|-----|
+| 当前版本 | v0.3.0 |
+| Python要求 | >= 3.10 |
+| 许可证 | Apache 2.0 |
 
 ### 核心目标
 1. 验证道义现实主义理论：研究道德领导类型是否比其他领导类型更能吸引国际支持
@@ -39,9 +42,13 @@ This is an LLM-driven agent-based modeling system built based on Professor Yan X
 3. 模拟国际秩序演化过程
 
 ### 关键假设
-- 道义型领导(Wangdao)通过道德原则和正当性行为获得最高的国际吸引力
-- 强权型领导(Qiangquan)可能短期获得权力，但长期面临支持流失
-- 传统霸权(Hegemon)和混合型(Hunyong)在吸引力和稳定性上处于中间位置
+
+| 领导类型 | 假设行为 | 预期结果 |
+|----------|----------|----------|
+| 王道型 (Wangdao) | 道德原则和正当性行为 | 获得最高国际吸引力 |
+| 强权型 (Qiangquan) | 权力最大化策略 | 短期获得权力，长期支持流失 |
+| 传统霸权 (Hegemon) | 力量投射和联盟管理 | 吸引力和稳定性居中 |
+| 混合型 (Hunyong) | 妥协与合作，避免对抗 | 吸引力和稳定性居中 |
 
 ---
 
@@ -49,31 +56,21 @@ This is an LLM-driven agent-based modeling system built based on Professor Yan X
 
 ### 技术栈
 
-#### 核心依赖
-```
-openai>=1.0.0          # LLM API客户端
-numpy>=1.24.0           # 数值计算
-pandas>=2.0.0           # 数据处理与分析
-pyyaml>=6.0             # 配置文件管理
-python-dotenv>=1.0.0    # 环境变量管理
-aiohttp>=3.8.0          # 异步支持
-```
-
-#### 可视化与监控
-```
-matplotlib>=3.7.0        # 静态图表
-plotly>=5.14.0          # 交互式可视化
-streamlit>=1.28.0       # 实时仪表板
-```
-
-#### 开发工具
-```
-pytest>=7.4.0           # 单元测试框架
-pytest-asyncio>=0.21.0 # 异步测试支持
-black>=23.7.0            # 代码格式化
-mypy>=1.5.0             # 类型检查
-loguru>=0.7.0            # 高级日志记录
-```
+| 类别 | 库/工具 | 用途 |
+|------|---------|------|
+| **核心依赖** | openai>=1.0.0 | LLM API客户端 |
+| | numpy>=1.24.0 | 数值计算 |
+| | pandas>=2.0.0 | 数据处理与分析 |
+| | pyyaml>=6.0 | 配置文件管理 |
+| | python-dotenv>=1.0.0 | 环境变量管理 |
+| | aiohttp (OpenAI内置) | 异步支持 |
+| **可视化与监控** | matplotlib>=3.7.0 | 静态图表 |
+| | plotly>=5.14.0 | 交互式可视化 |
+| | streamlit>=1.28.0 | 实时仪表板 |
+| **开发工具** | pytest>=7.4.0 | 单元测试框架 |
+| | pytest-asyncio>=0.21.0 | 异步测试支持 |
+| | black>=23.7.0 | 代码格式化 |
+| | mypy>=1.5.0 | 类型检查 |
 
 ### 项目结构
 
@@ -103,7 +100,7 @@ moral-realism/
 │   ├── metrics/                # 指标计算
 │   │   ├── analyzer.py        # 数据分析器
 │   │   ├── calculator.py      # 指标计算器
-│   │   └── storage.py        # 数据存储
+│   │   └── storage.py        # 数据数据存储
 │   ├── prompts/                # LLM提示词
 │   │   ├── base_prompt.py     # 基础提示词
 │   │   ├── behavior_prompts.py # 行为提示词
@@ -127,17 +124,10 @@ moral-realism/
 │   └── reports/             # 分析报告
 ├── logs/                        # 日志目录
 ├── tests/                       # 测试目录
-│   ├── test_phase1.py       # Phase 1: Core models
-│   ├── test_phase2.py       # Phase 2: Agents
-│   ├── test_phase2_minimal.py
-│   ├── test_phase4.py       # Phase 4: Interactions
-│   ├── test_phase5.py       # Phase 5: Metrics
-│   ├── test_phase6.py       # Phase 6: Workflow
-│   ├── test_phase7.py       # Phase 7: Visualization
-│   └── test_phase9.py       # Phase 9: Integration
 ├── run_dashboard.py            # 仪表板启动脚本
 ├── requirements.txt            # Python依赖
 ├── pyproject.toml             # 项目配置
+├── .LICENSE                      # Apache 2.0 许可证
 └── .env.example              # 环境变量模板
 ```
 
@@ -147,83 +137,38 @@ moral-realism/
 
 ### 道义现实主义理论
 
-道义现实主义是国际关系理论中的重要观点，主要内容包括：
+| 理论要素 | 内容说明 |
+|---------|---------|
+| 道义的作用 | 道德因素在国际政治中具有真实影响力 |
+| 领导类型分类 | 不同的领导方式产生不同的国际结果 |
+| 吸引力机制 | 道德领导通过正当性赢得支持 |
 
-1. **道义的作用**：道德因素在国际政治中具有真实影响力
-2. **领导类型分类**：不同的领导方式产生不同的国际结果
-3. **吸引力机制**：道德领导通过正当性赢得支持
+### 四种领导类型对比
 
-### 四种领导类型
+| 特征维度 | 道义型 (Wangdao) | 传统霸权 (Hegemon) | 强权型 (Qiangquan) | 混合型 (Hunyong) |
+|---------|-------------------|-------------------|-------------------|-------------------|
+| **道德标准** | 0.9 (最高) | 0.5 | 0.2 (最低) | 0.6 |
+| **核心利益权重** | 0.7 | 0.9 | 0.95 | 0.5 |
+| **道义考量权重** | 0.85 | 0.4 | 0.15 | 0.7 |
+| **偏好外交方案** | 是 | 否 | 否 | 是 |
+| **使用道德说服** | 是 | 否 | 否 | 是 |
+| **接受道德约束** | 是 | 否 | 否 | 是 |
+| **重视声誉** | 是 | 是 | 否 | 是 |
 
-#### 1. 道义型领导 (Wangdao / 道义型)
+### 领导类型理论假设
 
-**特征**：
-- 道德标准: 0.9 (最高)
-- 核心利益权重: 0.7
-- 道德考量权重: 0.85
-- 偏好外交方案: 是
-- 使用道德说服: 是
-- 接受道德约束: 是
-- 重视声誉: 是
-
-**禁止行为**：
-- 军事侵略
-- 单边干预
-- 违反主权
-- 未经授权的强制措施
-
-**优先行为**：
-- 多边合作
-- 和平争端解决
-- 尊重国际法
-- 互利协议
-
-**理论假设**：道义型领导通过道德正当性获得最高的国际吸引力
-
-#### 2. 传统霸权 (Hegemon / 传统霸权)
-
-**特征**：
-- 道德标准: 0.5
-- 核心利益权重: 0.9
-- 道德考量权重: 0.4
-- 偏好外交方案: 否
-- 使用道德说服: 否
-- 接受道德约束: 否
-- 重视声誉: 是
-
-**理论假设**：传统霸权通过力量投射和联盟管理维持主导地位
-
-#### 3. 强权型领导 (Qiangquan / 强权型)
-
-**特征**：
-- 道德标准: 0.2 (最低)
-- 核心利益权重: 0.95
-- 道德考量权重: 0.15
-- 偏好外交方案: 否
-- 使用道德说服: 否
-- 接受道德约束: 否
-- 重视声誉: 否
-
-**理论假设**：强权型追求权力最大化，道德考量次之
-
-#### 4. 混合型领导 (Hunyong / 混合型)
-
-**特征**：
-- 道德标准: 0.6
-- 核心利益权重: 0.5
-- 道德考量权重: 0.7
-- 偏好外交方案: 是
-- 使用道德说服: 是
-- 接受道德约束: 是
-- 重视声誉: 是
-
-**理论假设**：混合型倾向于妥协与合作，避免对抗
+| 领导类型 | 主要特征 | 理论假设 |
+|---------|---------|---------|
+| 道义型 | 道德原则、正当性行为、多边合作 | 通过道德正当性获得最高国际吸引力 |
+| 传统霸权 | 力量投射、联盟管理、重视声誉 | 通过力量投射和联盟管理维持主导地位 |
+| 强权型 | 权力最大化、强制措施、声誉忽视 | 追求权力最大化，道德考量次之 |
+| 混合型 | 妥协合作、避免对抗、平衡利益 | 倾向于妥协与合作，避免对抗 |
 
 ---
 
 ## 系统架构
 
-### 架构层次
+### 架构层次图
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -259,52 +204,84 @@ moral-realism/
 └─────────────────────┼──────────────────────┼─────────┘
 ```
 
-### 仿真流程
-
-#### 轮次执行流程 (8个阶段)
-
-1. **准备阶段 (PREPARATION)**
-   - 验证上下文和智能体状态
-   - 初始化智能体事件映射
-
-2. **事件生成阶段 (EVENT_GENERATION)**
-   - 从动态环境获取待处理事件
-   - 从事件调度器获取预调度事件
-   - 推进环境步骤计数
-
-3. **事件分发阶段 (EVENT_DISTRIBUTION)**
-   - 将事件分发到受影响的智能体
-   - 记录事件到环境历史
-
-4. **智能体决策阶段 (AGENT_DECISION_MAKING)**
-   - 为所有智能体收集决策
-   - 调用decide()方法处理情境和可行动作
-   - 构建决策上下文
-
-5. **交互执行阶段 (INTERACTION_EXECUTION)**
-   - 执行智能体之间的交互
-   - 处理直接交互和广播交互
-   - 更新关系评分
-
-6. **规则应用阶段 (RULE_APPLICATION)**
-   - 应用规则并验证变化
-   - 评估智能体道德水平
-   - 验证能力变化合法性
-
-7. **指标计算阶段 (METRICS_CALCULATION)**
-   - 计算并存储所有指标
-   - 保存指标到数据存储
-   - 生成系统级汇总
-
-8. **清理阶段 (CLEANUP)**
-   - 记录历史和更新统计
-   - 复制上下文错误和警告
-
-#### 仿真生命周期
+### 轮次执行流程
 
 ```
-NOT_INITIALIZED → INITIALIZED → READY → RUNNING → (PAUSED) → STOPPED/COMPLETED
+┌─────────────────────────────────────────────────────────────────┐
+│                    轮次执行流程 (8个阶段)          │
+└─────────────────────────────────────────────────────────────────┘
+
+  ┌────────────┐
+  │  阶段 1    │  PREPARATION (准备阶段)
+  │  验证上下文 │  → 验证上下文和智能体状态
+  │  初始化映射 │  → 初始化智能体事件映射
+  └──────┬─────┘
+         │
+  ┌─────▼─────────┐
+  │  阶段 2        │  EVENT_GENERATION (事件生成阶段)
+  │  获取环境事件   │  → 从动态环境获取待处理事件
+  │  获取调度事件   │  → 从事件调度器获取预调度事件
+  │  推进步骤计数  │  → 推进环境步骤计数
+  └──────┬─────────┘
+         │
+  ┌─────▼─────────┐
+  │  阶段 3        │  EVENT_DISTRIBUTION (事件分发阶段)
+  │  分发到智能体   │  → 将事件分发到受影响的智能体
+  │  记录历史     │  → 记录事件到环境历史
+  └──────┬─────────┘
+         │
+  ┌─────▼─────────┐
+  │  阶段 4        │  AGENT_DECISION_MAKING (智能体决策阶段)
+  │  收集决策     │  → 为所有智能体收集决策
+  │  调用decide() │  → 调用decide()方法处理情境和可行动作
+  │  构建上下文   │  → 构建决策上下文
+  └──────┬─────────┘
+         │
+  ┌─────▼─────────┐
+  │  阶段 5        │  INTERACTION_EXECUTION (交互执行阶段)
+  │  执行交互     │  → 执行智能体之间的交互
+  │  处理直接/广播 │  → 处理直接交互和广播交互
+  │  更新关系     │  → 更新关系评分
+  └──────┬─────────┘
+         │
+  ┌─────▼─────────┐
+  │  阶段 6        │  RULE_APPLICATION (规则应用阶段)
+  │  应用规则     │  → 应用规则并验证变化
+  │  评估道义     │  → 评估智能体道德水平
+  │  验证能力     │  → 验证能力变化合法性
+  └──────┬─────────┘
+         │
+  ┌─────▼─────────┐
+  │  阶段 7        │  METRICS_CALCULATION (指标计算阶段)
+  │  计算指标     │  → 计算并存储所有指标
+  │  保存数据     │  → 保存指标到数据存储
+  │  生成汇总     │  → 生成系统级汇总
+  └──────┬─────────┘
+         │
+  ┌─────▼─────────┐
+  │  阶段 8        │  CLEANUP (清理阶段)
+  │  记录历史     │  → 记录历史和更新统计
+  │  复制上下文   │  → 复制上下文错误和警告
+  └─────────────────┘
 ```
+
+### 仿真生命周期
+
+```
+初始状态 → 初始化 → 就绪 → 运行中 → (暂停) → (停止/完成)
+NOT_        INITIALIZED  READY      RUNNING    PAUSED    STOPPED
+INITIALIZED
+```
+
+| 状态 | 描述 | 可转换至 |
+|------|------|---------|
+| NOT_INITIALIZED | 尚未初始化 | INITIALIZED |
+| INITIALIZED | 已初始化，等待开始 | READY |
+| READY | 准备就绪 | RUNNING |
+| RUNNING | 仿真运行中 | PAUSED, STOPPED, COMPLETED |
+| PAUSED | 已暂停 | RUNNING, STOPPED |
+| STOPPED | 已停止 | INITIALIZED |
+| COMPLETED | 仿真完成 | INITIALIZED |
 
 ---
 
@@ -312,77 +289,79 @@ NOT_INITIALIZED → INITIALIZED → READY → RUNNING → (PAUSED) → STOPPED/C
 
 ### 环境要求
 
-- Python 3.10 或更高版本
-- pip 包管理器
-- SiliconFlow API密钥 (或兼容的LLM API)
+| 要求项 | 最低版本/说明 |
+|-------|--------------|
+| Python | 3.10 或更高版本 |
+| pip | 最新版本 |
+| API密钥 | SiliconFlow API密钥 (或兼容的LLM API) |
 
 ### 安装步骤
 
-1. **克隆仓库**
+#### 步骤1: 克隆仓库
+
 ```bash
 git clone https://github.com/yangyh-2025/moral-realism.git
 cd moral-realism
 ```
 
-2. **创建虚拟环境** (推荐)
+#### 步骤2: 创建虚拟环境
+
 ```bash
+# 创建虚拟环境
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# 或
-venv\Scripts\activate  # Windows
+
+# 激活虚拟环境 (Linux/Mac)
+source venv/bin/activate
+
+# 激活虚拟环境
+venv\Scripts\activate
 ```
 
-3. **安装依赖**
+#### 步骤3: 安装依赖
+
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **配置环境变量**
+#### 步骤4: 配置环境变量
+
 ```bash
+# 复制环境变量模板
 cp .env.example .env
+
 # 编辑 .env 文件，填入API密钥
+# 编辑器选择：vim, nano, VS Code等
 ```
 
-5. **验证安装**
+#### 步骤5: 验证安装
+
 ```bash
-python -m pytest tests/test_phase1.py
+python -m pytest tests/test_phase1.py -v
 ```
 
 ### LLM配置
 
-系统通过SiliconFlow API使用LLM，支持多种模型：
+#### 推荐模型
 
-**推荐模型**：
-- `Qwen/Qwen2.5-72B-Instruct` - 推荐的中文大模型
-- `Qwen/Qwen2.5-7B-Instruct` - 更快但能力稍弱
-- 其他兼容OpenAI API的模型
+| 模型名称 | 描述 | 适用场景 |
+|---------|------|---------|
+| Qwen/Qwen2.5-72B-Instruct | 推荐的中文大模型 | 生产环境、复杂决策 |
+| Qwen/Qwen2.5-7B-Instruct | 更快但能力稍弱 | 开发测试、快速原型 |
+| 其他OpenAI兼容模型 | 自定义模型 | 特定需求 |
 
-**环境变量配置** (`.env`文件)：
-```env
-# SiliconFlow API配置
-SILICONFLOW_API_KEY=your_api_key_here
-SILICONFLOW_BASE_URL=https://api.siliconflow.cn/v1
-SILICONFLOW_MODEL=Qwen/Qwen2.5-72B-Instruct
+#### 环境变量配置
 
-# LLM引擎配置
-LLM_TEMPERATURE=0.7      # 温度参数，控制随机性
-LLM_MAX_TOKENS=2048      # 最大生成token数
-LLM_TIMEOUT=60            # API超时时间(秒)
-
-# 仿真配置
-SIMULATION_STEPS=100      # 仿真步数
-NUM_AGENTS=5              # 智能体数量
-SEED=42                   # 随机种子
-
-# 日志配置
-LOG_LEVEL=INFO            # 日志级别
-LOG_FILE=logs/simulation.log
-
-# 输出配置
-OUTPUT_DIR=data/outputs
-CHECKPOINT_DIR=data/checkpoints
-REPORT_DIR=data/reports
-```
+| 变量名 | 说明 | 示例值 |
+|-------|------|--------|
+| SILICONFLOW_API_KEY | API密钥 | your_api_key_here |
+| SILICONFLOW_BASE_URL | API基础URL | https://api.siliconflow.cn/v1 |
+| SILICONFLOW_MODEL | 模型名称 | Qwen/Qwen2.5-72B-Instruct |
+| LLM_TEMPERATURE | 温度参数(0-1) | 0.7 |
+| LLM_MAX_TOKENS | 最大token数 | 2048 |
+| LLM_TIMEOUT | API超时(秒) | 60 |
+| SIMULATION_STEPS | 仿真步数 | 100 |
+| NUM_AGENTS | 智能体数量 | 5 |
+| LOG_LEVEL | 日志级别 | INFO |
 
 ---
 
@@ -394,27 +373,34 @@ REPORT_DIR=data/reports
 streamlit run run_dashboard.py
 ```
 
-仪表板地址：`http://localhost:8501`
+| 访问地址 | 说明 |
+|---------|------|
+| http://localhost:8501 | 默认仪表板地址 |
+| -p 8502 | 指定端口 |
+| --logger.level info | 日志级别 |
 
 ### 命令行运行
 
-```python
+```bash
 # 运行完整仿真
 python -m src.workflow.workflow
 
 # 运行单个仿真轮
 python tests/test_phase2.py
+
+# 运行特定测试
+python -m pytest tests/test_phase1.py -v
 ```
 
-### 编程接口
-
-#### 创建仿真
+### 编程接口示例
 
 ```python
 from src.workflow.simulation_controller import SimulationController
 from src.agents.controller_agent import SimulationConfig
+from src.agents import GreatPowerAgent
+from src.models.agent import LeadershipType
 
-# 创建配置
+# 1. 创建配置
 config = SimulationConfig(
     max_rounds=100,
     event_probability=0.2,
@@ -422,13 +408,10 @@ config = SimulationConfig(
     checkpoint_dir="./data/checkpoints",
 )
 
-# 创建控制器
+# 2. 创建控制器
 controller = SimulationController(config)
 
-# 初始化智能体
-from src.agents import GreatPowerAgent
-from src.models.agent import LeadershipType
-
+# 3. 初始化智能体
 agents = {
     "china": GreatPowerAgent(
         agent_id="china",
@@ -444,10 +427,7 @@ agents = {
     ),
 }
 
-# 注册智能体
-controller.set_agents(agents)
-
-# 运行仿真
+# 4. 注册智能体并运行 controller.set_agents(agents)
 result = controller.run_to_completion()
 print(f"仿真完成: {result}")
 ```
@@ -458,113 +438,65 @@ print(f"仿真完成: {result}")
 
 ### 智能体类型体系
 
-#### 1. 大国智能体 (GreatPowerAgent)
+| 智能体类型 | 文件路径 | 主要特征 | 决策方式 |
+|-----------|----------|---------|----------|
+| 大国智能体 | src/agents/great_power_agent.py | LLM驱动、领导类型 | LLM生成 |
+| 小国智能体 | src/agents/small_state_agent.py | 规则驱动、评估大国 | 基于规则计算 |
+| 国际组织 | src/agents/organization_agent.py | 多智能体协调 | 组织规则 |
+| 控制器智能体 | src/agents/controller_agent.py | 工作流管理 | 状态机 |
 
-**文件**: `src/agents/great_power_agent.py`
+### 大国智能体决策流程
 
-**特征**：
-- 使用LLM驱动决策
-- 遵循特定领导类型特征
-- 具有综合能力(硬实力+软实力)
-
-**能力模型**：
-- **硬实力**：军事能力、核威慑、常规力量、力量投射
-- **软实力**：话语权、叙事控制、媒体影响力、联盟关系
-
-**决策流程**：
 ```
-1. 接收情境信息
-2. 基于领导类型特征构建系统提示词
-3. 调用LLM生成决策
-4. 验证决策是否符合领导类型约束
-5. 记录决策历史
+┌─────────────────────────────────────────────────────────────┐
+│              大国智能体决策流程                        │
+└─────────────────────────────────────────────────────────────┘
+
+    接收情境信息 (situation)
+           │
+           ▼
+    构建系统提示词 (基于领导类型特征)
+           │
+           ▼
+    调用LLM生成决策 (function_call)
+           │
+           ▼
+    解析LLM响应 (action_type, rationale, etc.)
+           │
+           ▼
+    验证决策 (检查禁止行动、资源分配等)
+           │
+           ▼
+    记录决策历史 (add_history)
+           │
+           ▼
+    返回决策结果
 ```
 
-#### 2. 小国智能体 (SmallStateAgent)
+### 小国智能体评估维度
 
-**文件**: `src/agents/small_state_agent.py`
-
-**特征**：
-- 基于规则评估大国
-- 选择最具吸引力的领导类型进行结盟
-- 验证"道德领导吸引支持"理论
-
-**评估维度**：
-1. **领导类型偏好** (权重40%)
-   - 道义型: 4.0 (最高)
-   - 霸权型: 3.0
-   - 强权型: 2.0
-   - 混合型: 1.0 (最低)
-
-2. **行为评分** (权重30%)
-   - 基于最近的道德行为
-   - 道德性行为加分
-   - 强制性行为减分
-
-3. **能力评分** (权重20%)
-   - S型曲线：适中力量最吸引
-   - 极强力量带来威胁感
-
-4. **关系评分** (权重10%)
-   - 现有关系的延续性
+| 评估维度 | 权重 | 评分规则 |
+|---------|------|---------|
+| 领导类型偏好 | 40% | 道义型(4.0) > 霸权型(3.0) > 强权型(2.0) > 混合型(1.0) |
+| 行为评分 | 30% | 道德性行为加分，强制性行为减分 |
+| 能力评分 | 20% | S型曲线：适中力量最吸引，极强带来威胁 |
+| 关系评分 | 10% | 现有关系的延续性 |
 
 **决策规则**：
-- 如果综合评分 >= 30，结盟该大国
-- 否则保持中立
-
-#### 3. 国际组织智能体 (OrganizationAgent)
-
-**文件**: `src/agents/organization_agent.py`
-
-**组织类型**：
-- GLOBAL (全球性)
-- REGIONAL (区域性)
-- SECURITY (安全)
-- ECONOMIC (经济)
-- ENVIRONMENTAL (环境)
-
-**决策规则**：
-- CONSENSUS：全体一致
-- MAJORITY：多数决
-- LEADER_DECIDES：领导决定
-- COALITION：联盟决策
-
-**瘫痪检测**：
-- 领导决定规则但无领导时瘫痪
-- 3种以上不同领导类型导致瘫痪
-
-#### 4. 控制器智能体 (ControllerAgent)
-
-**文件**: `src/agents/controller_agent.py`
-
-**职责**：
-- 管理仿真工作流
-- 协调智能体交互
-- 维护仿真状态
-
-**状态跟踪**：
-- 当前轮数
-- 运行状态
-- 总决策数
-- 总交互数
-- 事件计数
+- 综合评分 >= 30：结盟该大国
+- 综合评分 < 30：保持中立
 
 ### 智能体关系模型
 
-**关系评分** (-1.0 到 1.0)：
-- 1.0：完全盟友
-- 0.7：友好
-- 0.3：偏向友好
-- 0.0：中立
-- -0.3：偏向敌对
-- -0.7：敌对
-- -1.0：完全敌对
-
-**关系更新规则**：
-- 积极行动：+0.1
-- 消极行动：-0.15
-- 成功响应：额外+0.05
-- 拒绝响应：额外-0.1
+| 关系评分范围 | 关系描述 | 更新规则 |
+|-----------|---------|---------|
+| 1.0 | 完全盟友 | - |
+| 0.7 | 友好 | 积极行动: +0.1 |
+| 0.3 | 偏向友好 | 成功响应: +0.05 |
+| 0.0 | 中立 | - |
+| -0.3 | 偏向敌对 | 消极行动: -0.15 |
+| -0.7 | 敌对 | 拒绝响应: -0.1 |
+| -1.0 | 完全敌对 | - |
 
 ---
 
@@ -574,80 +506,54 @@ print(f"仿真完成: {result}")
 
 #### 假设1：道义型领导吸引力优势
 
-**假设内容**：道义型领导比其他领导类型获得更多小国支持
+| 实验要素 | 内容 |
+|---------|------|
+| **假设** | 道义型领导比其他领导类型获得更多小国支持 |
+| **验证指标** | 小国结盟数量、小国结盟稳定性、小国满意度评分、道义指数评分 |
 
-**验证指标**：
-- 小国结盟数量
-- 小国结盟稳定性
-- 小国满意度评分
-- 道义指数评分
+**对照组设置**：
 
-**实验设计**：
-```
-对照组设置:
-- 4个大国，分别为4种领导类型
-- 16个小国，随机初始化
+| 组别 | 智能体配置 |
+|------|-----------|
+| 实验组 | 4个大国，分别为4种领导类型 |
+| 对照组 | 16个小国，随机初始化 |
 
-自变量:
-- 领导类型 (4水平)
-- 能力水平 (常量控制)
-
-因变量:
-- 50轮后小国结盟分布
-- 领导类型与结盟数量相关性
-- 小国结盟转移率
-```
+| 因素 | 水平 |
+|------|------|
+| 自变量1 | 领导类型 (4水平: 王道型、霸权型、强权型、混合型) |
+| 自变量2 | 能力水平 (常量控制) |
+| 因变量 | 50轮后小国结盟分布、领导类型与结盟数量相关性、小国结盟转移率 |
 
 #### 假设2：领导类型行为模式
 
-**假设内容**：不同领导类型表现出稳定的行为模式
-
-**行为维度**：
-1. **冲突倾向性**
-   - 道义型：最低
-   - 强权型：最高
-
-2. **合作倾向性**
-   - 道义型：最高
-   - 强权型：最低
-
-3. **多边主义倾向性**
-   - 道义型：最高
-   - 霸权型：中等
-
-4. **声誉管理**
-   - 道义型：重视
-   - 强权型：忽视
-
-**验证方法**：
-- 统计决策类型分布
-- 分析交互模式
-- 追踪道德指标变化
+| 行为维度 | 道义型 | 强权型 | 霸权型 | 混合型 |
+|---------|--------|--------|--------|--------|
+| 冲突倾向性 | 最低 | 最高 | 中等 | 低 |
+| 合作倾向性 | 最高 | 最低 | 中等 | 高 |
+| 多边主义 | 最高 | 最低 | 中等 | 高 |
+| 声誉管理 | 重视 | 忽视 | 重视 | 重视 |
 
 #### 假设3：能力与领导效果
 
-**假设内容**：相同领导类型下，能力高低影响效果
+| 对照组 | 能力配置 |
+|-------|----------|
+| 组A | 道义型领导，高能力 (80+) |
+| 组B | 道义型领导，低能力 (40-) |
 
-**实验设计**：
-```
-对照组:
-- 道义型领导，高能力 (80+)
-- 道义型领导，低能力 (40-)
-
-观察指标:
-- 国际吸引力
-- 话语权增长
-- 联盟质量
-```
+| 观察指标 | 测量方式 |
+|----------|---------|
+| 国际吸引力 | 小国结盟数 |
+| 话语权增长 | 软实力指数变化 |
+| 联盟质量 | 同盟强度 |
 
 ### 仿真参数建议
 
-| 参数 | 推荐值 | 说明 |
-|------|---------|------|
-| max_rounds | 50-100 | 仿真轮数，平衡计算效率与结果稳定性 |
-| event_probability | 0.15 | 危机事件概率，每轮15%概率触发 |
-| checkpoint_interval | 10 | 检查点保存间隔，防止数据丢失 |
-| num_small_states | 8-16 | 小国数量，确保统计显著性 |
+| 参数 | 推荐值 | 最小值 | 最大值 | 说明 |
+|------|---------|--------|--------|------|
+| max_rounds | 50-100 | 10 | 1000 | 仿真轮数 |
+| event_probability | 0.15 | 0.0 | 1.0 | 危机事件概率 |
+| checkpoint_interval | 10 | 1 | 100 | 检查点保存间隔 |
+| num_small_states | 8-16 | 4 | 32 | 小国数量 |
 
 ---
 
@@ -655,602 +561,174 @@ print(f"仿真完成: {result}")
 
 ### src/agents/
 
-#### controller_agent.py
+#### 模块文件列表
 
-**类**: `ControllerAgent`, `SimulationConfig`, `ControllerState`
+| 文件名 | 主要类 | 功能概述 |
+|-------|--------|---------|
+| controller_agent.py | ControllerAgent | 管理仿真工作流和协调智能体交互 |
+| great_power_agent.py | GreatPowerAgent | 使用LLM驱动的决策制定 |
+| small_state_agent.py | SmallStateAgent | 基于规则评估大国并选择结盟 |
+| organization_agent.py | OrganizationAgent | 模拟国际组织决策 |
 
-**功能**：
-- 管理仿真工作流和协调智能体交互
-- 维护仿真配置和状态
-- 提供仿真生命周期管理
+#### ControllerAgent 状态转换
 
-**主要方法**：
-- `start_simulation()`: 启动仿真
-- `pause_simulation()`: 暂停仿真
-- `resume_simulation()`: 恢复仿真
-- `stop_simulation()`: 停止仿真
-- `execute_round()`: 执行单轮仿真
-- `get_simulation_state()`: 获取仿真状态摘要
-
-**状态转换**：
 ```
 NOT_INITIALIZED → INITIALIZED → READY → RUNNING
-              ↓                ↓           ↓
-           (PAUSED)       STOPPED   COMPLETED
+                                      ↓         ↓
+                                 (PAUSED)    STOPPED
 ```
 
-#### great_power_agent.py
+#### GreatPowerAgent 主要方法
 
-**类**: `GreatPowerAgent`, `Commitment`
+| 方法名 | 参数 | 返回值 | 功能描述 |
+|-------|------|--------|---------|
+| decide() | situation, available_actions, context | Decision | 使用LLM制定决策 |
+| respond() | sender_id, message, context | Response | 响应消息 |
+| _validate_decision() | decision | bool | 验证决策符合领导约束 |
+| get_active_commitments() | - | List[Commitment] | 获取活跃承诺 |
+| get_decision_summary() | - | dict | 获取决策摘要 |
 
-**功能**：
-- 使用LLM驱动的决策制定
-- 实现领导类型特定行为模式
-- 管理承诺和责任
+#### SmallStateAgent 战略立场
 
-**主要方法**：
-- `decide(situation, available_actions, context)`: 使用LLM制定决策
-- `respond(sender_id, message, context)`: 响应消息
-- `_validate_decision(decision)`: 验证决策符合领导约束
-- `get_active_commitments()`: 获取活跃承诺
-- `get_decision_summary()`: 获取决策摘要
-
-**决策验证规则**：
-- 检查禁止行动清单
-- 确保资源分配在0-100范围内
-- 设置默认优先级
-
-#### small_state_agent.py
-
-**类**: `SmallStateAgent`, `StrategicStance`
-
-**功能**：
-- 评估大国并选择结盟
-- 验证道德领导吸引力理论
-- 动态调整战略立场
-
-**战略立场类型**：
-- ALIGNED: 与特定大国结盟
-- NEUTRAL: 保持中立
-- NON_ALIGNED: 不结盟运动
-- SWING: 摇摆国家
-
-**主要方法**：
-- `decide()`: 评估并选择结盟
-- `_assess_great_powers()`: 评估所有大国
-- `_score_behavior()`: 评分行为道德性
-- `_score_capability()`: 评分能力吸引力
-- `calculate_benefits()`: 计算预期收益
-- `calculate_risks()`: 计算预期风险
-
-**评估权重配置**：
-```python
-weights = {
-    "leadership_type": 0.4,
-    "behavior_score": 0.3,
-    "capability": 0.2,
-    "relationship": 0.1,
-}
-```
-
-#### organization_agent.py
-
-**类**: `OrganizationAgent`, `OrganizationType`, `DecisionRule`
-
-**功能**：
-- 模拟国际组织决策
-- 处理多智能体协调
-- 检测组织瘫痪
-
-**组织类型**：
-- GLOBAL: 全球性组织(如联合国)
-- REGIONAL: 区域性组织
-- SECURITY: 安全组织
-- ECONOMIC: 经济组织
-- ENVIRONMENTAL: 环境组织
-
-**决策规则**：
-- CONSENSUS: 全体一致
-- MAJORITY: 多数决
-- LEADER_DECIDES: 领导决定
-- COALITION: 联盟决策
-
-**主要方法**：
-- `decide()`: 基于组织规则决策
-- `_check_paralysis()`: 检测瘫痪条件
-- `add_member()`: 添加成员
-- `set_dominant_leader()`: 设置主导领导
+| 立场类型 | 值 | 描述 |
+|---------|-----|------|
+| ALIGNED | 与特定大国结盟 | 已选择结盟对象 |
+| NEUTRAL | 保持中立 | 未结盟任何大国 |
+| NON_ALIGNED | 不结盟运动 | 拒绝结盟 |
+| SWING | 摇摆国家 | 随时势变化 |
 
 ### src/core/
 
-#### llm_engine.py
+#### LLMEngine 方法对照
 
-**类**: `LLMEngine`, `LLMConfig`
-
-**功能**：
-- 提供统一的LLM API调用接口
-- 支持同步和异步调用
-- 支持函数调用和流式输出
-
-**主要方法**：
-- `chat_completion()`: 标准对话
-- `function_call()`: 函数调用(结构化输出)
-- `stream_chat_completion()`: 流式对话
-- `async_chat_completion()`: 异步对话
-- `async_stream_chat_completion()`: 异步流式
-
-**使用示例**：
-```python
-from src.core.llm_engine import LLMEngine
-
-# 创建引擎
-engine = LLMEngine()
-
-# 标准对话
-response = engine.chat_completion([
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": "Hello!"},
-])
-
-# 函数调用
-functions = [{
-    "name": "get_weather",
-    "description": "Get weather information",
-}]
-response = engine.function_call(messages, functions)
-```
+| 方法 | 类型 | 用途 |
+|------|------|------|
+| chat_completion() | 同步 | 标准对话 |
+| function_call() | 同步 | 函数调用(结构化输出) |
+| stream_chat_completion() | 同步流式 | 流式对话 |
+| async_chat_completion() | 异步 | 异步对话 |
+| async_stream_chat_completion() | 异步流式 | 异步流式 |
 
 ### src/models/
 
-#### agent.py
+#### 能力等级划分
 
-**类**: `Agent`, `GreatPower`, `SmallState` (枚举类型)
+| 等级 | 英文名称 | 中文描述 | 指数范围 |
+|------|---------|---------|.---------|
+| T0_SUPERPOWER | Superpower | 综级大国 | >=80 |
+| T1_GREAT_POWER | Great Power | 大国 | 65-79 |
+| T2_REGIONAL | Regional Power | 区域性大国 | 45-64 |
+| T3_MEDIUM | Medium Power | 中等国家 | 25-44 |
+| T4_SMALL | Small State | 小国 | <25 |
 
-**功能**：
-- 定义所有智能体的基础接口
-- 提供历史记录和关系管理
+#### 硬实力指标
 
-**核心方法**：
-- `decide()`: 抽象方法，子类必须实现
-- `respond()`: 抽象方法，子类必须实现
-- `add_history()`: 添加历史记录
-- `set_relationship()`: 设置关系评分
-- `get_relationship()`: 获取关系评分
+| 指标名 | 英文标识 | 中文描述 | 范围 |
+|-------|---------|---------|------|
+| 军事能力 | military_capability | 军事综合能力 | 0-100 |
+| 核威慑 | nuclear_capability | 核武器威慑力 | 0-100 |
+| 常规力量 | conventional_forces | 常规军事力量 | 0-100 |
+| 力量投射 | force_projection | 远程军事能力 | 0-100 |
+| GDP份额 | gdp_share | 全球GDP占比 | 0-100 |
+| 经济增长 | economic_growth | 年增长率 | 0-100 |
+| 贸易量 | trade_volume | 国际贸易规模 | 0-100 |
+| 金融影响力 | financial_influence | 金融系统影响力 | 0-100 |
+| 技术水平 | technology_level | 总体技术水平 | 0-100 |
+| 军事技术 | military_technology | 军事技术先进性 | 0-100 |
+| 创新能力 | innovation_capacity | 科技创新能力 | 0-100 |
 
-**关系阈值**：
-- `is_friendly_with()`: 评分 > 0.3
-- `is_hostile_toward()`: 评分 < -0.3
+#### 软实力指标
 
-#### capability.py
-
-**类**: `Capability`, `HardPower`, `SoftPower`, `CapabilityTier`
-
-**硬实力指标** (0-100)：
-- military_capability: 军事能力
-- nuclear_capability: 核威慑
-- conventional_forces: 常规力量
-- force_projection: 力量投射
-- gdp_share: 全球GDP份额
-- economic_growth: 经济增长率
-- trade_volume: 贸易量
-- financial_influence: 金融影响力
-- technology_level: 技术水平
-- military_technology: 军事技术
-- innovation_capacity: 创新能力
-
-**软实力指标** (0-100)：
-- discourse_power: 话语权
-- narrative_control: 叙事控制
-- media_influence: 媒体影响力
-- allies_count: 同盟数量
-- ally_strength: 同盟力量
-- network_position: 网络中心度
-- diplomatic_support: 外交支持
-- moral_legitimacy: 道德正当性
-- cultural_influence: 文化影响力
-- un_influence: 联合国影响力
-- institutional_leadership: 制度领导力
-
-**能力等级划分**：
-- T0_SUPERPOWER: 综级大国 (>=80)
-- T1_GREAT_POWER: 大国 (65-79)
-- T2_REGIONAL: 区域性大国 (45-64)
-- T3_MEDIUM: 中等国家 (25-44)
-- T4_SMALL: 小国 (<25)
-
-#### leadership_type.py
-
-**类**: `LeadershipType`, `LeadershipProfile`
-
-**四种领导类型详细对比**：
-
-| 维度 | 道义型 | 传统霸权 | 强权型 | 混合型 |
-|------|--------|----------|--------|--------|
-| 道德标准 | 0.9 | 0.5 | 0.2 | 0.6 |
-| 核心利益权重 | 0.7 | 0.9 | 0.95 | 0.5 |
-| 道德考量权重 | 0.85 | 0.4 | 0.15 | 0.7 |
-| 外交偏好 | 是 | 否 | 否 | 是 |
-| 道德说服 | 是 | 否 | 否 | 是 |
-| 道德约束 | 是 | 否 | 否 | 是 |
-| 重视声誉 | 是 | 是 | 否 | 是 |
-
-**战略利益分配** (按能力等级)：
-- T0_SUPERPOWER: 全球霸权、全球秩序、军事存在、全球联盟
-- T1_GREAT_POWER: 大国地位、区域霸权、全球影响、安全保障
-- T2_REGIONAL: 区域领导、领土完整、经济发展、大国自主
-- T3_MEDIUM: 主权保护、经济稳定、安全安排、国际一体化
-- T4_SMALL: 生存、经济可行、安全保障、发展援助
+| 指标名 | 英文标识 | 中文描述 | 范围 |
+|-------|---------|---------|------|
+| 话语权 | discourse_power | 国际话语影响力 | 0-100 |
+| 叙事控制 | narrative_control | 国际叙事塑造 | 0-100 |
+| 媒体影响力 | media_influence | 国际媒体影响力 | 0-100 |
+| 同盟数量 | allies_count | 国际同盟数量 | 0-100 |
+| 同盟力量 | ally_strength | 同盟综合实力 | 0-100 |
+| 网络中心度 | network_position | 国际网络位置 | 0-100 |
+| 外交支持 | diplomatic_support | 外交支持率 | 0-100 |
+| 道德正当性 | moral_legitimacy | 道德地位 | 0-100 |
+| 文化影响力 | cultural_influence | 文化输出能力 | 0-100 |
+| 联合国影响力 | un_influence | 联合国话语权 | 0-100 |
+| 制度领导力 | institutional_leadership | 国际组织领导 | 0-100 |
 
 ### src/environment/
 
-#### dynamic_environment.py
+#### 环境模块对比
 
-**类**: `DynamicEnvironment`, `Event`, `EventType`, `RegularEventType`, `CrisisEventType`
+| 文件 | 类 | 主要功能 |
+|------|-----|---------|
+| dynamic_environment.py | DynamicEnvironment | 生成和管理动态事件 |
+| rule_environment.py | RuleEnvironment | 验证能力变化、评估道德水平 |
+| static_environment.py | StaticEnvironment | 提供静态环境配置 |
 
-**功能**：
-- 生成和管理动态事件
-- 支持周期性事件、随机危机事件、用户自定义事件
+#### 秩序类型对比
 
-**周期性事件**：
-- LEADERSHIP_CHANGE: 领导换届 (每20轮)
-- ECONOMIC_CYCLE: 经济周期 (每10轮)
-- DIPLOMATIC_SUMMIT: 外交峰会 (每15轮)
-- ELECTION: 选举 (每20轮)
-- ALLIANCE_FORMATION: 同盟形成 (每25轮)
-- TREATY_RENEWAL: 条约续签 (每30轮)
-- TRADE_AGREEMENT: 贸易协定 (每12轮)
+| 秩序类型 | 力量分布特征 | 规范特征 | 冲突特征 |
+|---------|-------------|---------|---------|
+| 霸权秩序 | 单一主导力量 | 高规范权威 | 低冲突水平 |
+| 均势秩序 | 两个大致相等力量 | 中等规范权威 | 中等冲突水平 |
+| 大国协调 | 多强合作 | 高规范权威 | 低冲突水平 |
+| 多极平衡 | 多个中等力量 | 低规范权威 | 中等冲突水平 |
+| 无政府混乱 | 力量分散 | 低规范权威 | 高冲突水平 |
 
-**危机事件类型**：
-- MILITARY_CONFLICT: 军事冲突
-- ECONOMIC_CRISIS: 经济危机
-- TERRITORIAL_DISPUTE: 领土争端
-- DIPLOMATIC_CRISES: 外交危机
-- SANCTIONS_IMPOSED: 制裁实施
-- HUMANITARIAN_DISASTER: 人道主义灾难
-- TERRORISM: 恐怖主义
-- `CYBER_ATTACK`: 网络攻击
+#### 周期性事件配置
 
-**主要方法**：
-- `get_regular_events()`: 获取周期性事件
-- `get_random_events()`: 获取随机危机
-- `add_custom_event()`: 添加自定义事件
-- `get_all_pending_events()`: 获取所有待处理事件
-
-#### rule_environment.py
-
-**类**: `RuleEnvironment`, `OrderType`, `MoralDimension`, `MoralEvaluation`, `CapabilityChangeRule`
-
-**功能**：
-- 验证能力变化
-- 评估道德水平
-- 检查秩序演化规则
-
-**秩序类型**：
-- HEGEMONIC_ORDER: 霸权秩序 (单一主导力量)
-- BALANCE_OF_POWER: 均势秩序 (两个大致相等力量)
-- CONCERT_OF_POWERS: 大国协调 (多强合作)
-- ANARCHIC_DISORDER: 无政府混乱
-- MULTIPOLAR_BALANCE: 多极平衡 (无强协调)
-
-**道德维度**：
-- RESPECT_FOR_NORMS: 尊重规范
-- HUMANITARIAN_CONCERN: 人道主义关怀
-- PEACEFUL_RESOLUTION: 和平解决争端
-- INTERNATIONAL_COOPERATION: 国际合作
-- JUSTICE_AND_FAIRNESS: 正义与公平
-
-**主要方法**：
-- `validate_capability_change()`: 验证能力变化
-- `evaluate_moral_level()`: 评估道德水平
-- `check_order_evolution()`: 检查秩序演化
-- `calculate_moral_level_index()`: 计算道德指数
-
-#### static_environment.py
-
-**功能**：
-- 提供静态环境配置
-- 存储不变的环境参数
-
-### src/interaction/
-
-#### interaction_manager.py
-
-**类**: `InteractionManager`, `InteractionResult`, `InteractionStep`
-
-**功能**：
-- 协调智能体交互
-- 管理交互历史
-- 维护关系网络
-
-**主要方法**：
-- `execute_interactions()`: 执行交互
-- `_execute_direct_interaction()`: 直接交互
-- `_execute_broadcast_interaction()`: 广播交互
-- `_update_relationships()`: 更新关系
-- `get_interaction_history()`: 获取交互历史
-
-**交互类型**：
-- DIPLOMATIC: 外交沟通
-- ECONOMIC: 经济合作/制裁
-- MILITARY: 军事互动
-- COERCIVE: 强制措施
-- COOPERATIVE: 合作项目
-
-#### behavior_selector.py
-
-**功能**：
-- 为智能体选择可用行为
-- 基于上下文和限制条件
-
-#### interaction_rules.py
-
-**功能**：
-- 定义交互规则和约束
-- 验证交互合法性
-
-#### response_generator.py
-
-**功能**：
-- 生成响应内容
-- 基于模板和上下文
+| 事件类型 | 触发间隔 | 事件描述 |
+|---------|---------|---------|
+| LEADERSHIP_CHANGE | 20轮 | 领导换届 |
+| ECONOMIC_CYCLE | 10轮 | 经济周期波动 |
+| DIPLOMATIC_SUMMIT | 15轮 | 外交峰会 |
+| ELECTION | 20轮 | 重要选举 |
+| ALLIANCE_FORMATION | 25轮 | 同盟形成 |
+| TREATY_RENEWAL | 30轮 | 条约续签 |
+| TRADE_AGREEMENT | 12轮 | 贸易协定 |
 
 ### src/metrics/
 
-#### calculator.py
+#### 指标计算流程
 
-**类**: `MetricsCalculator`, `AgentMetrics`, `SystemMetrics`
+```
+┌─────────────────────────────────────────────────────────────┐
+│                指标计算流程                              │
+└─────────────────────────────────────────────────────────────┘
 
-**功能**：
-- 计算所有仿真指标
-- 智能体级别和系统级别指标
-
-**智能体指标**：
-- 能力指标：硬实力指数、软实力指数、综合能力指数
-- 道德指标：道德指数、各维度评分
-- 成功指标：成功率、行动数、关系质量
-
-**系统指标**：
-- pattern_type: 格局类型 (unipolar, bipolar, multipolar)
-- power_concentration: 权力集中度 (HHI指数)
-- order_stability: 秩序稳定性 (0-100)
-- norm_consensus: 规范共识度 (0-100)
-- public_goods_level: 公共物品水平 (0-100)
-- order_type: 秩序类型
-
-**主要方法**：
-- `calculate_all_metrics()`: 计算所有指标
-- `_calculate_agent_metrics()`: 计算智能体指标
-- `_calculate_system_metrics()`: 计算系统指标
-- `_calculate_power_concentration()`: 计算HHI指数
-- `_calculate_order_stability()`: 计算稳定性
-
-#### analyzer.py
-
-**功能**：
-- 分析指标数据
-- 生成统计报告
-
-#### storage.py
-
-**类**: `DataStorage`
-
-**功能**：
-- 持久化仿真数据
-- 支持多种存储格式 (JSON, CSV)
-
-**主要方法**：
-- `save_metrics()`: 保存指标
-- `save_checkpoint()`: 保存检查点
-- `load_checkpoint()`: 加载检查点
-- `export_to_csv()`: 导出CSV
-- `get_system_trends()`: 获取系统趋势
-
-### src/prompts/
-
-#### leadership_prompts.py
-
-**类**: `GreatPowerPromptBuilder`, `ActionType`
-
-**功能**：
-- 为大国智能体生成LLM提示词
-- 支持结构化输出
-
-**可用行动类型**：
-- SECURITY_MILITARY: 军事部署
-- SECURITY_ALLIANCE: 同盟
-- SECURITY_MEDIATION: 调解冲突
-- ECONOMIC_TRADE: 贸易合作
-- ECONOMIC_SANCTION: 经济制裁
-- ECONOMIC_AID: 经济援助
-- NORM_PROPOSAL: 提议规范
-- NORM_REFORM: 改革规范
-- DIPLOMATIC_VISIT: 外交访问
-- DIPLOMATIC_ALLIANCE: 正式结盟
-- NO_ACTION: 无行动
-
-**主要方法**：
-- `build_system_prompt()`: 构建系统提示词
-- `build_user_prompt()`: 构建用户提示词
-- `get_function_definitions()`: 获取函数定义
-- `parse_function_call()`: 解析函数调用
-
-#### base_prompt.py
-
-**功能**：
-- 提供基础提示词模板
-
-#### behavior_prompts.py
-
-**功能**：
-- 提供行为相关提示词
-
-#### response_prompts.py
-
-**功能**：
-- 提供响应生成提示词
-
-### src/visualization/
-
-#### dashboard.py
-
-**类**: `Dashboard`
-
-**功能**：
-- Streamlit实时可视化仪表板
-- 提供四大核心面板
-- 交互式仿真控制
-
-**面板功能**：
-- **概览面板**：系统状态、报告生成
-- **实力格局面板**：能力分布、排名变化
-- **道义水平面板**：道德指数、维度评分
-- **互动结果面板**：交互统计、关系网络
-- **国际秩序面板**：秩序类型、稳定性、公共物品
-
-**控制功能**：
-- 启动/暂停/停止仿真
-- 加载检查点
-- 调整参数
-- 生成报告
-
-#### panels.py
-
-**功能**：
-- 提供可视化组件函数
-
-**主要函数**：
-- `render_capability_panel()`: 渲染能力面板
-- `render_moral_panel()`: 渲染道德面板
-- `render_interaction_panel()`: 渲染互动面板
-- `render_order_panel()`: 渲染秩序面板
-- `render_sidebar_controls()`: 渲染侧边栏控制
-- `render_status_bar()`: 渲染状态栏
-
-#### report_generator.py
-
-**类**: `ReportGenerator`
-
-**功能**：
-- 生成HTML和JSON格式报告
-- 汇总仿真结果
+    获取所有智能体
+           │
+           ▼
+    ┌─────┴─────┐
+    │             │
+计算智能体指标   计算系统指标
+    │             │
+    ├─ 能力指标    ├─ 格局类型
+    ├─ 道德指标    ├─ 权力集中度(HHI)
+    └─ 成功指标    ├─ 秩序稳定性
+                    ├─ 规范共识度
+                    └─ 公共物品水平
+    │             │
+    └─────┬─────┘
+          │
+          ▼
+    合成指标字典
+          │
+          ▼
+    保存到存储
+```
 
 ### src/workflow/
 
-#### simulation_controller.py
+#### 工作流组件
 
-**类**: `SimulationController`, `ControllerStatus`, `ExecutionMode`
-
-**功能**：
-- 控制仿真生命周期
-- 管理轮次执行
-- 检查点管理
-
-**执行模式**：
-- STEP_BY_STEP: 逐步执行
-- BATCH: 批量执行
-- RUN_TO_COMPLETION: 运行至完成
-
-**状态管理**：
-- initialize(): 初始化控制器
-- start(): 启动仿真
-- pause(): 暂停仿真
-- resume(): 恢复仿真
-- stop(): 停止仿真
-- reset(): 重置状态
-
-#### round_executor.py
-
-**类**: `RoundExecutor`, `RoundPhase`, `RoundContext`, `RoundResult`
-
-**功能**：
-- 执行单轮完整流程
-- 提供阶段钩子机制
-
-**阶段列表**：
-1. PREPARATION: 准备阶段
-2. EVENT_GENERATION: 事件生成
-3. EVENT_DISTRIBUTION: 事件分发
-4. AGENT_DECISION_MAKING: 智能体决策
-5. INTERACTION_EXECUTION: 交互执行
-6. RULE_APPLICATION: 规则应用
-7. METRICS_CALCULATION: 指标计算
-8. CLEANUP: 清理
-
-**阶段钩子**：
-```python
-executor.register_phase_hook(
-    RoundPhase.AGENT_DECISION_MAKING,
-    lambda ctx, result: custom_logic(ctx, result)
-)
-```
-
-#### state_manager.py
-
-**类**: `StateManager`, `SimulationSnapshot`, `StateDiff`
-
-**功能**：
-- 捕获完整仿真状态
-- 恢复仿真状态
-- 计算状态差异
-
-**快照内容**：
-- 智能体状态
-- 环境状态
-- 交互历史
-- 事件状态
-- 指标状态
-- 控制器状态
-- 工作流状态
-
-**主要方法**：
-- `capture_state()`: 捕获状态
-- `restore_state()`: 恢复状态
-- `get_state_diff()`: 获取差异
-- `validate_state()`: 验证状态
-
-#### event_scheduler.py
-
-**`类**: `EventScheduler`, `ScheduledEvent`, `ScheduleStats`
-
-**功能**：
-- 调度事件到特定轮次
-- 管理条件事件
-- 提供事件查询功能
-
-**调度类型**：
-- 指轮次调度：在指定轮次触发
-- 条件调度：基于条件函数触发
-
-**主要方法**：
-- `schedule_event()`: 调度轮次事件
-- `schedule_conditional_event()`: 调度条件事件
-- `get_events_for_round()`: 获取轮次事件
-- `mark_executed()`: 标记已执行
-- `cancel_event()`: 取消事件
-
-#### intervention.py
-
-**功能**：
-- 实验干预管理
-- 仿真实验控制变量
-
-**干预类型**：
-- 参数调整
-- 事件注入
-- 状态重置
-- 智能体添加/移除
-
-#### performance_monitor.py
-
-**功能**：
-- 性能监控和统计
-- 瓶托分析和优化
-
-#### workflow.py
-
-**功能**：
-- 工作流主入口
-- 协调所有组件
+| 文件名 | 主要类 | 功能描述 |
+|-------|--------|---------|
+| simulation_controller.py | SimulationController | 控制仿真生命周期 |
+| round_executor.py | RoundExecutor | 执行单轮完整流程 |
+| state_manager.py | StateManager | 捕获和恢复仿真状态 |
+| event_scheduler.py | EventScheduler | 调度事件到特定轮次 |
+| intervention.py | - | 实验干预管理 |
+| performance_monitor.py | - | 性能监控和统计 |
+| workflow.py | - | 工作流主入口 |
 
 ---
 
@@ -1260,16 +738,28 @@ executor.register_phase_hook(
 
 ```bash
 # 运行所有测试
-pytest tests/
+pytest tests/ -v
 
 # 运行特定测试
-pytest tests/test_phase1.py
-pytest tests/test_phase2.py
-pytest tests/test_phase4.py
+pytest tests/test_phase1.py -v
+pytest tests/test_phase2.py -v
+pytest tests/test_phase4.py -v
 
 # 生成覆盖率报告
-pytest --cov=src tests/
+pytest tests/ --cov=src --cov-report=html
 ```
+
+### 测试阶段对照
+
+| 测试文件 | 测试内容 | 状态 |
+|---------|---------|------|
+| test_phase1.py | 核心模型测试 | ✅ |
+| test_phase2.py | 智能体测试 | ✅ |
+| test_phase4.py | 交互测试 | ✅ |
+| test_phase5.py | 指标测试 | ✅ |
+| test_phase6.py | 工作流测试 | ✅ |
+| test_phase7.py | 可视化测试 | ✅ |
+| test_phase9.py | 集成测试 | ✅ |
 
 ### 代码格式化
 
@@ -1293,26 +783,13 @@ mypy --strict src/
 
 ### 日志配置
 
-系统使用Python标准logging和loguru：
-
-```python
-import logging
-
-# 基本配置
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-
-logger = logging.getLogger(__name__)
-```
-
-### 贡献指南
-
-1. **代码风格**：遵循PEP 8规范
-2. **文档字符串**：使用Google风格文档字符串
-3. **类型注解**：逐步添加类型注解
-4. **提交信息**：使用清晰的提交消息
+| 日志级别 | 描述 | 适用场景 |
+|---------|------|---------|
+| DEBUG | 详细调试信息 | 开发调试 |
+| INFO | 一般信息 | 正常运行 |
+| WARNING | 警告信息 | 非致命问题 |
+| ERROR | 错误信息 | 需要关注 |
+| CRITICAL | 严重错误 | 系统崩溃 |
 
 ---
 
@@ -1320,42 +797,68 @@ logger = logging.getLogger(__name__)
 
 ### Q: 如何设置不同的LLM提供商？
 
-A: 修改`.env`文件中的`SILICONFLOW_BASE_URL`和模型配置，或修改`LLMEngine`类以支持其他API。
+修改`.env`文件中的`SILICONFLOW_BASE_URL`和模型配置，或修改`LLMEngine`类以支持其他API。
 
 ### Q: 如何增加仿真规模？
 
-A: 调整`NUM_AGENTS`和`max_rounds`参数，注意大规模仿真需要更多计算资源。
+调整`NUM_AGENTS`和`max_rounds`参数，注意大规模仿真需要更多计算资源。
 
 ### Q: 如何分析仿真结果？
 
-A: 使用仪表板可视化，或导出CSV文件使用pandas/Excel分析。
+使用仪表板可视化，或导出CSV文件使用pandas/Excel分析。
 
 ### Q: 如何自定义智能体行为？
 
-A: 修改特定智能体的`decide()`方法，或修改领导类型配置。
+修改特定智能体的`decide()`方法，或修改领导类型配置。
+
+### Q: 仿真无法启动怎么办？
+
+1. 检查API密钥配置
+2. 验证Python版本 >= 3.10
+3. 确认依赖包已安装
+4. 查看日志文件获取详细错误
+
+### Q: 如何贡献代码？
+
+1. Fork本仓库
+2. 创建特性分支
+3. 提交更改
+4. 推送到分支
+5. 创建Pull Request
 
 ---
 
 ## 许可证
 
-MIT License
+本项目采用Apache 2.0许可证。
 
-Copyright (c) 2025 yangyh-2025
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+### 许可证摘要
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+| 权利 | 使用条件 |
+|------|---------|
+| 商业使用 | 允许 |
+| 修改 | 允许 |
+| 分发 | 允许 |
+| 专利授权 | 授予 |
+| 责任声明 | 需要保留 |
+| 担保 | 按原样提供 |
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+详见[LICENSE](LICENSE)文件获取完整许可条款。
 
 ---
 
 ## 联系方式 / Contact
 
-- **GitHub**: https://github.com/yangyh-2025/moral-realism
-- **Email**: yangyuhang2667@163.com
-- **项目问题**: [GitHub Issues](https://github.com/yangyh-2025/moral-realism/issues)
-- **讨论讨论**: [GitHub Discussions](https://github.com/yangyh-2025/moral-realism/discussions)
+| 方式 | 信息 |
+|------|------|
+| **GitHub** | https://github.com/yangyh-2025/moral-realism |
+| **Email** | yangyuhang2667@163.com |
+| **项目问题** | [GitHub Issues](https://github.com/yangyh-2025/moral-realism/issues) |
+| **讨论讨论** | [GitHub Discussions](https://github.com/yangyh-2025/moral-realism/discussions) |
 
 ## 致谢 / Acknowledgments
 
