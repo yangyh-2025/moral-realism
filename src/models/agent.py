@@ -305,7 +305,7 @@ class Agent(ABC):
         if len(self.history) > self.max_history_length:
             self.history = self.history[-self.max_history_length:]
 
-    def get_history(self, event_type:: Optional[str] = None) -> List[HistoryEntry]:
+    def get_history(self, event_type: Optional[str] = None) -> List[HistoryEntry]:
         """
         获取代理的历史记录，可按事件类型筛选
 

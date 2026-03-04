@@ -151,7 +151,7 @@ LEADERSHIP_PROFILES: Dict[LeadershipType, LeadershipProfile] = {
             "强烈致力于通过道德手段维护国际秩序。"
         ),
         moral_standard=0.9,  # 高道德标准
-        core_interest_weight=0.7,
+        core_interest=0.7,
         marginal_interest_weight=0.3,
         moral_consideration_weight=0.85,  # 高道德考虑权重
         prefers_diplomatic_solution=True,

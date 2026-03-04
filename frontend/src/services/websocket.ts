@@ -161,6 +161,32 @@ export class WebSocketService {
           }
           break;
 
+        case 'systemic_event':
+          if (message.event) {
+            store.addSystemicEvent(message.event);
+          }
+          break;
+
+        case 'norm_evolution':
+          if (message.norms !== undefined && message.round !== undefined) {
+            store.setCurrentNorms(message.norms);
+            store.updateNormsHistory(message.round, message.norms);
+          }
+          break;
+
+        case 'order_change':
+          console.log('Order type changed to:', message.order_type);
+          if (message.order_type && store.currentMetrics?.system_metrics) {
+            store.setCurrentMetrics({
+              ...store.currentMetrics,
+              system_metrics: {
+                ...store.currentMetrics.system_metrics,
+                order_type: message.order_type,
+              },
+            });
+          }
+          break;
+
         default:
           console.log('Unknown message type:', message.type);
       }
