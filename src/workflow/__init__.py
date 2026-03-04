@@ -48,7 +48,6 @@ from src.workflow.performance_monitor import (
 )
 from src.workflow.state_manager import (
     SimulationSnapshot,
-    SnapshotState,
     StateDiff,
     StateManager,
 )

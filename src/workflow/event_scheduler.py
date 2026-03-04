@@ -8,7 +8,7 @@ and provides event lookup functionality.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 import logging
 import uuid
 
