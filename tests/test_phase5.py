@@ -295,7 +295,6 @@ class TestMetricsCalculator(unittest.TestCase):
                 Capability("gp1"),
             ),
             GreatPower(
-(
                 "gp2",
                 "GP2",
                 "GP2",
@@ -665,7 +664,7 @@ class TestMetricsAnalyzer(unittest.TestCase):
         """Test order evolution analysis."""
         # Create system trends with changing order types
         system_trends = {
-            "order_type":": [
+            "order_type": [
                 {"round": 0, "value": "multipolar"},
                 {"round": 1, "value": "multipolar"},
                 {"round": 2, "value": "multipolar"},
@@ -746,7 +745,7 @@ class TestMetricsAnalyzer(unittest.TestCase):
         self.assertLessEqual(prediction["confidence"], 1)
 
         # Predicted values should be increasing
-        preds = prediction["predicted_valuesValues"]
+        preds = prediction["predicted_values"]
         self.assertGreater(preds[-1], preds[0])
 
     def test_get_summary_statistics(self):
@@ -816,21 +815,21 @@ class TestIntegration(unittest.TestCase):
                 "gp1",
                 "Great Power 1",
                 "大国1",
-                LeadershipType.WANGDAO
+                LeadershipType.WANGDAO,
                 Capability("gp1"),
             ),
             "gp2": GreatPower(
                 "gp2",
                 "Great Power 2",
                 "大国2",
-                LeadershipType.HEGEMON
+                LeadershipType.HEGEMON,
                 Capability("gp2"),
             ),
             "ss1": SmallState(
                 "ss1",
                 "Small State 1",
                 "小国1",
-                LeadershipType.WANGDAO
+                LeadershipType.WANGDAO,
                 Capability("ss1"),
             ),
         }
