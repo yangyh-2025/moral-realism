@@ -1,8 +1,15 @@
 """
-Pydantic schemas for API request/response models.
+API请求/响应模型的Pydantic架构定义
 
-This module defines all data models used by the API including
-agent configurations, simulation parameters, metrics, and checkpoints.
+本模块定义FastAPI使用的所有数据模型，包括：
+- 代理配置模型（AgentCreateRequest, AgentUpdateRequest）
+- 模拟参数配置（SimulationConfigRequest）
+- 能力配置（HardPowerConfig, SoftPowerConfig, CapabilityConfig）
+- 响应模型（各种响应类型）
+- WebSocket消息模型
+- 导出模型
+
+所有模型使用Pydantic进行自动验证和序列化。
 """
 
 from datetime import datetime
@@ -13,11 +20,19 @@ from pydantic import BaseModel, Field, validator
 
 
 # ============================================================================
-# Enums
+# 枚举类型定义
 # ============================================================================
 
 class LeadershipType(str, Enum):
-    """Leadership types for agents."""
+    """
+    领导类型枚举
+
+    基于道义现实主义理论的四种领导类型：
+    - WANGDAO: 道义型领导
+    - HEGEMON: 传统霸权
+    - QIANGQUAN: 强权型领导
+    - HUNYONG: 混合型/合作型领导
+    """
     WANGDAO = "wangdao"
     HEGEMON = "hegemon"
     QIANGQUAN = "qiangquan"
@@ -25,7 +40,15 @@ class LeadershipType(str, Enum):
 
 
 class AgentType(str, Enum):
-    """Agent types in the simulation."""
+    """
+    代理类型枚举
+
+    定义模拟中不同类型的代理：
+    - GREAT_POWER: 大国
+    - SMALL_STATE: 小国
+    - ORGANIZATION: 国际组织
+    - CONTROLLER: 控制者/实验者
+    """
     GREAT_POWER = "great_power"
     SMALL_STATE = "small_state"
     ORGANIZATION = "organization"
@@ -33,19 +56,32 @@ class AgentType(str, Enum):
 
 
 class ControllerStatus(str, Enum):
-    """Status of simulation controller."""
-    NOT_INITIALIZED = "not_initialized"
-    INITIALIZED = "initialized"
-    READY = "ready"
-    RUNNING = "running"
-    PAUSED = "paused"
-    STOPPED = "stopped"
-    COMPLETED = "completed"
-    ERROR = "error"
+    """
+    模拟控制器状态枚举
+
+    定义控制器的各种可能状态
+    """
+    NOT_INITIALIZED = "not_initialized"  # 未初始化
+    INITIALIZED = "initialized"  # 已初始化
+    READY = "ready"  # 准备就绪
+    RUNNING = "running"  # 运行中
+    PAUSED = "paused"  # 已暂停
+    STOPPED = "stopped"  # 已停止
+    COMPLETED = "completed"  # 已完成
+    ERROR = "error"  # 错误状态
 
 
 class CapabilityTier(str, Enum):
-    """Capability tiers."""
+    """
+    能力层级枚举
+
+    根据综合能力指数将国家划分为5个等级：
+    - T0_SUPERPOWER: 超级大国
+    - T1_GREAT_POWER: 大国
+    - T2_REGIONAL: 区域性大国
+    - T3_MEDIUM: 中等国家
+    - T4_SMALL: 小国
+    """
     T0_SUPERPOWER = "t0_superpower"
     T1_GREAT_POWER = "t1_great_power"
     T2_REGIONAL = "t2_regional"
@@ -54,11 +90,15 @@ class CapabilityTier(str, Enum):
 
 
 # ============================================================================
-# Request Models
+# 请求模型定义
 # ============================================================================
 
 class HardPowerConfig(BaseModel):
-    """Hard power configuration."""
+    """
+    硬权力配置请求模型
+
+    定义代理硬实力的各维度配置
+    """
     military_capability: float = Field(default=50.0, ge=0, le=100)
     nuclear_capability: float = Field(default=0.0, ge=0, le=100)
     conventional_forces: float = Field(default=50.0, ge=0, le=100)
@@ -75,7 +115,11 @@ class HardPowerConfig(BaseModel):
 
 
 class SoftPowerConfig(BaseModel):
-    """Soft power configuration."""
+    """
+    软权力配置请求模型
+
+    定义代理软实力的各维度配置
+    """
     discourse_power: float = Field(default=50.0, ge=0, le=100)
     narrative_control: float = Field(default=50.0, ge=0, le=100)
     media_influence: float = Field(default=50.0, ge=0, le=100)
@@ -90,13 +134,21 @@ class SoftPowerConfig(BaseModel):
 
 
 class CapabilityConfig(BaseModel):
-    """Capability configuration."""
+    """
+    能力配置请求模型
+
+    包含硬实力和软实力的完整配置
+    """
     hard_power: HardPowerConfig = Field(default_factory=HardPowerConfig)
     soft_power: SoftPowerConfig = Field(default_factory=SoftPowerConfig)
 
 
 class AgentCreateRequest(BaseModel):
-    """Request to create an agent."""
+    """
+    代理创建请求模型
+
+    用于创建新代理的API请求
+    """
     agent_id: str = Field(..., min_length=1, max_length=100)
     name: str = Field(..., min_length=1, max_length=200)
     name_zh: str = Field(..., min_length=1, max_length=200)
@@ -107,7 +159,11 @@ class AgentCreateRequest(BaseModel):
 
 
 class AgentUpdateRequest(BaseModel):
-    """Request to update an agent."""
+    """
+    代理更新请求模型
+
+    用于更新现有代理的API请求
+    """
     name: Optional[str] = Field(None, min_length=1, max_length=200)
     name_zh: Optional[str] = Field(None, min_length=1, max_length=200)
     leadership_type: Optional[LeadershipType] = None
@@ -116,8 +172,12 @@ class AgentUpdateRequest(BaseModel):
 
 
 class SimulationConfigRequest(BaseModel):
-    """Request to configure simulation."""
-    max_rounds: int = Field(default=100, ge=1, le=10000)
+    """
+    模拟配置请求模型
+
+    用于配置模拟运行参数的API请求
+    """
+    max_rounds: int = Field(default(default=100, ge=1, le=10000)
     event_probability: float = Field(default=0.2, ge=0, le=1)
     checkpoint_interval: int = Field(default=10, ge=0, le=1000)
     checkpoint_dir: str = Field(default="./data/checkpoints")
@@ -125,7 +185,11 @@ class SimulationConfigRequest(BaseModel):
 
 
 class ApiConfigRequest(BaseModel):
-    """Request to configure API settings."""
+    """
+    API配置请求模型
+
+    用于配置API设置的请求
+    """
     api_key: str = Field(default="")
     model: str = Field(default="")
     base_url: str = Field(default="")
@@ -133,11 +197,15 @@ class ApiConfigRequest(BaseModel):
 
 
 # ============================================================================
-# Response Models
+# 响应模型定义
 # ============================================================================
 
 class HardPowerResponse(BaseModel):
-    """Hard power response."""
+    """
+    硬权力响应模型
+
+    返回代理的硬实力详细指标
+    """
     military_capability: float
     nuclear_capability: float
     conventional_forces: float
@@ -155,7 +223,11 @@ class HardPowerResponse(BaseModel):
 
 
 class SoftPowerResponse(BaseModel):
-    """Soft power response."""
+    """
+    软权力响应模型
+
+    返回代理的软实力详细指标
+    """
     discourse_power: float
     narrative_control: float
     media_influence: float
@@ -171,7 +243,11 @@ class SoftPowerResponse(BaseModel):
 
 
 class CapabilityResponse(BaseModel):
-    """Capability response."""
+    """
+    能力响应模型
+
+    返回代理的综合能力信息
+    """
     hard_power_index: float
     soft_power_index: float
     capability_index: float
@@ -181,7 +257,11 @@ class CapabilityResponse(BaseModel):
 
 
 class MoralMetricsResponse(BaseModel):
-    """Moral metrics response."""
+    """
+    道德指标响应模型
+
+    返回代理的道德相关指标
+    """
     moral_index: float
     respect_for_norms: float
     humanitarian_concern: float
@@ -191,7 +271,11 @@ class MoralMetricsResponse(BaseModel):
 
 
 class SuccessMetricsResponse(BaseModel):
-    """Success metrics response."""
+    """
+    成功指标响应模型
+
+    返回代理的行动成功率和关系指标
+    """
     success_rate: float
     total_actions: int
     successful_actions: int
@@ -202,7 +286,11 @@ class SuccessMetricsResponse(BaseModel):
 
 
 class AgentSummaryResponse(BaseModel):
-    """Agent summary response."""
+    """
+    代理摘要响应模型
+
+    返回代理的基本信息摘要
+    """
     agent_id: str
     name: str
     name_zh: str
@@ -218,7 +306,11 @@ class AgentSummaryResponse(BaseModel):
 
 
 class AgentDetailResponse(BaseModel):
-    """Agent detail response."""
+    """
+    代理详细信息响应模型
+
+    返回代理的完整详细信息
+    """
     agent_id: str
     name: str
     name_zh: str
@@ -234,7 +326,11 @@ class AgentDetailResponse(BaseModel):
 
 
 class SystemMetricsResponse(BaseModel):
-    """System-level metrics response."""
+    """
+    系统级指标响应模型
+
+    返回整个模拟系统的综合指标
+    """
     pattern_type: str
     power_concentration: float
     order_stability: float
@@ -244,7 +340,11 @@ class SystemMetricsResponse(BaseModel):
 
 
 class ControllerStateResponse(BaseModel):
-    """Controller state response."""
+    """
+    控制器状态响应模型
+
+    返回模拟控制器的当前状态
+    """
     current_round: int
     is_running: bool
     is_paused: bool
@@ -254,7 +354,11 @@ class ControllerStateResponse(BaseModel):
 
 
 class ControllerStatsResponse(BaseModel):
-    """Controller statistics response."""
+    """
+    控制器统计响应模型
+
+    返回模拟控制器的执行统计信息
+    """
     total_rounds_executed: int
     total_rounds_scheduled: int
     successful_rounds: int
@@ -267,7 +371,11 @@ class ControllerStatsResponse(BaseModel):
 
 
 class SimulationStatusResponse(BaseModel):
-    """Simulation status response."""
+    """
+    模拟状态响应模型
+
+    返回模拟的完整状态信息
+    """
     status: str
     config: Dict[str, Any]
     state: ControllerStateResponse
@@ -277,7 +385,11 @@ class SimulationStatusResponse(BaseModel):
 
 
 class RoundResultResponse(BaseModel):
-    """Round execution result response."""
+    """
+    回合执行结果响应模型
+
+    返回单次回合的执行结果
+    """
     round: int
     is_successful: bool
     decisions_count: int
@@ -288,7 +400,11 @@ class RoundResultResponse(BaseModel):
 
 
 class MetricsResponse(BaseModel):
-    """Comprehensive metrics response."""
+    """
+    综合指标响应模型
+
+    返回包含代理指标和系统指标的完整指标数据
+    """
     timestamp: str
     round: int
     agent_count: int
@@ -298,7 +414,11 @@ class MetricsResponse(BaseModel):
 
 
 class CheckpointResponse(BaseModel):
-    """Checkpoint response."""
+    """
+    检查点响应模型
+
+    返回检查点的基本信息
+    """
     checkpoint_id: str
     timestamp: str
     round: Optional[int]
@@ -306,37 +426,51 @@ class CheckpointResponse(BaseModel):
 
 
 class CheckpointListResponse(BaseModel):
-    """List of checkpoints response."""
+    """
+    检查点列表响应模型
+
+    返回所有检查点的列表信息
+    """
     checkpoints: List[CheckpointResponse]
     count: int
 
 
 # ============================================================================
-# WebSocket Message Models
+# WebSocket消息模型定义
 # ============================================================================
 
 class WSMessageType(str, Enum):
-    """WebSocket message types."""
-    CONNECTED = "connected"
-    ROUND_START = "round_start"
-    ROUND_COMPLETE = "round_complete"
-    SIMULATION_COMPLETE = "simulation_complete"
-    ERROR = "error"
-    LOG = "log"
-    CHECKPOINT_SAVED = "checkpoint_saved"
-    METRICS_UPDATE = "metrics_update"
-    STATUS_UPDATE = "status_update"
+    """
+    WebSocket消息类型枚举
+
+    定义WebSocket通信中支持的消息类型
+    """
+    CONNECTED = "connected"  # 连接已建立
+    ROUND_START = "round_start"  # 回合开始
+    ROUND_COMPLETE = "round_complete"  # 回合完成
+    SIMULATION_COMPLETE = "simulation_complete"  # 模拟完成
+    ERROR = "error"  # 错误事件
+    LOG = "log"  # 日志消息
+    CHECKPOINT_SAVED = "checkpoint_saved"  # 检查点已保存
+    METRICS_UPDATE = "metrics_update"  # 指标更新
+    STATUS_UPDATE = "status_update"  # 状态更新
 
 
 class WSConnected(BaseModel):
-    """WebSocket connected message."""
+    """
+    WebSocket连接已建立消息模型
+    """
     type: WSMessageType = WSMessageType.CONNECTED
     simulation_id: str
     timestamp: str
 
 
 class WSLogMessage(BaseModel):
-    """WebSocket log message."""
+    """
+    WebSocket日志消息模型
+
+    用于向客户端推送日志消息
+    """
     type: WSMessageType = WSMessageType.LOG
     level: str
     message: str
@@ -344,7 +478,11 @@ class WSLogMessage(BaseModel):
 
 
 class WSErrorMessage(BaseModel):
-    """WebSocket error message."""
+    """
+    WebSocket错误消息模型
+
+    用于向客户端推送错误信息
+    """
     type: WSMessageType = WSMessageType.ERROR
     error: str
     details: Optional[Dict[str, Any]] = None
@@ -352,11 +490,15 @@ class WSErrorMessage(BaseModel):
 
 
 # ============================================================================
-# Export Models
+# 导出模型定义
 # ============================================================================
 
 class ExportRequest(BaseModel):
-    """Request to export data."""
+    """
+    数据导出请求模型
+
+    用于请求导出模拟数据
+    """
     data_type: str = Field(..., regex="^(csv|json|report)$")
     start_round: int = Field(default=0, ge=0)
     end_round: Optional[int] = Field(None, ge=0)
@@ -364,7 +506,11 @@ class ExportRequest(BaseModel):
 
 
 class ExportResponse(BaseModel):
-    """Export response."""
+    """
+    数据导出响应模型
+
+    返回数据导出的结果信息
+    """
     success: bool
     message: str
     filepath: Optional[str] = None

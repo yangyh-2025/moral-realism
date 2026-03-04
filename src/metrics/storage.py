@@ -725,3 +725,285 @@ class DataStorage:
                             file.unlink()
                     except Exception as e:
                         print(f"Error deleting {file}: {e}")
+
+    # Decision History Persistence Methods
+
+    def save_decision_history(
+        self,
+        agent_id: str,
+        decision: Dict[str, Any],
+        round_id: int,
+    ) -> Optional[str]:
+        """
+        Save a single decision to decision history log.
+
+        Args:
+            agent_id: ID of the agent making the decision.
+            decision: The decision dictionary.
+            round_id: Round identifier.
+
+        Returns:
+            Path to log file, or None if save failed.
+        """
+        try:
+            row = {
+                "round": round_id,
+                "timestamp": datetime.now().isoformat(),
+                "agent_id": agent_id,
+                " "action_type": decision.get("action_type", "unknown"),
+                "target_agent_id": decision.get("target_agent_id", ""),
+                "rationale": decision.get("rationale", ""),
+                "strategic_stance": decision.get("strategic_stance", ""),
+                "alignment_threshold": decision.get("alignment_threshold", 0),
+                "in_crisis": decision.get("in_crisis", False),
+                "action": decision.get("action", ""),
+            }
+
+            filepath = self.base_dir / "exports" / "decisions.csv"
+            headers = [
+                "round", "timestamp", "agent_id", "action_type",
+                "target_agent_id", "rationale", "strategic_stance",
+                "alignment_threshold", "in_crisis", "action",
+            ]
+
+            self._write_csv_row(filepath, row, headers)
+            return str(filepath)
+
+        except Exception as e:
+            print(f"Error saving decision for {agent_id}: {e}")
+            return None
+
+    def save_interaction_details(
+        self,
+        interaction: Dict[str, Any],
+        round_id: int,
+    ) -> Optional[str]:
+        """
+        Save interaction details to log.
+
+        Args:
+            interaction: The interaction dictionary.
+            round_id: Round identifier.
+
+        Returns:
+            Path to log file, or None if save failed.
+        """
+        try:
+            row = {
+                "round": round_id,
+                "timestamp": datetime.now().isoformat(),
+                "interaction_id": interaction.get("interaction_id", ""),
+                "from_agent_id": interaction.get("from_agent_id", ""),
+                "to_agent_id": interaction.get("to_agent_id", ""),
+                "interaction_type": interaction.get("interaction_type", ""),
+                "success": interaction.get("success", True),
+                "response": str(interaction.get("response", {})),
+                "metadata": str(interaction.get("metadata", {})),
+            }
+
+            filepath = self.base_dir / "exports" / "interactions_detailed.csv"
+            headers = [
+                "round", "timestamp", "interaction_id", "from_agent_id",
+                "to_agent_id", "interaction_type", "success",
+                "response", "metadata",
+            ]
+
+            self._write_csv_row(filepath, row, headers)
+            return str(filepath)
+
+        except Exception as e:
+            print(f"Error saving interaction details: {e}")
+            return None
+
+    def save_systemic_event(
+        self,
+        event: Dict[str, Any],
+        round_id: int,
+    ) -> Optional[str]:
+        """
+        Save systemic event to log.
+
+        Args:
+            event: The systemic event dictionary.
+            round_id: Round identifier.
+
+        Returns:
+            Path to log file, or None if save failed.
+        """
+        try:
+            row = {
+                "round": round_id,
+                "timestamp": datetime.now().isoformat(),
+                "event_id": event.get("event_id", ""),
+                "event_type": event.get("event_type", ""),
+                "description": event.get("description", ""),
+                "participants": str(event.get("participants", [])),
+                "impact_level": event.get("impact_level", 0),
+            }
+
+            filepath = self.base_dir / "exports" / "systemic_events.csv"
+            headers = [
+                "round", "timestamp", "event_id", "event_type",
+                "description", "participants", "impact_level",
+            ]
+
+            self._write_csv_row(filepath, row, headers)
+            return str(filepath)
+
+        except Exception as e:
+            print(f"Error saving systemic event: {e}")
+            return None
+
+    def get_decision_history(
+        self,
+        agent_id: Optional[str] = None,
+        round_id: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Get decision history with optional filters.
+
+        Args:
+            agent_id: Filter by specific agent ID.
+            round_id: Filter by specific round.
+
+        Returns:
+            List of decision records.
+        """
+        filepath = self.base_dir / "exports" / "decisions.csv"
+
+        if not filepath.exists():
+            return []
+
+        try:
+            rows = []
+            with open(filepath, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    try:
+                        row_num = int(row.get("round", 0))
+
+                        # Apply filters
+                        if round_id is not None and row_num != round_id:
+                            continue
+                        if agent_id is not None and row.get("agent_id") != agent_id:
+                            continue
+
+                        rows.append(row)
+
+                    except (ValueError, TypeError):
+                        # Skip invalid rows
+                        continue
+
+            return rows
+
+        except Exception as e:
+            print(f"Error reading decision history: {e}")
+            return []
+
+    def get_interaction_history(
+        self,
+        agent_id: Optional[str] = None,
+        round_id: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Get detailed interaction history with optional filters.
+
+        Args:
+            agent_id: Filter by specific agent ID.
+            round_id: Filter by specific round.
+            limit: Maximum number of results to return.
+
+        Returns:
+            List of interaction records.
+        """
+        filepath = self.base_dir / "exports" / "interactions_detailed.csv"
+
+        if not filepath.exists():
+            return []
+
+        try:
+            rows = []
+            with open(filepath, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    try:
+                        # Apply filters
+                        if round_id is not None:
+                            try:
+                                row_num = int(row.get("round", 0))
+                                if row_num != round_id:
+                                    continue
+                            except ValueError:
+                                continue
+
+                        if agent_id is not None:
+                            from_agent = row.get("from_agent_id", "")
+                            to_agent = row.get("to_agent_id", "")
+                            if agent_id not in [from_agent, to_agent]:
+                                continue
+
+                        rows.append(row)
+
+                        if limit and len(rows) >= limit:
+                            break
+
+                    except (ValueError, TypeError):
+                        # Skip invalid rows
+                        continue
+
+            return rows
+
+        except Exception as e:
+            print(f"Error reading interaction history: {e}")
+            return []
+
+    def get_systemic_events(
+        self,
+        event_type: Optional[str] = None,
+        round_id: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Get systemic events with optional filters.
+
+        Args:
+            event_type: Filter by event type.
+            round_id: Filter by specific round.
+
+        Returns:
+            List of systemic event records.
+        """
+        filepath = self.base_dir / "exports" / "systemic_events.csv"
+
+        if not filepath.exists():
+            return []
+
+        try:
+            rows = []
+            with open(filepath, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    try:
+                        # Apply filters
+                        if round_id is not None:
+                            try:
+                                row_num = int(row.get("round", 0))
+                                if row_num != round_id:
+                                    continue
+                            except ValueError:
+                                continue
+
+                        if event_type is not None and row.get("event_type") != event_type:
+                            continue
+
+                        rows.append(row)
+
+                    except (ValueError, TypeError):
+                        # Skip invalid rows
+                        continue
+
+            return rows
+
+        except Exception as e:
+            print(f"Error reading systemic events: {e}")
+            return []

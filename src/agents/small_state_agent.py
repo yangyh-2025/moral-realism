@@ -1,8 +1,8 @@
 """
 Small state agent implementation for moral realism ABM system.
 
-This module implements the SmallStateAgent class which uses rule-based
-decision making to evaluate great powers and align with the most
+This module implements SmallStateAgent class which uses rule-based
+decision making to evaluate great powers and align with most
 attractive leadership type, validating the "moral leadership attracts support"
 theory.
 """
@@ -28,7 +28,7 @@ class SmallStateAction(Enum):
     SIDE_SELECTION = "side_selection"  # 选边站队
     DEFECT_SWITCH = "defect_switch"  # 倒戈转向
     NO_ALLIANCE_COALITION = "no_alliance_coalition"  # 不结盟联合
-    MEDIATION = "mediation"  # 大国间调停
+    MEDIATION = "mediation" 间调停
     COUNTER_RESPOND = "counter_respond"  # 反制/响应
 
 
@@ -86,6 +86,12 @@ class SmallStateAgent(Agent):
     # Minimum threshold for alignment
     alignment_threshold: float = 30.0  # Minimum score to align
 
+    # Previous score for alignment comparison (for defection detection)
+    previous_alignment_score: float = 0.0
+
+    # Threshold for defection (when score drops by this much)
+    defection_threshold: float = 15.0
+
     def __post_init__(self) -> None:
         """Initialize agent after dataclass initialization."""
         # Set agent type
@@ -112,69 +118,57 @@ class SmallStateAgent(Agent):
         """
         Make a decision by assessing great powers and choosing alignment.
 
+        Implements 7 behavior types:
+        1. ALIGN_FOLLOW - Align and follow a great power
+        2. NEUTRAL_OBSERVE - Maintain neutrality and observe
+        3. SIDE_SELECTION - Choose a side in conflict
+        4. DEFECT_SWITCH - Switch allegiance when conditions change
+        5. NO_ALLIANCE_COALITION - Form non-aligned coalition
+        6. MEDIATION - Mediate between great powers
+        7. COUNTER_RESPOND - Counter/Respond to hostile actions
+
         Args:
             situation: Description of current situation.
-            available_actions: List of actions available to the agent.
+            available_actions: List of actions available to agent.
             context: Additional context for decision-making, should include 'great_powers'.
 
         Returns:
-            Dictionary containing the decision and rationale.
+            Dictionary containing decision and rationale.
         """
         if context is None:
             context = {}
 
         great_powers = context.get("great_powers", [])
+        events = situation.get("events", [])
+        in_crisis = situation.get("in_crisis", False)
 
         # Assess all great powers
         assessments = self._assess_great_powers(great_powers, context)
 
-        # Determine best alignment
-        best_alignment = self._determine_best_alignment(assessments)
+        # Determine action based on 7 behavior types
+        action_type, rationale = self._determine_action_type(
+            assessments, great_powers, situation, context
+        )
 
-        # Update stance based on assessment
-        if best_alignment is not None and best_alignment["score"] >= self.alignment_threshold:
-            # Align with best great power
-            self.strategic_stance = StrategicStance.ALIGNED
-            self.aligned_with = best_alignment["agent_id"]
-
-            # Update relationship
-            self.set_relationship(best_alignment["agent_id"], 0.7)
-
-            action = "align_with_great_power"
-            rationale = (
-                f"Aligning with {best_alignment['name']} due to their "
-                f"{best_alignment['leadership_type']} leadership (score: {best_alignment['score']:.2f}). "
-                f"Their moral conduct and behavior are attractive."
-            )
-        else:
-            # Stay neutral
-            self.strategic_stance = StrategicStance.NEUTRAL
-            self.aligned_with = None
-
-            action = "maintain_neutrality"
-            rationale = (
-                "Maintaining neutrality as no great power meets the alignment threshold. "
-                "Current great powers lack sufficient moral leadership or attractive behavior."
-            )
-
-            if assessments:
-                best = max(assessments, key=lambda x: x["score"])
-                rationale += f" Best score was {best['score']:.2f} from {best['name']}."
+        # Update stance based on action
+        self._update_stance_from_action(action_type, assessments)
 
         decision = {
             "agent_id": self.agent_id,
-            "action": action,
+            "action_type": action_type.value,
+            "action": action_type.value,
             "target_agent_id": self.aligned_with,
             "rationale": rationale,
             "strategic_stance": self.strategic_stance.value,
             "assessments": assessments,
             "alignment_threshold": self.alignment_threshold,
+            "in_crisis": in_crisis,
         }
 
         # Record decision in history
         self.add_history(
             "decision",
-            f"Decided to {action}",
+            f"Decided to {action_type.value}",
             metadata={
                 "decision": decision,
                 "situation": situation,
@@ -182,12 +176,212 @@ class SmallStateAgent(Agent):
         )
 
         logger.info(
-            f"{self.name} decided to {action}. "
+            f"{self.name} decided to {action_type.value}. "
             f"Stance: {self.strategic_stance.value}, "
             f"Aligned with: {self.aligned_with or 'None'}"
         )
 
         return decision
+
+    def _determine_action_type(
+        self,
+        assessments: List[Dict[str, Any]],
+        great_powers: List[Dict[str, Any]],
+        situation: Dict[str, Any],
+        context: Dict[str, Any],
+    ) -> tuple[SmallStateAction, str]:
+        """
+        Determine action type based on assessments and situation.
+
+        Implements the 7 behavior types selection logic.
+
+        Args:
+            assessments: List of great power assessments.
+            great_powers: List of great powers.
+            situation: Current situation.
+            context: Additional context.
+
+        Returns:
+            Tuple of (action_type, rationale).
+        """
+        if not assessments:
+            return SmallStateAction.NEUTRAL_OBSERVE, (
+                "No great powers available to assess. "
+                "Maintaining neutral observation."
+            )
+
+        in_crisis = situation.get("in_crisis", False)
+        events = situation.get("events", [])
+
+        # Find best assessment
+        best = max(assessments, key=lambda x: x["score"])
+        best_score = best["score"]
+
+        # Check for deflection trigger (score dropped significantly)
+        if self.aligned_with and self.previous_alignment_score > 0:
+            if best_score < self.previous_alignment_score - self.defection_threshold:
+                self.previous_alignment_score = best_score
+                return SmallStateAction.DEFECT_SWITCH, (
+                    f"Current alignment score decreased by "
+                    f"{self.previous_alignment_score - best_score:.2f}, "
+                    f"switching allegiance from previous great power to "
+                    f"{best.get('name', 'new alignment')}. "
+                    f"Previous policy no longer serves our interests."
+                )
+
+        self.previous_alignment_score = best_score
+
+        # Behavior 1: ALIGN_FOLLOW - When best meets threshold
+        if best_score >= self.alignment_threshold and not in_crisis:
+            return SmallStateAction.ALIGN_FOLLOW, (
+                f"Aligning with {best['name']} due to their "
+                f"{best['leadership_type']} leadership (score: {best_score:.2f}). "
+                f"Their moral conduct and behavior provide attractive benefits."
+            )
+
+        # Behavior 2: NEUTRAL_OBSERVE - When no great power meets threshold
+        if best_score < self.alignment_threshold and not in_crisis:
+            return SmallStateAction.NEUTRAL_OBSERVE, (
+                f"Maintaining neutrality as no great power meets "
+                f"alignment threshold (threshold: {self.alignment_threshold}, "
+                f"best score: {best_score:.2f}). "
+                f"Current great powers lack sufficient moral leadership "
+                f"or attractive behavior."
+            )
+
+        # Behavior: Check for similar scores (coalition opportunity)
+        if len(assessments) >= 2:
+            scores = [a["score"] for a in assessments]
+            score_variance = max(scores) - min(scores)
+            if score_variance < 10 and len(assessments) > 2:
+                return SmallStateAction.NO_ALLIANCE_COALITION, (
+                    f"Multiple great powers have similar scores "
+                    f"(variance: {score_variance:.2f}). "
+                    f"Forming non-aligned coalition to balance influence."
+                )
+
+        # Behavior 3: SIDE_SELECTION - In crisis, choose a side
+        if in_crisis:
+            # Prefer Wangdao leader in crisis if available
+            wangdao_assessment = next(
+                (a for a in assessments if a["leadership_type"] == "wangdao"),
+                None
+            )
+            if wangdao_assessment and wangdao_assessment["score"] >= 20:
+                return SmallStateAction.SIDE_SELECTION, (
+                    f"In crisis, selecting side with {wangdao_assessment['name']} "
+                    f"due to their moral leadership and ability to provide security. "
+                    f"Aligning with principled leadership in crisis."
+                )
+            else:
+                return SmallStateAction.SIDE_SELECTION, (
+                    f"In crisis, selecting side with {best['name']} "
+                    f"(score: {best_score:.2f}) for security and support."
+                )
+
+        # Behavior 7: COUNTER_RESPOND - Respond to hostile actions
+        for event in events[-3:]:
+            if self._is_hostile_action(event, great_powers):
+                sender_id = event.get("sender_id", "")
+                relationship = self.get_relationship(sender_id)
+                if relationship < -0.3:
+                    # Hostile action from non-aligned power
+                    sender = next(
+                        (gp for gp in great_powers if gp.get("agent_id") == sender_id),
+                        None
+                    )
+                    if sender:
+                        return SmallStateAction.COUNTER_RESPOND, (
+                            f"Responding to hostile action from {sender.get('name', 'unknown')}. "
+                            f"Implementing countermeasures to protect national interests."
+                        )
+
+        # Default: NEUTRAL_OBSERVE
+        return SmallStateAction.NEUTRAL_OBSERVE, (
+            f"Maintaining neutral observation posture. "
+            f"No compelling reason to align at this time."
+        )
+
+    def _is_hostile_action(
+        self,
+        event: Dict[str, Any],
+        great_powers: List[Dict[str, Any]],
+    ) -> bool:
+        """
+        Check if an event represents a hostile action.
+
+        Args:
+            event: Event to check.
+            great_powers: List of great powers.
+
+        Returns:
+            True if event is hostile.
+        """
+        event_type = event.get("event_type", "").lower()
+
+        hostile_actions = [
+            "economic_sanction",
+            "security_military",
+            "military_escalation",
+        ]
+
+        return any(action in event_type for action in hostile_actions)
+
+    def _update_stance_from_action(
+        self,
+        action_type: SmallStateAction,
+        assessments: List[Dict[str, Any]],
+    ) -> None:
+        """
+        Update strategic stance based on selected action type.
+
+        Args:
+            action_type: The selected action type.
+            assessments: Great power assessments.
+        """
+        if action_type == SmallStateAction.ALIGN_FOLLOW:
+            self.strategic_stance = StrategicStance.ALIGNED
+            if assessments:
+                best = max(assessments, key=lambda x: x["score"])
+                self.aligned_with = best["agent_id"]
+                self.set_relationship(best["agent_id"], 0.7)
+
+        elif action_type == SmallStateAction.SIDE_SELECTION:
+            self.strategic_stance = StrategicStance.ALIGNED
+            if assessments:
+                best = max(assessments, key=lambda x: x["score"])
+                self.aligned_with = best["agent_id"]
+                self.set_relationship(best["agent_id"], 0.6)
+
+        elif action_type == SmallStateAction.DEFECT_SWITCH:
+            self.strategic_stance = StrategicStance.SWING
+            if assessments:
+                best = max(assessments, key=lambda x: x["score"])
+                self.aligned_with = best["agent_id"]
+                # Reduce relationship with previous alignment
+                for agent_id in self.relations.keys():
+                    if agent_id != self.agent_id and agent_id != best["agent_id"]:
+                        current = self.get_relationship(agent_id)
+                        self.set_relationship(agent_id, current - 0.2)
+
+        elif action_type == SmallStateAction.NO_ALLIANCE_COALITION:
+            self.strategic_stance = StrategicStance.NON_ALIGNED
+            self.aligned_with = None
+
+        elif action_type == SmallStateAction.MEDIATION:
+            self.strategic_stance = StrategicStance.NEUTRAL
+            self.aligned_with = None
+
+        elif action_type == SmallStateAction.COUNTER_RESPOND:
+            if self.aligned_with:
+                self.strategic_stance = StrategicStance.ALIGNED
+            else:
+                self.strategic_stance = StrategicStance.NEUTRAL
+
+        else:  # NEUTRAL_OBSERVE
+            self.strategic_stance = StrategicStance.NEUTRAL
+            # Keep existing alignment or set to None
+            pass
 
     def respond(
         self,
@@ -199,12 +393,12 @@ class SmallStateAgent(Agent):
         Respond to a message from another agent.
 
         Args:
-            sender_id: ID of the sending agent.
+            sender_id: ID of sending agent.
             message: The message content and metadata.
             context: Additional context for response generation.
 
         Returns:
-            Dictionary containing the response.
+            Dictionary containing response.
         """
         if context is None:
             context = {}
@@ -336,7 +530,7 @@ class SmallStateAgent(Agent):
 
         Args:
             great_power: Great power agent dictionary.
-            leadership_type: The leadership type of the great power.
+            leadership_type: The leadership type of great power.
 
         Returns:
             Behavior score (0-100).
@@ -415,10 +609,10 @@ class SmallStateAgent(Agent):
 
     def _score_relationship(self, agent_id: str) -> float:
         """
-        Score based on existing relationship with the agent.
+        Score based on existing relationship with agent.
 
         Args:
-            agent_id: ID of the agent.
+            agent_id: ID of agent.
 
         Returns:
             Relationship score (0-100).
@@ -432,7 +626,7 @@ class SmallStateAgent(Agent):
         assessments: List[Dict[str, Any]],
     ) -> Optional[Dict[str, Any]]:
         """
-        Determine the best great power to align with.
+        Determine best great power to align with.
 
         Args:
             assessments: List of great power assessments.
@@ -443,7 +637,7 @@ class SmallStateAgent(Agent):
         if not assessments:
             return None
 
-        # Find the highest scoring great power
+        # Find highest scoring great power
         best = max(assessments, key=lambda x: x["score"])
 
         # Only return if it meets a minimum threshold
@@ -452,9 +646,41 @@ class SmallStateAgent(Agent):
 
         return None
 
+    def _calculate_risk_benefit_ratio(
+        self,
+        great_power_id: str,
+        leadership_type: str,
+        capability_index: float,
+    ) -> float:
+        """
+        Calculate risk-benefit ratio for aligning with a great power.
+
+        Args:
+            great_power_id: ID of great power.
+            leadership_type: Leadership type of great power.
+            capability_index: Capability index of great power.
+
+        Returns:
+            Risk-benefit ratio (higher = more favorable).
+        """
+        # Get expected benefits and risks
+        benefits = self.calculate_benefits(great_power_id, leadership_type)
+        risks = self.calculate_risks(great_power_id, leadership_type)
+
+        # Calculate average benefit
+        avg_benefit = sum(benefits.values()) / len(benefits) if benefits else 50
+
+        # Calculate average risk
+        avg_risk = sum(risks.values()) / len(risks) if risks else 50
+
+        # Risk-benefit ratio (benefit adjusted by capability)
+        ratio = (avg_benefit - avg_risk * 0.5) * (capability_index / 100)
+
+        return max(0, min(100, ratio))
+
     def get_alignment_summary(self) -> Dict[str, Any]:
         """
-        Get a summary of the small state's alignment.
+        Get a summary of small state's alignment.
 
         Returns:
             Dictionary with alignment information.
@@ -465,6 +691,7 @@ class SmallStateAgent(Agent):
             "strategic_stance": self.strategic_stance.value,
             "aligned_with": self.aligned_with,
             "alignment_threshold": self.alignment_threshold,
+            "previous_alignment_score": self.previous_alignment_score,
         }
 
     def update_alignment(
@@ -473,10 +700,10 @@ class SmallStateAgent(Agent):
         new_stance: Optional[StrategicStance] = None,
     ) -> None:
         """
-        Update the alignment with a great power.
+        Update alignment with a great power.
 
         Args:
-            great_power_id: ID of the great power to align with (None for neutral).
+            great_power_id: ID of great power to align with (None for neutral).
             new_stance: New strategic stance (inferred from alignment if not provided).
         """
         self.aligned_with = great_power_id
@@ -508,8 +735,8 @@ class SmallStateAgent(Agent):
         Calculate expected benefits from aligning with a great power.
 
         Args:
-            great_power_id: ID of the great power.
-            leadership_type: Leadership type of the great power.
+            great_power_id: ID of great power.
+            leadership_type: Leadership type of great power.
 
         Returns:
             Dictionary of expected benefits.
@@ -553,8 +780,8 @@ class SmallStateAgent(Agent):
         Calculate expected risks from aligning with a great power.
 
         Args:
-            great_power_id: ID of the great power.
-            leadership_type: Leadership type of the great power.
+            great_power_id: ID of great power.
+            leadership_type: Leadership type of great power.
 
         Returns:
             Dictionary of expected risks.
