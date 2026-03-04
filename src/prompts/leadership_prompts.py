@@ -310,7 +310,7 @@ G    """
         available_actions = context.get("available_actions", [])
 
         # Build prompt
-        prompt_parts = ["## Current Situation"]
+        prompt_parts = ["## 当前局势"]
 
         if situation:
             for key, value in situation.items():
