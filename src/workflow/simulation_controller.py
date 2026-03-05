@@ -1,8 +1,11 @@
 """
-Simulation controller for moral realism ABM system.
+道义现实主义ABM系统的模拟控制器
 
-This module provides SimulationController class which manages
-simulation lifecycle, round execution, and checkpoint management.
+本模块提供SimulationController类，用于管理：
+- 模拟生命周期（启动、暂停、恢复、停止）
+- 回合执行（单回合、批处理、运行到完成）
+- 检查点管理（保存、加载）
+- 状态查询
 """
 
 from dataclasses import dataclass, field
@@ -19,46 +22,46 @@ logger = logging.getLogger(__name__)
 
 
 class ControllerStatus(Enum):
-    """Status of simulation controller."""
+    """模拟控制器状态"""
 
-    NOT_INITIALIZED = "not_initialized"
-    INITIALIZED = "initialized"
-    READY = "ready"
-    RUNNING = "running"
-    PAUSED = "paused"
-    STOPPED = "stopped"
-    COMPLETED = "completed"
-    ERROR = "error"
+    NOT_INITIALIZED = "not_initialized"  # 未初始化
+    INITIALIZED = "initialized"  # 已初始化
+    READY = "ready"  # 准备就绪
+    RUNNING = "running"  # 正在运行
+    PAUSED = "paused"  # 已暂停
+    STOPPED = "stopped"  # 已停止
+    COMPLETED = "completed"  # 已完成
+    ERROR = "error"  # 发生错误
 
 
 class ExecutionMode(Enum):
-    """Modes of simulation execution."""
+    """模拟执行模式"""
 
-    STEP_BY_STEP = "step_by_step"
-    BATCH = "batch"
-    RUN_TO_COMPLETION = "run_to_completion"
+    STEP_BY_STEP = "step_by_step"  # 逐步执行
+    BATCH = "batch"  # 批处理
+    RUN_TO_COMPLETION = "run_to_completion"  # 运行到完成
 
 
 @dataclass
 class ControllerStats:
-    """Statistics for simulation controller."""
+    """模拟控制器统计信息"""
 
-    total_rounds_executed: int = 0
-    total_rounds_scheduled: int = 0
-    successful_rounds: int = 0
-    failed_rounds: int = 0
+    total_rounds_executed: int = 0  # 执行的总回合数
+    total_rounds_scheduled: int = 0  # 调度的总回合数
+    successful_rounds: int = 0  # 成功的回合数
+    failed_rounds: int = 0  # 失败的回合数
 
-    # Checkpoint statistics
-    checkpoints_saved: int = 0
-    checkpoints_loaded: int = 0
+    # 检查点统计
+    checkpoints_saved: int = 0  # 保存的检查点数
+    checkpoints_loaded: int = 0  # 加载的检查点数
 
-    # Time statistics
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    total_execution_time: float = 0.0
+    # 时间统计
+    start_time: Optional[datetime] = None  # 开始时间
+    end_time: Optional[datetime] = None  # 结束时间
+    total_execution_time: float = 0.0  # 总执行时间（秒）
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary."""
+        """转换为字典格式"""
         return {
             "total_rounds_executed": self.total_rounds_executed,
             "total_rounds_scheduled": self.total_rounds_scheduled,
@@ -74,13 +77,15 @@ class ControllerStats:
 
 class SimulationController:
     """
-    Control simulation lifecycle and execution.
+    模拟控制器类
 
-    Provides:
-    - Simulation lifecycle management (start, pause, resume, stop)
-    - Round execution (single, batch, run to completion)
-    - Checkpoint management (save, load)
-    - Status queries
+    控制模拟生命周期和执行。
+
+    提供的功能：
+    - 模拟生命周期管理（启动、暂停、恢复、停止）
+    - 回合执行（单回合、批处理、运行到完成）
+    - 检查点管理（保存、加载）
+    - 状态查询
     """
 
     def __init__(
@@ -88,53 +93,53 @@ class SimulationController:
         config: Optional[SimulationConfig] = None,
     ) -> None:
         """
-        Initialize simulation controller.
+        初始化模拟控制器
 
         Args:
-            config: Simulation configuration.
+            config: 模拟配置
         """
         self.config = config or SimulationConfig()
 
-        # State tracking
+        # 状态跟踪
         self.status = ControllerStatus.INITIALIZED
         self.state = ControllerState()
 
-        # Statistics
+        # 统计信息
         self.stats = ControllerStats()
 
-        # Component references (to be injected)
+        # 组件引用（待注入）
         self._agents: Dict[str, Agent] = {}
         self._round_executor: Optional[Any] = None
         self._data_storage: Optional[Any] = None
         self._state_manager: Optional[Any] = None
         self._performance_monitor: Optional[Any] = None
 
-        # Execution mode
+        # 执行模式
         self._execution_mode = ExecutionMode.STEP_BY_STEP
 
-        logger.info(f"SimulationController initialized with config: {self.config.max_rounds} max rounds")
+        logger.info(f"模拟控制器已初始化，配置: {self.config.max_rounds} 最大回合")
 
     def initialize(self) -> bool:
         """
-        Initialize controller and prepare for execution.
+        初始化控制器并准备执行
 
         Returns:
-            True if initialization successful.
+            初始化成功返回True
         """
         if self.status == ControllerStatus.RUNNING:
-            logger.warning("Controller already running, cannot initialize")
+            logger.warning("控制器已在运行，无法初始化")
             return False
 
-        # Validate required components
+        # 验证必需组件
         if not self._agents:
-            logger.warning("No agents registered, cannot initialize")
+            logger.warning("未注册代理，无法初始化")
             return False
 
         if self._round_executor is None:
-            logger.warning("No round executor configured, cannot initialize")
+            logger.warning("未配置回合执行器，无法初始化")
             return False
 
-        # Register agents with interaction manager if available
+        # 将代理注册到互动管理器（如果可用）
         if hasattr(self._round_executor, "_interaction_manager"):
             interaction_mgr = self._round_executor._interaction_manager
             if interaction_mgr:
@@ -142,18 +147,18 @@ class SimulationController:
                     interaction_mgr.register_agent(agent)
 
         self.status = ControllerStatus.READY
-        logger.info("SimulationController initialized and ready")
+        logger.info("模拟控制器已初始化并就绪")
         return True
 
     def start(self) -> bool:
         """
-        Start simulation execution.
+        启动模拟执行
 
         Returns:
-            True if start successful.
+            启动成功返回True
         """
         if self.status != ControllerStatus.READY:
-            logger.warning(f"Cannot start from status {self.status.value}")
+            logger.warning(f"无法从状态 {self.status.value} 启动")
             return False
 
         self.status = ControllerStatus.RUNNING
@@ -162,57 +167,57 @@ class SimulationController:
         self.state.current_round = 0
         self.stats.start_time = datetime.now()
 
-        logger.info("Simulation started")
+        logger.info("模拟已启动")
         return True
 
     def pause(self) -> bool:
         """
-        Pause simulation execution.
+        暂停模拟执行
 
         Returns:
-            True if pause successful.
+            暂停成功返回True
         """
         if self.status != ControllerStatus.RUNNING:
-            logger.warning(f"Cannot pause from status {self.status.value}")
+            logger.warning(f"无法从状态 {self.status.value} 暂停")
             return False
 
         self.status = ControllerStatus.PAUSED
         self.state.is_running = True
         self.state.is_paused = True
 
-        logger.info("Simulation paused")
+        logger.info("模拟已暂停")
         return True
 
     def resume(self) -> bool:
         """
-        Resume simulation execution.
+        恢复模拟执行
 
         Returns:
-            True if resume successful.
+            恢复成功返回True
         """
         if self.status != ControllerStatus.PAUSED:
-            logger.warning(f"Cannot resume from status {self.status.value}")
+            logger.warning(f"无法从状态 {self.status.value} 恢复")
             return False
 
         self.status = ControllerStatus.RUNNING
         self.state.is_running = True
         self.state.is_paused = False
 
-        logger.info("Simulation resumed")
+        logger.info("模拟已恢复")
         return True
 
     def stop(self) -> bool:
         """
-        Stop simulation execution.
+        停止模拟执行
 
         Returns:
-            True if stop successful.
+            停止成功返回True
         """
         if self.status not in [
             ControllerStatus.RUNNING,
             ControllerStatus.PAUSED,
         ]:
-            logger.warning(f"Cannot stop from status {self.status.value}")
+            logger.warning(f"无法从状态 {self.status.value} 停止")
             return False
 
         self.status = ControllerStatus.STOPPED
@@ -225,40 +230,40 @@ class SimulationController:
                 self.stats.end_time - self.stats.start_time
             ).total_seconds()
 
-        logger.info(f"Simulation stopped after {self.stats.total_execution_time:.2f}s")
+        logger.info(f"模拟已停止，执行时间: {self.stats.total_execution_time:.2f}秒")
         return True
 
     def reset(self) -> None:
-        """Reset controller state for new simulation."""
+        """重置控制器状态以进行新的模拟"""
         self.status = ControllerStatus.INITIALIZED
         self.state = ControllerState()
         self.stats = ControllerStats()
         self.state.current_round = 0
 
-        logger.info("Controller reset")
+        logger.info("控制器已重置")
 
     def execute_single_round(self) -> Optional[Dict[str, Any]]:
         """
-        Execute a single simulation round.
+        执行单个模拟回合
 
         Returns:
-            Round result dictionary, or None if execution failed.
+            回合结果字典，失败返回None
         """
         if self.status != ControllerStatus.RUNNING:
-            logger.warning(f"Cannot execute round from status {self.status.value}")
+            logger.warning(f"无法从状态 {self.status.value} 执行回合")
             return None
 
         if self.state.current_round >= self.config.max_rounds:
-            logger.info("Max rounds reached, simulation complete")
+            logger.info("达到最大回合数，模拟完成")
             self.status = ControllerStatus.COMPLETED
             self.stats.end_time = datetime.now()
             return None
 
-        # Start performance tracking
+        # 启动性能跟踪
         if self._performance_monitor:
             self._performance_monitor.start_round(self.state.current_round + 1)
 
-        # Execute round
+        # 执行回合
         try:
             round_result = self._execute_round_internal()
 
@@ -267,34 +272,32 @@ class SimulationController:
             else:
                 self.stats.failed_rounds += 1
 
-            # Checkpoint if needed
+            # 需要时保存检查点
             if self._should_checkpoint():
                 self.save_checkpoint()
 
             self.stats.total_rounds_executed += 1
 
             return round_result
-
         except Exception as e:
-            logger.error(f"Round execution failed: {e}", exc_info=True)
+            logger.error(f"回合执行失败: {e}", exc_info=True)
             self.stats.failed_rounds += 1
             self.status = ControllerStatus.ERROR
             return None
-
         finally:
-            # End performance tracking
+            # 结束性能跟踪
             if self._performance_monitor:
                 self._performance_monitor.end_round()
 
     def execute_rounds(self, n: int) -> List[Dict[str, Any]]:
         """
-        Execute n simulation rounds.
+        执行n个模拟回合
 
         Args:
-            n: Number of rounds to execute.
+            n: 要执行的回合数
 
         Returns:
-            List of round results.
+            回合结果列表
         """
         results = []
 
@@ -313,15 +316,15 @@ class SimulationController:
 
     def run_to_completion(self) -> Dict[str, Any]:
         """
-        Run simulation to completion (max rounds).
+        运行模拟直到完成（最大回合数）
 
         Returns:
-            Summary of execution results.
+            执行结果摘要
         """
         self._execution_mode = ExecutionMode.RUN_TO_COMPLETION
 
         if not self.start():
-            return {"status": "failed", "reason": "Could not start simulation"}
+            return {"status": "failed", "reason": "无法启动模拟"}
 
         results = []
 
@@ -346,20 +349,20 @@ class SimulationController:
 
     def save_checkpoint(self, checkpoint_id: Optional[str] = None) -> Optional[str]:
         """
-        Save current simulation state as checkpoint.
+        将当前模拟状态保存为检查点
 
         Args:
-            checkpoint_id: Optional checkpoint ID.
+            checkpoint_id: 可选的检查点ID
 
         Returns:
-            Path to saved checkpoint, or None if failed.
+            保存的检查点路径，失败返回None
         """
         if self._state_manager is None or self._data_storage is None:
-            logger.warning("Cannot save checkpoint: state_manager or data_storage not configured")
+            logger.warning("无法保存检查点：state_manager或data_storage未配置")
             return None
 
         try:
-            # Capture state
+            # 捕获状态
             snapshot = self._state_manager.capture_state(
                 round_number=self.state.current_round,
                 additional_context={
@@ -378,7 +381,7 @@ class SimulationController:
                 },
             )
 
-            # Save checkpoint
+            # 保存检查点
             state_dict = snapshot.to_dict()
             path = self._data_storage.save_checkpoint(
                 simulation_state=state_dict,
@@ -387,37 +390,35 @@ class SimulationController:
 
             if path:
                 self.stats.checkpoints_saved += 1
-                logger.info(f"Checkpoint saved to {path}")
+                logger.info(f"检查点已保存到 {path}")
 
             return path
-
         except Exception as e:
-            logger.error(f"Checkpoint save failed: {e}", exc_info=True)
+            logger.error(f"检查点保存失败: {e}", exc_info=True)
             return None
 
     def load_checkpoint(self, checkpoint_id: str) -> bool:
         """
-        Load simulation state from checkpoint.
+        从检查点加载模拟状态
 
         Args:
-            checkpoint_id: The checkpoint ID to load.
+            checkpoint_id: 要加载的检查点ID
 
         Returns:
-            True if load successful.
+            加载成功返回True
         """
         if self._data_storage is None:
-            logger.warning("Cannot load checkpoint: data_storage not configured")
+            logger.warning("无法加载检查点：data_storage未配置")
             return False
 
         try:
-            # Load checkpoint
+            # 加载检查点
             checkpoint = self._data_storage.load_checkpoint(checkpoint_id)
-
             if checkpoint is None:
-                logger.error(f"Checkpoint not found: {checkpoint_id}")
+                logger.error(f"未找到检查点: {checkpoint_id}")
                 return False
 
-            # Restore state
+            # 恢复状态
             if self._state_manager:
                 from src.workflow.state_manager import SimulationSnapshot
                 snapshot = SimulationSnapshot.from_dict(checkpoint.get("state", {}))
@@ -425,7 +426,7 @@ class SimulationController:
                 if self._state_manager.restore_state(snapshot):
                     self.stats.checkpoints_loaded += 1
 
-                    # Update controller state
+                    # 更新控制器状态
                     controller_states = checkpoint.get("state", {}).get(
                         "controller_states", {}
                     )
@@ -443,30 +444,28 @@ class SimulationController:
 
                     self.status = ControllerStatus.READY
 
-                    logger.info(f"Checkpoint loaded: {checkpoint_id}")
+                    logger.info(f"检查点已加载: {checkpoint_id}")
                     return True
-
             return False
-
         except Exception as e:
-            logger.error(f"Checkpoint load failed: {e}", exc_info=True)
+            logger.error(f"检查点加载失败: {e}", exc_info=True)
             return False
 
     def get_status(self) -> ControllerStatus:
         """
-        Get current controller status.
+        获取当前控制器状态
 
         Returns:
-            Current ControllerStatus.
+            当前ControllerStatus
         """
         return self.status
 
     def get_performance_stats(self) -> Optional[Dict[str, Any]]:
         """
-        Get performance statistics.
+        获取性能统计信息
 
         Returns:
-            Performance statistics dictionary, or None if monitor not configured.
+            性能统计字典，监控器未配置返回None
         """
         if self._performance_monitor is None:
             return None
@@ -476,10 +475,10 @@ class SimulationController:
 
     def get_controller_summary(self) -> Dict[str, Any]:
         """
-        Get complete controller summary.
+        获取完整的控制器摘要
 
         Returns:
-            Dictionary with controller state and statistics.
+            包含控制器状态和统计信息的字典
         """
         return {
             "status": self.status.value,
@@ -503,37 +502,37 @@ class SimulationController:
             "execution_mode": self._execution_mode.value,
         }
 
-    # Component injection methods
+    # 组件注入方法
 
     def set_agents(self, agents: Dict[str, Agent]) -> None:
-        """Set agents dictionary."""
+        """设置代理字典"""
         self._agents = agents
-        logger.info(f"Registered {len(agents)} agents")
+        logger.info(f"已注册 {len(agents)} 个代理")
 
     def set_round_executor(self, executor: Any) -> None:
-        """Set round executor."""
+        """设置回合执行器"""
         self._round_executor = executor
-        logger.info("Round executor configured")
+        logger.info("回合执行器已配置")
 
     def set_data_storage(self, storage: Any) -> None:
-        """Set data storage."""
+        """设置数据存储"""
         self._data_storage = storage
-        logger.info("Data storage configured")
+        logger.info("数据存储已配置")
 
     def set_state_manager(self, state_manager: Any) -> None:
-        """Set state manager."""
+        """设置状态管理器"""
         self._state_manager = state_manager
-        logger.info("State manager configured")
+        logger.info("状态管理器已配置")
 
     def set_performance_monitor(self, monitor: Any) -> None:
-        """Set performance monitor."""
+        """设置性能监控器"""
         self._performance_monitor = monitor
-        logger.info("Performance monitor configured")
+        logger.info("性能监控器已配置")
 
-    # Private helper methods
+    # 私有辅助方法
 
     def _should_checkpoint(self) -> bool:
-        """Check if checkpoint should be saved."""
+        """检查是否应该保存检查点"""
         if self.config.checkpoint_interval <= 0:
             return False
 
@@ -544,15 +543,15 @@ class SimulationController:
 
     def _execute_round_internal(self) -> Dict[str, Any]:
         """
-        Internal round execution using round executor.
+        使用回合执行器内部执行回合
 
         Returns:
-            Round result dictionary.
+            回合结果字典
         """
         from src.workflow.round_executor import RoundContext
         from src.workflow.state_manager import SimulationSnapshot
 
-        # Build round context
+        # 构建回合上下文
         context = RoundContext(
             round_number=self.state.current_round + 1,
             start_time=datetime.now(),
@@ -578,10 +577,10 @@ class SimulationController:
             ),
         )
 
-        # Execute round
+        # 执行回合
         result = self._round_executor.execute_round(context)
 
-        # Update controller state
+        # 更新控制器状态
         self.state.current_round += 1
         self.state.total_decisions += result.decisions_count
         self.state.total_interactions += result.interactions_executed
@@ -590,17 +589,17 @@ class SimulationController:
         return result.to_dict()
 
     def is_running(self) -> bool:
-        """Check if simulation is running."""
+        """检查模拟是否正在运行"""
         return self.status == ControllerStatus.RUNNING
 
     def is_paused(self) -> bool:
-        """Check if simulation is paused."""
+        """检查模拟是否已暂停"""
         return self.status == ControllerStatus.PAUSED
 
     def is_ready(self) -> bool:
-        """Check if simulation is ready."""
+        """检查模拟是否就绪"""
         return self.status == ControllerStatus.READY
 
     def get_remaining_rounds(self) -> int:
-        """Get number of remaining rounds."""
+        """获取剩余回合数"""
         return max(0, self.config.max_rounds - self.state.current_round)

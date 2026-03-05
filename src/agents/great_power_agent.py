@@ -1,8 +1,8 @@
 """
-Great power agent implementation for the moral realism ABM system.
+道义现实主义ABM系统的大国代理实现
 
-This module implements the GreatPowerAgent class which uses LLM-based
-decision making driven by leadership type characteristics.
+本模块实现GreatPowerAgent类，使用基于LLM的
+决策制定，由领导类型特征驱动。
 """
 
 from dataclasses import dataclass, field
@@ -24,59 +24,61 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Commitment:
-    """Represents a commitment made by a great power."""
+    """表示大国做出的承诺"""
 
-    commitment_id: str
-    description: str
-    target_agent_id: Optional[str] = None
-    action_type: Optional[str] = None
-    start_round: int = 0
-    end_round: Optional[int] = None  # None means indefinite
-    is_active: bool = True
-    fulfillment: float = 0.0  # 0-1 scale of how well it's being fulfilled
+    commitment_id: str  # 承诺ID
+    description: str  # 承诺描述
+    target_agent_id: Optional[str] = None  # 目标代理ID
+    action_type: Optional[str] = None  # 行动类型
+    start_round: int = 0  # 开始回合
+    end_round: Optional[int] = None  # 结束回合（None表示无限期）
+    is_active: bool = True  # 是否活跃
+    fulfillment: float = 0.0  # 履行程度（0-1刻度）
 
 
 @dataclass
 class GreatPowerAgent(Agent):
     """
-    A great power agent driven by LLM and leadership type.
+    大国代理类
 
-    This agent uses LLM to make decisions reflecting its leadership type
-    (Wangdao, Hegemon, Qiangquan, or Hunyong) and combines it with
-    its capability level as a constant independent variable.
+    由LLM和领导类型驱动的大国代理。
+
+    该代理使用LLM做出反映其领导类型
+    （道义型、霸权型、强权型或昏庸型）的决策，
+    并将其与能力水平作为常量自变量结合。
     """
 
-    # LLM engine for decision making
-    llm_engine: Optional[LLMEngine] = None
-    prompt_builder: GreatPowerPromptBuilder = field(default_factory=GreatPowerPromptBuilder)
+    # 用于决策制定的LLM引擎
+    llm_engine: Optional[LLMEngine] = None  # LLM引擎
+    prompt_builder: GreatPowerPromptBuilder = field(default_factory=GreatPowerPromptBuilder)  # 提示词构建器
 
-    # Commitments management
-    commitments: List[Commitment] = field(default_factory=list)
-    current_round: int = 0
+    # 承诺管理
+    commitments: List[Commitment] = field(default_factory=list)  # 承诺列表
+    current_round: int = 0  # 当前回合数
 
     def __post_init__(self) -> None:
-        """Initialize the agent after dataclass initialization."""
-        # Set agent type
+        """数据类初始化后的处理"""
+        # 设置代理类型
         self.agent_type = AgentType.GREAT_POWER
 
-        # Initialize leadership profile if not set
+        # 如果未设置则初始化领导配置文件
         if self.leadership_profile is None:
             from src.models.leadership_type import get_leadership_profile
             self.leadership_profile = get_leadership_profile(self.leadership_type)
 
-        # Initialize capability if not set
+        # 如果未设置则初始化能力
         if self.capability is None:
             self.capability = Capability(agent_id=self.agent_id)
 
-        # Initialize LLM engine with default config
+        # 使用默认配置初始化LLM引擎
         if self.llm_engine is None:
             try:
                 self.llm_engine = LLMEngine()
             except ValueError as e:
-                logger.warning(f"Could not initialize LLM engine: {e}")
+                logger.warning(f"无法初始化LLM引擎: {e}")
                 self.llm_engine = None
 
-        # Initialize relations with self
+        # 初始化与自己的关系
         self.relations[self.agent_id] = 1.0
 
     def decide(
@@ -86,38 +88,38 @@ class GreatPowerAgent(Agent):
         context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
-        Make a decision using LLM-driven decision making.
+        使用LLM驱动的决策制定做出决策
 
         Args:
-            situation: Description of the current situation.
-            available_actions: List of actions available to the agent.
-            context: Additional context for decision-making.
+            situation: 当前情况描述
+            available_actions: 代理可用的行动列表
+            context: 决策制定的附加上下文
 
         Returns:
-            Dictionary containing the decision and rationale.
+            包含决策和理由的字典
         """
         if context is None:
             context = {}
 
-        # Prepare context with required information
+        # 准备包含所需信息的上下文
         context["situation"] = situation
         context["available_actions"] = available_actions
 
-        # Check if LLM is available
+        # 检查LLM是否可用
         if self.llm_engine is None:
             return self._fallback_decision(available_actions, context)
 
         try:
-            # Build system prompt
+            # 构建系统提示词
             function_definitions = self.prompt_builder.get_function_definitions()
             system_prompt = self.prompt_builder.build_system_prompt(
                 self, function_definitions
             )
 
-            # Build user prompt
+            # �用户建提示词
             user_prompt = self.prompt_builder.build_user_prompt(self, context)
 
-            # Call LLM
+            # 调用LLM
             messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
@@ -126,17 +128,17 @@ class GreatPowerAgent(Agent):
             response = self.llm_engine.function_call(
                 messages=messages,
                 functions=function_definitions,
-                temperature=0.7,  # Lower temperature for more consistent decisions
+                temperature=0.7,  # 较低温度以获得更一致的决策
             )
 
-            # Parse function call result
+            # 解析函数调用结果
             function_call = response.get("function_call")
             decision = self.prompt_builder.parse_function_call(function_call)
 
-            # Validate decision
+            # 验证决策
             decision = self._validate_decision(decision)
 
-            # Add metadata
+            # 添加元数据
             decision["agent_id"] = self.agent_id
             decision["leadership_type"] = self.leadership_type.value
             decision["round"] = self.current_round
@@ -146,14 +148,14 @@ class GreatPowerAgent(Agent):
                 "usage": response.get("usage"),
             }
 
-            # Update commitments based on decision
+            # 根据决策更新承诺
             if decision["action_type"] != "no_action":
                 self._update_commitments_from_decision(decision)
 
-            # Record decision in history
+            # 在历史中记录决策
             self.add_history(
                 "decision",
-                f"Decided to take action: {decision['action_type']}",
+                f"决定采取行动: {decision['action_type']}",
                 metadata={
                     "decision": decision,
                     "situation": situation,
@@ -161,14 +163,13 @@ class GreatPowerAgent(Agent):
             )
 
             logger.info(
-                f"{self.name} decided on action: {decision['action_type']} "
-                f"with rationale: {decision['rationale'][:100]}..."
+                f"{self.name} 决定采取行动: {decision['action_type']}，"
+                f"理由: {decision['rationale'][:100]}..."
             )
 
             return decision
-
         except Exception as e:
-            logger.error(f"Error in LLM decision making for {self.name}: {e}")
+            logger.error(f"{self.name} 的LLM决策制定出错: {e}")
             return self._fallback_decision(available_actions, context)
 
     def respond(
@@ -178,39 +179,39 @@ class GreatPowerAgent(Agent):
         context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
-        Respond to a message from another agent.
+        响应来自另一个代理的消息
 
         Args:
-            sender_id: ID of the sending agent.
-            message: The message content and metadata.
-            context: Additional context for response generation.
+            sender_id: 发送代理的ID
+            message: 消息内容和元数据
+            context: 响应生成的附加上下文
 
         Returns:
-            Dictionary containing the response.
+            包含响应的字典
         """
         if context is None:
             context = {}
 
-        # Get sender information if available in context
+        # 如果可用则获取发送者信息
         sender = context.get("agents", {}).get(sender_id, {"name": sender_id})
 
-        # Check if LLM is available
+        # 检查LLM是否可用
         if self.llm_engine is None:
             return self._fallback_response(sender_id, message, context)
 
         try:
-            # Build response prompt
+            # 构建响应提示词
             prompt = self.prompt_builder.build_response_prompt(
                 self, sender, message, context
             )
 
-            # Get system prompt
-            system_prompt = f"""You are {self.name} ({self.name_zh}), a {self.leadership_profile.name_zh} great power.
+            # 获取系统提示词
+            system_prompt = f"""你是 {self.name}（{self.name_zh}），一个{self.leadership_profile.name_zh}大国。
 
-Respond to the following message based on your leadership characteristics.
+根据你的领导特征响应以下消息。
 """
 
-            # Call LLM
+            # 调用LLM
             messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
@@ -218,7 +219,7 @@ Respond to the following message based on your leadership characteristics.
 
             response = self.llm_engine.chat_completion(
                 messages=messages,
-                temperature=0.8,  # Higher temperature for more varied responses
+                temperature=0.8,  # 较高温度以获得更多样的响应
             )
 
             content = response.get("content", "")
@@ -233,42 +234,41 @@ Respond to the following message based on your leadership characteristics.
                 "round": self.current_round,
             }
 
-            # Record response in history
+            # 在历史中记录响应
             self.add_history(
                 "response",
-                f"Responded to {sender_id}: {content[:100]}...",
+                f"响应 {sender_id}: {content[:100]}...",
                 metadata={
                     "response": response_data,
                     "original_message": message,
                 },
             )
 
-            # Update relationship based on interaction
+            # 根据互动更新关系
             self._update_relationship_from_interaction(sender_id, message, response_data)
 
             return response_data
-
         except Exception as e:
-            logger.error(f"Error in LLM response generation for {self.name}: {e}")
+            logger.error(f"{self.name} 的LLM响应生成出错: {e}")
             return self._fallback_response(sender_id, message, context)
 
     def _validate_decision(self, decision: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Validate the decision against leadership profile constraints.
+        验证决策是否符合领导配置文件约束
 
         Args:
-            decision: The decision to validate.
+            decision: 要验证的决策
 
         Returns:
-            Validated decision (may be modified).
+            验证后的决策（可能被修改）
         """
         action_type = decision.get("action_type", "no_action")
 
-        # Check if action is prohibited
+        # 检查行动是否被禁止
         if self.leadership_profile:
             prohibited = self.leadership_profile.prohibited_actions
 
-            # Check both exact match and partial match
+            # 检查精确匹配和部分匹配
             is_prohibited = any(
                 action_type in prohibited or
                 prohibited_item in action_type
@@ -277,20 +277,20 @@ Respond to the following message based on your leadership characteristics.
 
             if is_prohibited:
                 logger.warning(
-                    f"{self.name} attempted prohibited action: {action_type}. "
-                    f"Falling back to no_action."
+                    f"{self.name} 尝试禁止行动: {action_type}。"
+                    f"回退到不采取行动。"
                 )
                 decision["action_type"] = "no_action"
                 decision["rationale"] = (
-                    f"Original action '{action_type}' is prohibited by leadership type. "
-                    "Taking no action instead."
+                    f"原始行动 '{action_type}' 被领导类型禁止。"
+                    "改为不采取行动。"
                 )
 
-        # Ensure priority is valid
+        # 确保优先级有效
         if "priority" not in decision or decision["priority"] not in ["high", "medium", "low"]:
             decision["priority"] = "medium"
 
-        # Ensure resource allocation is valid
+        # 确保资源分配有效
         if "resource_allocation" not in decision:
             decision["resource_allocation"] = 50
         else:
@@ -304,42 +304,42 @@ Respond to the following message based on your leadership characteristics.
         context: Dict[str, Any],
     ) -> Dict[str, Any]:
         """
-        Generate a fallback decision when LLM is unavailable.
+        当LLM不可用时生成回退决策
 
         Args:
-            available_actions: List of available actions.
-            context: Context information.
+            available_actions: 可用行动列表
+            context: 上下文信息
 
         Returns:
-            Fallback decision.
+            回退决策
         """
-        # Default to prioritized actions if available
+        # 默认使用优先行动（如果可用）
         prioritized = (
             self.leadership_profile.prioritized_actions
             if self.leadership_profile
             else []
         )
 
-        # Select action based on leadership type
+        # 根据领导类型选择行动
         if self.leadership_type == LeadershipType.WANGDAO:
             action_type = ActionType.DIPLOMATIC_VISIT.value
-            rationale = "Prioritizing diplomatic engagement as Wangdao leader"
+            rationale = "作为道义型领导，优先外交参与"
         elif self.leadership_type == LeadershipType.HEGEMON:
             action_type = ActionType.SECURITY_ALLIANCE.value
-            rationale = "Strengthening alliances to maintain hegemonic position"
+            rationale = "通过加强同盟来维持霸权地位"
         elif self.leadership_type == LeadershipType.QIANGQUAN:
             action_type = ActionType.ECONOMIC_TRADE.value
-            rationale = "Maximizing economic benefits and power"
+            rationale = "最大化经济利益和权力"
         else:  # HUNYONG
             action_type = ActionType.NO_ACTION.value
-            rationale = "Avoiding confrontation through inaction"
+            rationale = "通过不行动避免对抗"
 
         return {
             "agent_id": self.agent_id,
             "action_type": action_type,
             "target_agent_id": None,
-            "rationale": rationale + " (fallback decision - LLM unavailable)",
-            "moral_consideration": "Fallback decision",
+            "rationale": rationale + "（回退决策- LLM不可用）",
+            "moral_consideration": "回退决策",
             "resource_allocation": 50,
             "priority": "medium",
             "leadership_type": self.leadership_type.value,
@@ -354,32 +354,32 @@ Respond to the following message based on your leadership characteristics.
         context: Dict[str, Any],
     ) -> Dict[str, Any]:
         """
-        Generate a fallback response when LLM is unavailable.
+        当LLM不可用时生成回退响应
 
         Args:
-            sender_id: ID of the sender.
-            message: The message.
-            context: Context information.
+            sender_id: 发送者ID
+            message: 消息
+            context: 上下文信息
 
         Returns:
-            Fallback response.
+            回退响应
         """
-        content = f"Thank you for your message. We will consider your proposal."
+        content = f"感谢您的消息。我们将考虑您的提议。"
 
         if self.leadership_type == LeadershipType.WANGDAO:
             content = (
-                "We appreciate your message and will approach this matter "
-                "with consideration for all parties involved."
+                "我们感谢您的消息，并将以对所有相关方都"
+                "考虑的方式处理此事。"
             )
         elif self.leadership_type == LeadershipType.HEGEMON:
             content = (
-                "We have received your message. Our response will be guided "
-                "by our strategic interests and alliance commitments."
+                "我们已收到您的消息。我们的回应将由"
+                "我们的战略利益和同盟承诺指导。"
             )
         elif self.leadership_type == LeadershipType.QIANGQUAN:
             content = (
-                "We have noted your message. We will respond based on "
-                "our national interests."
+                "我们已注意到您的消息。我们将根据"
+                "我们的国家利益做出回应。"
             )
 
         return {
@@ -394,14 +394,14 @@ Respond to the following message based on your leadership characteristics.
 
     def _update_commitments_from_decision(self, decision: Dict[str, Any]) -> None:
         """
-        Update commitments based on a new decision.
+        根据新决策更新承诺
 
         Args:
-            decision: The decision to process.
+            decision: 要处理的决策
         """
         action_type = decision.get("action_type")
 
-        # Create commitment for significant actions
+        # 为重要行动创建承诺
         if action_type in [
             ActionType.DIPLOMATIC_ALLIANCE.value,
             ActionType.SECURITY_ALLIANCE.value,
@@ -424,20 +424,20 @@ Respond to the following message based on your leadership characteristics.
         response: Dict[str, Any],
     ) -> None:
         """
-        Update relationship based on interaction.
+        根据互动更新关系
 
         Args:
-            sender_id: ID of the sender.
-            message: The incoming message.
-            response: The response sent.
+            sender_id: 发送者ID
+            message: 传入消息
+            response: 发送的响应
         """
-        # Simple logic: positive interactions increase relationship
+        # 简单逻辑：正面互动增加关系
         message_type = message.get("type", "unknown")
 
-        # Default small positive adjustment for engagement
+        # 默认的小正面调整
         adjustment = 0.05
 
-        # Adjust based on message type
+        # 根据消息类型调整
         if "threat" in message_type.lower() or "sanction" in message_type.lower():
             adjustment = -0.1
         elif "cooperation" in message_type.lower() or "alliance" in message_type.lower():
@@ -449,19 +449,19 @@ Respond to the following message based on your leadership characteristics.
 
     def get_active_commitments(self) -> List[Commitment]:
         """
-        Get all currently active commitments.
+        获取所有当前活跃的承诺
 
         Returns:
-            List of active commitments.
+            活跃承诺列表
         """
         return [c for c in self.commitments if c.is_active]
 
     def get_objective_interests(self) -> List[str]:
         """
-        Get the objective strategic interests based on capability tier.
+        根据能力层级获取客观战略利益
 
         Returns:
-            List of strategic interests.
+            战略利益列表
         """
         if self.capability is None:
             return []
@@ -470,20 +470,20 @@ Respond to the following message based on your leadership characteristics.
         return get_strategic_interests(tier)
 
     def advance_round(self) -> None:
-        """Advance to the next simulation round."""
+        """推进到下一个模拟回合"""
         self.current_round += 1
 
-        # Update commitment status based on round
+        # 根据回合更新承诺状态
         for commitment in self.commitments:
             if commitment.end_round is not None and self.current_round > commitment.end_round:
                 commitment.is_active = False
 
     def get_decision_summary(self) -> Dict[str, Any]:
         """
-        Get a summary of recent decisions.
+        获取最近决策的摘要
 
         Returns:
-            Dictionary with decision statistics.
+            包含决策统计的字典
         """
         decisions = self.get_history("decision")
 

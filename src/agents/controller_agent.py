@@ -1,8 +1,8 @@
 """
-Controller agent implementation for moral realism ABM system.
+道义现实主义ABM系统的控制代理实现
 
-This module implements ControllerAgent class which manages simulation
-workflow and orchestrates agent interactions.
+本模块实现ControllerAgent类，用于管理模拟工作流
+并协调代理之间的互动。
 """
 
 from dataclasses import dataclass, field
@@ -19,48 +19,49 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class SimulationConfig:
-    """Configuration for simulation parameters."""
+    """模拟参数配置类"""
 
-    max_rounds: int = 100
-    event_probability: float = 0.2
-    checkpoint_interval: int = 10
-    checkpoint_dir: str = "./data/checkpoints"
-    log_level: str = "INFO"
+    max_rounds: int = 100  # 最大回合数
+    event_probability: float = 0.2  # 事件发生概率
+    checkpoint_interval: int = 10  # 检查点保存间隔
+    checkpoint_dir: str = "./data/checkpoints"  # 检查点目录
+    log_level: str = "INFO"  # 日志级别
 
 
 @dataclass
 class ControllerState:
-    """State tracking for controller agent."""
+    """控制代理状态跟踪类"""
 
-    current_round: int = 0
-    is_running: bool = False
-    is_paused: bool = False
-    total_decisions: int = 0
-    total_interactions: int = 0
-    event_count: int = 0
+    current_round: int = 0  # 当前回合数
+    is_running: bool = False  # 是否运行中
+    is_paused: bool = False  # 是否已暂停
+    total_decisions: int = 0  # 总决策数
+    total_interactions: int = 0  # 总互动数
+    event_count: int = 0  # 事件计数
 
 
 @dataclass
 class ControllerAgent(Agent):
     """
-    A controller agent that manages simulation workflow and
-    orchestrates agent interactions.
+    控制代理类
+
+    管理模拟工作流并协调代理互动的控制代理。
     """
 
-    # Simulation configuration
+    # 模拟配置
     config: SimulationConfig = field(default_factory=SimulationConfig)
 
-    # Controller state tracking
+    # 控制器状态跟踪
     state: ControllerState = field(default_factory=ControllerState)
 
-    # Agent management
-    great_powers: Dict[str, Any] = field(default_factory=dict)
-    small_states: Dict[str, Any] = field(default_factory=dict)
-    organizations: Dict[str, Any] = field(default_factory=dict)
-    all_agents: Dict[str, Any] = field(default_factory=dict)
+    # 代理管理
+    great_powers: Dict[str, Any] = field(default_factory=dict)  # 大国代理字典
+    small_states: Dict[str, Any] = field(default_factory=dict)  # 小国代理字典
+    organizations: Dict[str, Any] = field(default_factory=dict)  # 组织代理字典
+    all_agents: Dict[str, Any] = field(default_factory=dict)  # 所有代理字典
 
     def __post_init__(self) -> None:
-        """Initialize agent after dataclass initialization."""
+        """数据类初始化后的处理"""
         self.agent_type = AgentType.CONTROLLER
 
         if self.leadership_profile is None:
@@ -78,7 +79,7 @@ class ControllerAgent(Agent):
         available_actions: List[Dict[str, Any]],
         context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """Make simulation control decisions."""
+        """做出模拟控制决策"""
         if context is None:
             context = {}
 
@@ -86,12 +87,12 @@ class ControllerAgent(Agent):
         decision = {
             "agent_id": self.agent_id,
             "action": action,
-            "rationale": f"Controller decision: {action}",
+            "rationale": f"控制器决策: {action}",
             "current_round": self.state.current_round,
             "is_running": self.state.is_running,
         }
 
-        self.add_history("decision", f"Decided to {action}", metadata={"decision": decision})
+        self.add_history("decision", f"决定执行 {action}", metadata={"decision": decision})
         return decision
 
     def respond(
@@ -100,13 +101,13 @@ class ControllerAgent(Agent):
         message: Dict[str, Any],
         context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """Respond to simulation control messages."""
+        """响应模拟控制消息"""
         if context is None:
             context = {}
 
         message_type = message.get("type", "unknown")
 
-        content = f"Controller acknowledges {message_type} from {sender_id}."
+        content = f"控制器确认收到来自 {sender_id} 的 {message_type}。"
 
         response = {
             "sender_id": self.agent_id,
@@ -116,12 +117,11 @@ class ControllerAgent(Agent):
             "current_round": self.state.current_round,
         }
 
-        self.add_history("response", f"Responded to {sender_id}", metadata={"response": response})
-        return response
+        self.add_history("response", f"响应 {sender_id}", metadata={"response": response})
         return response
 
     def _create_agent(self, agent_config: Dict[str, Any]) -> None:
-        """Create an agent instance from configuration."""
+        """从配置创建代理实例"""
         agent_type = agent_config.get("agent_type")
         agent_id = agent_config.get("agent_id")
 
@@ -174,36 +174,36 @@ class ControllerAgent(Agent):
             self.all_agents[agent_id] = agent
 
     def start_simulation(self) -> None:
-        """Start simulation."""
+        """启动模拟"""
         self.state.is_running = True
         self.state.is_paused = False
-        logger.info(f"Simulation started. Max rounds: {self.config.max_rounds}")
+        logger.info(f"模拟已启动，最大回合数: {self.config.max_rounds}")
 
     def pause_simulation(self) -> None:
-        """Pause simulation."""
+        """暂停模拟"""
         self.state.is_paused = True
-        logger.info("Simulation paused")
+        logger.info("模拟已暂停")
 
     def resume_simulation(self) -> None:
-        """Resume simulation."""
+        """恢复模拟"""
         self.state.is_paused = False
-        logger.info("Simulation resumed")
+        logger.info("模拟已恢复")
 
     def stop_simulation(self) -> None:
-        """Stop simulation."""
+        """停止模拟"""
         self.state.is_running = False
         self.state.is_paused = False
-        logger.info("Simulation stopped")
+        logger.info("模拟已停止")
 
     def execute_round(self) -> None:
-        """Execute a single simulation round."""
+        """执行单个模拟回合"""
         if not self.state.is_running or self.state.is_paused:
             return
 
-        # Increment round
+        # 增加回合数
         self.state.current_round += 1
 
-        # Execute agent decisions
+        # 执行代理决策
         for agent_id, agent in self.all_agents.items():
             situation = {"round": self.state.current_round}
             available_actions = []
@@ -218,15 +218,15 @@ class ControllerAgent(Agent):
             decision = agent.decide(situation, available_actions, context)
             self.state.total_decisions += 1
 
-        logger.info(f"Round {self.state.current_round} completed")
+        logger.info(f"第 {self.state.current_round} 回合已完成")
 
     def advance_round(self) -> None:
-        """Advance to next round."""
+        """推进到下一回合"""
         self.state.current_round += 1
-        logger.info(f"Advanced to round {self.state.current_round}")
+        logger.info(f"已推进到第 {self.state.current_round} 回合")
 
     def get_simulation_state(self) -> Dict[str, Any]:
-        """Get complete simulation state summary."""
+        """获取完整的模拟状态摘要"""
         return {
             "current_round": self.state.current_round,
             "max_rounds": self.config.max_rounds,

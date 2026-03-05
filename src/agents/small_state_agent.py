@@ -1,10 +1,9 @@
 """
-Small state agent implementation for moral realism ABM system.
+道义现实主义ABM系统的小国代理实现
 
-This module implements SmallStateAgent class which uses rule-based
-decision making to evaluate great powers and align with most
-attractive leadership type, validating the "moral leadership attracts support"
-theory.
+本模块实现SmallStateAgent类，使用基于规则的
+决策制定来评估大国并与最具吸引力的领导类型对齐，
+验证"道义型领导吸引支持"的理论。
 """
 
 from dataclasses import dataclass, field
@@ -21,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class SmallStateAction(Enum):
-    """Action types available to small states."""
+    """小国可用的行动类型"""
 
     ALIGN_FOLLOW = "align_follow"  # 结盟跟随
     NEUTRAL_OBSERVE = "neutral_observe"  # 中立观望
@@ -33,80 +32,80 @@ class SmallStateAction(Enum):
 
 
 class StrategicStance(Enum):
-    """Strategic stance of a small state toward great powers."""
+    """小国对大国的战略姿态"""
 
-    ALIGNED = "aligned"  # Aligned with a specific great power
-    NEUTRAL = "neutral"  # Maintains neutrality
-    NON_ALIGNED = "non_aligned"  # Non-aligned movement
-    SWING = "swing"  # Swing state, shifts alignment
+    ALIGNED = "aligned"  # 与特定大国结盟
+    NEUTRAL = "neutral"  # 保持中立
+    NON_ALIGNED = "non_aligned"  # 非结盟运动
+    SWING = "swing"  # 摇摆国，会转变结盟
 
 
 @dataclass
 class SmallStateAgent(Agent):
     """
-    A small state agent that evaluates and follows great powers.
+    小国代理类
 
-    This agent uses rule-based logic to assess great powers based on
-    their leadership types and behaviors, validating the "moral leadership
-    attracts support" theory of moral realism.
+    一个评估大国并跟随它们的小国代理。
+    该代理使用基于规则的逻辑来评估大国的领导类型和行为，
+    验证道义现实主义中的"道义型领导吸引支持"理论。
 
-    Key principles:
-    - Wangdao (Moral) leadership provides highest attraction (score 4)
-    - Hegemon leadership provides medium-high attraction (score 3)
-    - Qiangquan (Power-seeking) provides medium attraction (score 2)
-    - Hunyong (Appeasement) provides lowest attraction (score 1)
+    关键原则：
+    - 道义型领导提供最高吸引力（得分4）
+    - 霸权型领导提供中高吸引力（得分3）
+    - 强权型领导提供中等吸引力（得分2）
+    - 昏庸型领导提供最低吸引力（得分1）
     """
 
-    # Strategic stance toward great powers
+    # 对大国的战略姿态
     strategic_stance: StrategicStance = StrategicStance.NEUTRAL
 
-    # Current alignment
-    aligned_with: Optional[str] = None  # agent_id of aligned great power
+    # 当前结盟
+    aligned_with: Optional[str] = None  # agent大国代理ID
 
-    # Leadership type preferences (higher = more attractive)
+    # 领导类型偏好（越高=越具吸引力）
     leadership_preferences: Dict[str, float] = field(
         default_factory=lambda: {
-            "wangdao": 4.0,  # Highest preference for moral leadership
-            "hegemon": 3.0,  # Medium-high for traditional hegemon
-            "qiangquan": 2.0,  # Medium for power-seeking
-            "hunyong": 1.0,  # Lowest for appeasement
+            "wangdao": 4.0,  # 对道义型领导的最高偏好
+            "hegemon": 3.0,  # 对传统霸权的中高偏好
+            "qiangquan": 2.0,  # 对强权型的中等偏好
+            "hunyong": 1.0,  # 对绥庸型的最低偏好
         }
     )
 
-    # Assessment weights
+    # 评估权重
     weights: Dict[str, float] = field(
         default_factory=lambda: {
-            "leadership_type": 0.4,  # Weight for leadership type
-            "behavior_score": 0.3,  # Weight for recent behavior
-            "capability": 0.2,  # Weight for capability/power
-            "relationship": 0.1,  # Weight for existing relationship
+            "leadership_type": 0.4,  # 领导类型的权重
+            "behavior_score": 0.3,  # 最近行为的权重
+            "capability": 0.2,  # 能力/权力的权重
+            "relationship": 0.1,  # 现有关系的权重
         }
     )
 
-    # Minimum threshold for alignment
-    alignment_threshold: float = 30.0  # Minimum score to align
+    # 结盟的最低阈值
+    alignment_threshold: float = 30.0  # 结盟的最低得分
 
-    # Previous score for alignment comparison (for defection detection)
+    # 用于结盟比较的先前得分（用于检测背叛）
     previous_alignment_score: float = 0.0
 
-    # Threshold for defection (when score drops by this much)
+    # 背叛的阈值（当得分下降这么多时）
     defection_threshold: float = 15.0
 
     def __post_init__(self) -> None:
-        """Initialize agent after dataclass initialization."""
-        # Set agent type
+        """数据类初始化后的处理"""
+        # 设置代理类型
         self.agent_type = AgentType.SMALL_STATE
 
-        # Initialize leadership profile if not set
+        # 初始化领导配置文件（如果未设置）
         if self.leadership_profile is None:
             from src.models.leadership_type import get_leadership_profile
             self.leadership_profile = get_leadership_profile(self.leadership_type)
 
-        # Initialize capability if not set
+        # 初始化能力（如果未设置）
         if self.capability is None:
             self.capability = Capability(agent_id=self.agent_id)
 
-        # Initialize relations with self
+        # 初始化与自己的关系
         self.relations[self.agent_id] = 1.0
 
     def decide(
@@ -116,24 +115,24 @@ class SmallStateAgent(Agent):
         context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
-        Make a decision by assessing great powers and choosing alignment.
+        通过评估大国并选择结盟来做出决策
 
-        Implements 7 behavior types:
-        1. ALIGN_FOLLOW - Align and follow a great power
-        2. NEUTRAL_OBSERVE - Maintain neutrality and observe
-        3. SIDE_SELECTION - Choose a side in conflict
-        4. DEFECT_SWITCH - Switch allegiance when conditions change
-        5. NO_ALLIANCE_COALITION - Form non-aligned coalition
-        6. MEDIATION - Mediate between great powers
-        7. COUNTER_RESPOND - Counter/Respond to hostile actions
+        实现7种行为类型：
+        1. ALIGN_FOLLOW - 结盟并跟随一个大国
+        2. NEUTRAL_OBSERVE - 保持中立并观察
+        3. SIDE_SELECTION - 在冲突中选边站队
+        4. DEFECT_SWITCH - 条件变化时转变结盟
+        5. NO_ALLIANCE_COALITION - 结成非结盟联盟
+        6. MEDIATION - 在大国间进行调停
+        7. COUNTER_RESPOND - 反制/响应敌对行动
 
         Args:
-            situation: Description of current situation.
-            available_actions: List of actions available to agent.
-            context: Additional context for decision-making, should include 'great_powers'.
+            situation: 当前情况的描述
+            available_actions: 代理可用的行动列表
+            context: 决策制定的附加上下文，应包含'great_powers'
 
         Returns:
-            Dictionary containing decision and rationale.
+            包含决策和理由的字典
         """
         if context is None:
             context = {}
@@ -142,15 +141,15 @@ class SmallStateAgent(Agent):
         events = situation.get("events", [])
         in_crisis = situation.get("in_crisis", False)
 
-        # Assess all great powers
+        # 评估所有大国
         assessments = self._assess_great_powers(great_powers, context)
 
-        # Determine action based on 7 behavior types
+        # 根据评估确定行动类型
         action_type, rationale = self._determine_action_type(
             assessments, great_powers, situation, context
         )
 
-        # Update stance based on action
+        # 根据行动更新姿态
         self._update_stance_from_action(action_type, assessments)
 
         decision = {
@@ -165,10 +164,10 @@ class SmallStateAgent(Agent):
             "in_crisis": in_crisis,
         }
 
-        # Record decision in history
+        # 在历史中记录决策
         self.add_history(
             "decision",
-            f"Decided to {action_type.value}",
+            f"决定执行 {action_type.value}",
             metadata={
                 "decision": decision,
                 "situation": situation,
@@ -176,9 +175,9 @@ class SmallStateAgent(Agent):
         )
 
         logger.info(
-            f"{self.name} decided to {action_type.value}. "
-            f"Stance: {self.strategic_stance.value}, "
-            f"Aligned with: {self.aligned_with or 'None'}"
+            f"{self.name} 决定执行 {action_type.value}。"
+            f"姿态: {self.strategic_stance.value}，"
+            f"与 {self.aligned_with or '无大国'} 结盟"
         )
 
         return decision
@@ -191,115 +190,115 @@ class SmallStateAgent(Agent):
         context: Dict[str, Any],
     ) -> tuple[SmallStateAction, str]:
         """
-        Determine action type based on assessments and situation.
+        根据评估和情况确定行动类型
 
-        Implements the 7 behavior types selection logic.
+        实现7种行为类型的选择逻辑。
 
         Args:
-            assessments: List of great power assessments.
-            great_powers: List of great powers.
-            situation: Current situation.
-            context: Additional context.
+            assessments: 大国评估列表
+            great_powers: 大国列表
+            situation: 当前情况
+            context: 附加上下文
 
         Returns:
-            Tuple of (action_type, rationale).
+            (action_type, rationale) 元组
         """
         if not assessments:
             return SmallStateAction.NEUTRAL_OBSERVE, (
-                "No great powers available to assess. "
-                "Maintaining neutral observation."
+                "没有可用的大国进行评估。"
+                "保持中立观察。"
             )
 
         in_crisis = situation.get("in_crisis", False)
         events = situation.get("events", [])
 
-        # Find best assessment
+        # 找到最佳评估
         best = max(assessments, key=lambda x: x["score"])
         best_score = best["score"]
 
-        # Check for deflection trigger (score dropped significantly)
+        # 检查是否触发背叛（得分显著下降）
         if self.aligned_with and self.previous_alignment_score > 0:
             if best_score < self.previous_alignment_score - self.defection_threshold:
                 self.previous_alignment_score = best_score
                 return SmallStateAction.DEFECT_SWITCH, (
-                    f"Current alignment score decreased by "
-                    f"{self.previous_alignment_score - best_score:.2f}, "
-                    f"switching allegiance from previous great power to "
-                    f"{best.get('name', 'new alignment')}. "
-                    f"Previous policy no longer serves our interests."
+                    f"当前结盟得分下降了"
+                    f"{self.previous_alignment_score - best_score:.2f}，"
+                    f"从先前的大国转向到"
+                    f"{best.get('name', '新结盟')}。"
+                    f"先前的政策不再符合我们的利益。"
                 )
 
         self.previous_alignment_score = best_score
 
-        # Behavior 1: ALIGN_FOLLOW - When best meets threshold
+        # 行为1: ALIGN_FOLLOW - 当最佳满足阈值时
         if best_score >= self.alignment_threshold and not in_crisis:
             return SmallStateAction.ALIGN_FOLLOW, (
-                f"Aligning with {best['name']} due to their "
-                f"{best['leadership_type']} leadership (score: {best_score:.2f}). "
-                f"Their moral conduct and behavior provide attractive benefits."
+                f"与 {best['name']} 结盟，由于他们的"
+                f"{best['leadership_type']} 领导型（得分：{best_score:.2f}）。"
+                f"他们的道德行为和行为提供了有吸引力的益处。"
             )
 
-        # Behavior 2: NEUTRAL_OBSERVE - When no great power meets threshold
+        # 行为2: NEUTRAL_OBSERVE - 当没有大国满足阈值时
         if best_score < self.alignment_threshold and not in_crisis:
             return SmallStateAction.NEUTRAL_OBSERVE, (
-                f"Maintaining neutrality as no great power meets "
-                f"alignment threshold (threshold: {self.alignment_threshold}, "
-                f"best score: {best_score:.2f}). "
-                f"Current great powers lack sufficient moral leadership "
-                f"or attractive behavior."
+                f"保持中立，因为没有大国满足"
+                f"结盟阈值（阈值：{self.alignment_threshold}，"
+                f"最佳得分：{best_score:.2f}）。"
+                f"当前的大国缺乏足够的道义领导"
+                f"或有吸引力的行为。"
             )
 
-        # Behavior: Check for similar scores (coalition opportunity)
+        # 行为：检查相似得分（联盟机会）
         if len(assessments) >= 2:
             scores = [a["score"] for a in assessments]
             score_variance = max(scores) - min(scores)
             if score_variance < 10 and len(assessments) > 2:
                 return SmallStateAction.NO_ALLIANCE_COALITION, (
-                    f"Multiple great powers have similar scores "
-                    f"(variance: {score_variance:.2f}). "
-                    f"Forming non-aligned coalition to balance influence."
+                    f"多个大国具有相似的得分"
+                    f"（方差：{score_variance:.2f}）。"
+                    f"结成非结盟联盟以平衡影响力。"
                 )
 
-        # Behavior 3: SIDE_SELECTION - In crisis, choose a side
+        # 行为3: SIDE_SELECTION - 在危机中，选边站队
         if in_crisis:
-            # Prefer Wangdao leader in crisis if available
+            # 在危机中如果有可用的道义型领导则优先
             wangdao_assessment = next(
                 (a for a in assessments if a["leadership_type"] == "wangdao"),
                 None
             )
             if wangdao_assessment and wangdao_assessment["score"] >= 20:
                 return SmallStateAction.SIDE_SELECTION, (
-                    f"In crisis, selecting side with {wangdao_assessment['name']} "
-                    f"due to their moral leadership and ability to provide security. "
-                    f"Aligning with principled leadership in crisis."
+                    f"在危机中，选择与 {wangdao_assessment['name']} 的站队，"
+                    f"由于他们的道德领导和提供安全的能力。"
+                    f"在危机中与有原则的领导结盟。"
                 )
             else:
                 return SmallStateAction.SIDE_SELECTION, (
-                    f"In crisis, selecting side with {best['name']} "
-                    f"(score: {best_score:.2f}) for security and support."
+                    f"在危机中，选择与 {best['name']} 的站队"
+                    f"（得分：{best_score:.2f}）以获得安全和支持。"
                 )
 
-        # Behavior 7: COUNTER_RESPOND - Respond to hostile actions
+        # 行为7: COUNTER_RESPOND - 响应敌对行动
         for event in events[-3:]:
             if self._is_hostile_action(event, great_powers):
                 sender_id = event.get("sender_id", "")
                 relationship = self.get_relationship(sender_id)
                 if relationship < -0.3:
-                    # Hostile action from non-aligned power
+                    # 来自非结盟权力的敌对行动
                     sender = next(
                         (gp for gp in great_powers if gp.get("agent_id") == sender_id),
                         None
                     )
                     if sender:
                         return SmallStateAction.COUNTER_RESPOND, (
-                            f"Responding to hostile action from {sender.get('name', 'unknown')}. "
-                            f"Implementing countermeasures to protect national interests."
+                            f"响应来自 {sender.get('name', '未知')} 的敌对行动。"
+                            f"实施反制措施以保护国家利益。"
                         )
 
-        # Default: NEUTRAL_OBSERVE
+        # 默认：NEUTRAL_OBSERVE
         return SmallStateAction.NEUTRAL_OBSERVE, (
-            f"Maintaining neutral observation posture. "
-            f"No compelling reason to align at this time."
+            f"保持中立观察姿态。"
+            f"此时没有令人信服的结盟理由。"
         )
 
     def _is_hostile_action(
@@ -308,17 +307,16 @@ class SmallStateAgent(Agent):
         great_powers: List[Dict[str, Any]],
     ) -> bool:
         """
-        Check if an event represents a hostile action.
+        检查事件是否代表敌对行动
 
         Args:
-            event: Event to check.
-            great_powers: List of great powers.
+            event: 要检查的事件
+            great_powers: 大国列表
 
         Returns:
-            True if event is hostile.
+            如果事件是敌对的则返回True
         """
         event_type = event.get("event_type", "").lower()
-
         hostile_actions = [
             "economic_sanction",
             "security_military",
@@ -333,11 +331,11 @@ class SmallStateAgent(Agent):
         assessments: List[Dict[str, Any]],
     ) -> None:
         """
-        Update strategic stance based on selected action type.
+        根据选定的行动类型更新战略姿态
 
         Args:
-            action_type: The selected action type.
-            assessments: Great power assessments.
+            action_type: 选定的行动类型
+            assessments: 大国评估
         """
         if action_type == SmallStateAction.ALIGN_FOLLOW:
             self.strategic_stance = StrategicStance.ALIGNED
@@ -358,7 +356,7 @@ class SmallStateAgent(Agent):
             if assessments:
                 best = max(assessments, key=lambda x: x["score"])
                 self.aligned_with = best["agent_id"]
-                # Reduce relationship with previous alignment
+                # 减少与先前结盟的关系
                 for agent_id in self.relations.keys():
                     if agent_id != self.agent_id and agent_id != best["agent_id"]:
                         current = self.get_relationship(agent_id)
@@ -377,10 +375,9 @@ class SmallStateAgent(Agent):
                 self.strategic_stance = StrategicStance.ALIGNED
             else:
                 self.strategic_stance = StrategicStance.NEUTRAL
-
         else:  # NEUTRAL_OBSERVE
             self.strategic_stance = StrategicStance.NEUTRAL
-            # Keep existing alignment or set to None
+            # 保持现有结盟或设置为None
             pass
 
     def respond(
@@ -390,56 +387,56 @@ class SmallStateAgent(Agent):
         context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
-        Respond to a message from another agent.
+        响应来自另一个代理的消息
 
         Args:
-            sender_id: ID of sending agent.
-            message: The message content and metadata.
-            context: Additional context for response generation.
+            sender_id: 发送消息的代理ID
+            message: 消息内容和元数据
+            context: 响应生成的附加上下文
 
         Returns:
-            Dictionary containing response.
+            包含响应的字典
         """
         if context is None:
             context = {}
 
-        # Determine response based on alignment and relationship
+        # 根据结盟和关系确定响应
         relationship_score = self.get_relationship(sender_id)
 
-        # Check if sender is aligned great power
+        # 检查发送者是否为结盟大国
         is_aligned = self.aligned_with == sender_id
 
         message_type = message.get("type", "unknown")
 
         if is_aligned:
-            # Friendly response to aligned power
+            # 对结盟大国的友好响应
             content = (
-                f"We appreciate {message_type} from our partner. "
-                f"We support your initiative and will cooperate accordingly."
+                f"我们感谢您发来的 {message_type}。"
+                f"我们将支持您的倡议并相应合作。"
             )
             message_type_response = "support"
             relationship_adjustment = 0.05
         elif relationship_score > 0.3:
-            # Friendly but not aligned
+            # 友好但未结盟
             content = (
-                f"We have received your {message_type} with interest. "
-                f"We will consider it based on our national interests."
+                f"我们以兴趣收到了您的 {message_type}。"
+                f"我们将根据我们的国家利益来考虑它。"
             )
             message_type_response = "consider"
             relationship_adjustment = 0.02
         elif relationship_score < -0.3:
-            # Hostile response
+            # 敌对响应
             content = (
-                f"We have received your {message_type}. "
-                f"We must respectfully decline as it conflicts with our interests."
+                f"我们收到了您的 {message_type}。"
+                f"我们必须恭敬地拒绝，因为它与我们的利益冲突。"
             )
             message_type_response = "decline"
             relationship_adjustment = -0.05
         else:
-            # Neutral response
+            # 中立响应
             content = (
-                f"We have received your {message_type}. "
-                f"We will evaluate it and respond in due course."
+                f"我们收到了您的 {message_type}。"
+                f"我们将评估它并适时做出回应。"
             )
             message_type_response = "acknowledge"
             relationship_adjustment = 0.0
@@ -453,14 +450,14 @@ class SmallStateAgent(Agent):
             "relationship_score": relationship_score,
         }
 
-        # Update relationship
+        # 更新关系
         new = max(-1.0, min(1.0, relationship_score + relationship_adjustment))
         self.set_relationship(sender_id, new)
 
-        # Record response in history
+        # 在历史中记录响应
         self.add_history(
             "response",
-            f"Responded to {sender_id}",
+            f"响应 {sender_id}",
             metadata={"response": response, "original_message": message},
         )
 
@@ -472,38 +469,38 @@ class SmallStateAgent(Agent):
         context: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
         """
-        Assess all great powers and calculate attraction scores.
+        评估所有大国并计算吸引力得分
 
         Args:
-            great_powers: List of great power agent dictionaries.
-            context: Additional context.
+            great_powers: 大国代理的字典列表
+            context: 附加上下文
 
         Returns:
-            List of assessments with scores.
+            包含得分的评估列表
         """
         assessments = []
 
         for gp in great_powers:
             gp_id = gp.get("agent_id")
             if gp_id == self.agent_id:
-                continue  # Skip self
+                continue  # 跳过自己
 
             leadership_type = gp.get("leadership_type", "unknown")
             name = gp.get("name", gp_id)
 
-            # Base score from leadership type preference
+            # 来自领导类型偏好的基础得分
             leadership_score = self.leadership_preferences.get(leadership_type, 0) * 10
 
-            # Score from recent behavior
+            # 来自最近行为的得分
             behavior_score = self._score_behavior(gp, leadership_type)
 
-            # Score from capability (smaller states prefer moderate power)
+            # 来自能力的得分（小国偏好适度权力）
             capability_score = self._score_capability(gp)
 
-            # Score from existing relationship
+            # 来自现有关系的得分
             relationship_score = self._score_relationship(gp_id)
 
-            # Calculate weighted total
+            # 计算加权总分
             total_score = (
                 leadership_score * self.weights["leadership_type"] +
                 behavior_score * self.weights["behavior_score"] +
@@ -526,49 +523,49 @@ class SmallStateAgent(Agent):
 
     def _score_behavior(self, great_power: Dict[str, Any], leadership_type: str) -> float:
         """
-        Score a great power's behavior based on leadership type and recent actions.
+        根据领导类型和最近行动对大国的行为进行评分
 
         Args:
-            great_power: Great power agent dictionary.
-            leadership_type: The leadership type of great power.
+            great_power: 大国代理字典
+            leadership_type: 大国的领导类型
 
         Returns:
-            Behavior score (0-100).
+            行为得分（0-100）
         """
-        # Base score from leadership type moral characteristics
+        # 来自领导类型道德特征的基础得分
         leadership_moral_scores = {
-            "wangdao": 90,  # Highest moral behavior
-            "hegemon": 60,  # Moderate moral behavior
-            "qiangquan": 30,  # Low moral behavior
-            "hunyong": 50,  # Mixed moral behavior
+            "wangdao": 90,  # 最高道德行为
+            "hegemon": 60,  # 中等道德行为
+            "qiangquan": 30,  # 低道德行为
+            "hunyong": 50,  # 混合道德行为
         }
 
         base_score = leadership_moral_scores.get(leadership_type, 50)
 
-        # Get recent behavior if available
+        # 如果可用则获取最近行为
         recent_behavior = great_power.get("recent_behavior", [])
         recent_actions = great_power.get("recent_actions", [])
 
-        # Adjust score based on recent actions
+        # 根据最近行动调整得分
         adjustment = 0
 
-        for action in recent_actions[-5:]:  # Last 5 actions
+        for action in recent_actions[-5:]:  # 最近5个行动
             action_type = action.get("action_type", "").lower()
 
-            # Positive actions
+            # 正面行动
             if any(pos in action_type for pos in [
                 "norm_proposal", "diplomatic_visit", "economic_aid"
             ]):
                 adjustment += 5
 
-            # Negative actions
+            # 负面行动
             if any(neg in action_type for neg in [
-                "economic_sanction", "military aggression"
+                "economic_sanction", "military_aggression"
             ]):
                 adjustment -= 10
 
-        # Adjust score based on behavior types
-        for behavior in recent_behavior[-3:]:  # Last 3 behaviors
+        # 根据行为类型调整得分
+        for behavior in recent_behavior[-3:]:  # 最近3个行为
             if behavior.get("moral", False):
                 adjustment += 8
             elif behavior.get("coercive", False):
@@ -578,46 +575,44 @@ class SmallStateAgent(Agent):
 
         return max(0, min(100, base_score + adjustment))
 
-    def _score_capability(self, great_power: Dict[str, Any]) -> float:
+    def _score_capability(self, great_power: Dict[str, Any]]) -> float:
         """
-        Score a great power's capability.
+        对大国的能力进行评分
 
-        Small states prefer powers that are strong enough to provide security
-        but not overwhelmingly dominant (moderate power is attractive).
+        小国偏好足够强大提供安全但不过度主导的权力。
 
         Args:
-            great_power: Great power agent dictionary.
+            great_power: 大国代理字典
 
         Returns:
-            Capability score (0-100).
+            能力得分（0-100）
         """
         capability_index = great_power.get("capability_index", 50)
 
-        # Sigmoid-like curve: highest attraction at moderate power levels
-        # Very high power can be threatening, very low is insufficient
-        # Optimal range: 60-80
-
+        # 类似S形曲线：在中等权力水平时吸引力最高
+        # 很高权力可能具有威胁性，很低则不足
+        # 最佳范围：60-80
         if capability_index < 60:
-            # Below optimal: linear increase
+            # 低于最优：线性增长
             return (capability_index / 60) * 80
         elif capability_index <= 80:
-            # Optimal range: high score
+            # 最优范围：高得分
             return 100 - ((capability_index - 70) / 10) * 20
         else:
-            # Above optimal: decreasing score
+            # 高于最优：递减得分
             return max(50, 100 - (capability_index - 80) * 1.5)
 
     def _score_relationship(self, agent_id: str) -> float:
         """
-        Score based on existing relationship with agent.
+        根据与代理的现有关系进行评分
 
         Args:
-            agent_id: ID of agent.
+            agent_id: 代理ID
 
         Returns:
-            Relationship score (0-100).
+            关系得分（0-100）
         """
-        # Relationship is -1 to 1, convert to 0-100
+        # 关系是-1到1，转换为0-100
         current = self.get_relationship(agent_id)
         return (current + 1) * 50
 
@@ -626,21 +621,21 @@ class SmallStateAgent(Agent):
         assessments: List[Dict[str, Any]],
     ) -> Optional[Dict[str, Any]]:
         """
-        Determine best great power to align with.
+        确定最佳大国以结盟
 
         Args:
-            assessments: List of great power assessments.
+            assessments: 大国评估列表
 
         Returns:
-            Best assessment if available, None otherwise.
+            最佳评估（如果可用），否则返回None
         """
         if not assessments:
             return None
 
-        # Find highest scoring great power
+        # 找到得分最高的大国
         best = max(assessments, key=lambda x: x["score"])
 
-        # Only return if it meets a minimum threshold
+        # 只有当它满足最低阈值时才返回
         if best["score"] >= self.alignment_threshold:
             return best
 
@@ -653,37 +648,36 @@ class SmallStateAgent(Agent):
         capability_index: float,
     ) -> float:
         """
-        Calculate risk-benefit ratio for aligning with a great power.
+        计算与大国结盟的风险-收益比
 
         Args:
-            great_power_id: ID of great power.
-            leadership_type: Leadership type of great power.
-            capability_index: Capability index of great power.
+            great_power_id: 大国ID
+            leadership_type: 大国的领导类型
+            capability_index: 大国的能力指数
 
         Returns:
-            Risk-benefit ratio (higher = more favorable).
+            风险-收益比（越高=越有利）
         """
-        # Get expected benefits and risks
+        # 获取预期收益和风险
         benefits = self.calculate_benefits(great_power_id, leadership_type)
         risks = self.calculate_risks(great_power_id, leadership_type)
 
-        # Calculate average benefit
+        # 计算平均收益
         avg_benefit = sum(benefits.values()) / len(benefits) if benefits else 50
 
-        # Calculate average risk
+        # 计算平均风险
         avg_risk = sum(risks.values()) / len(risks) if risks else 50
 
-        # Risk-benefit ratio (benefit adjusted by capability)
+        # 风险-收益比（收益由能力调整）
         ratio = (avg_benefit - avg_risk * 0.5) * (capability_index / 100)
-
         return max(0, min(100, ratio))
 
     def get_alignment_summary(self) -> Dict[str, Any]:
         """
-        Get a summary of small state's alignment.
+        获取小国的结盟摘要
 
         Returns:
-            Dictionary with alignment information.
+            包含结盟信息的字典
         """
         return {
             "agent_id": self.agent_id,
@@ -700,11 +694,11 @@ class SmallStateAgent(Agent):
         new_stance: Optional[StrategicStance] = None,
     ) -> None:
         """
-        Update alignment with a great power.
+        更新与大国的结盟
 
         Args:
-            great_power_id: ID of great power to align with (None for neutral).
-            new_stance: New strategic stance (inferred from alignment if not provided).
+            great_power_id: 要结盟的大国ID（None表示中立）
+            new_stance: 新战略姿态（如果未提供则从结盟推断）
         """
         self.aligned_with = great_power_id
 
@@ -715,10 +709,10 @@ class SmallStateAgent(Agent):
         else:
             self.strategic_stance = StrategicStance.ALIGNED
 
-        # Record change
+        # 记录变化
         self.add_history(
             "alignment_change",
-            f"Changed alignment to {great_power_id or 'neutral'}",
+            f"改变结盟为 {great_power_id or '中立'}",
             metadata={
                 "previous_stance": self.strategic_stance.value,
                 "new_stance": self.strategic_stance.value,
@@ -732,16 +726,16 @@ class SmallStateAgent(Agent):
         leadership_type: str,
     ) -> Dict[str, float]:
         """
-        Calculate expected benefits from aligning with a great power.
+        计算与大国结盟的预期收益
 
         Args:
-            great_power_id: ID of great power.
-            leadership_type: Leadership type of great power.
+            great_power_id: 大国ID
+            leadership_type: 大国的领导类型
 
         Returns:
-            Dictionary of expected benefits.
+            预期收益的字典
         """
-        # Base benefits by leadership type
+        # 按领导类型的基础收益
         base_benefits = {
             "wangdao": {
                 "security": 80,
@@ -777,16 +771,16 @@ class SmallStateAgent(Agent):
         leadership_type: str,
     ) -> Dict[str, float]:
         """
-        Calculate expected risks from aligning with a great power.
+        计算与大国结盟的预期风险
 
         Args:
-            great_power_id: ID of great power.
-            leadership_type: Leadership type of great power.
+            great_power_id: 大国ID
+            leadership_type: 大国的领导类型
 
         Returns:
-            Dictionary of expected risks.
+            预期风险的字典
         """
-        # Base risks by leadership type
+               # 按领导类型的基础风险
         base_risks = {
             "wangdao": {
                 "entanglement": 20,

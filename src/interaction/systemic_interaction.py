@@ -1,9 +1,17 @@
 """
-Systemic interaction layer for moral realism ABM system.
+道义现实主义ABM系统的体系互动层模块
 
-This module implements SystemicInteractionManager class which handles
-system-level interactions including international order shaping,
-norm evolution, and values competition.
+本模块实现SystemicInteractionManager类，用于处理：
+- 国际秩序塑造
+- 规范演化与扩散
+- 价值观竞争
+- 制度改革
+
+核心概念：
+- 系统级互动：涉及整个国际体系的互动
+- 国际规范：体系中的行为准则和价值观
+- 体系事件：影响整个体系的重要事件
+- 秩序类型：多极、两极、单极霸权、等级秩序
 """
 
 from dataclasses import dataclass, field
@@ -20,30 +28,30 @@ logger = logging.getLogger(__name__)
 
 
 class OrderType(Enum):
-    """Types of international orders."""
+    """国际秩序类型枚举"""
 
-    MULTIPOLAR = "multipolar"  # 多极
-    BIPOLAR = "bipolar"  # 两极
-    UNIPOLAR_HEGEMONIC = "unipolar_hegemonic"  # 单极霸权
+    MULTIPOLAR = "multipolar"  # 多极秩序
+    BIPOLAR = "bipolar"  # 两极秩序
+    UNIPOLAR_HEGEMONIC = = "unipolar_hegemonic"  # 单极霸权秩序
     HIERARCHICAL = "hierarchical"  # 等级秩序
 
 
 @dataclass
 class Norm:
-    """Represents an international norm."""
+    """表示国际规范"""
 
-    norm_id: str
-    name: str
-    description: str
-    category: str  # security, economic, human_rights, etc.
-    strength: float  # 0-1, how strongly held
-    originator: Optional[str] = None  # agent_id of originating great power
-    adoption_level: float = 0.0  # 0-1, level of international adoption
-    date_created: datetime = field(default_factory=datetime.now)
-    date_modified: Optional[datetime] = None
+    norm_id: str  # 规范唯一标识符
+    name: str  # 规范名称
+    description: str  # 规范描述
+    category: str  # 规范类别（安全、经济、人权等）
+    strength: float  # 规范强度（0-1）
+    originator: Optional[str] = None  # 发起该规范的大国代理ID
+    adoption_level: float = 0.0  # 国际采纳程度（0-1）
+    date_created: datetime = field(default_factory=datetime.now)  # 创建日期
+    date_modified: Optional[datetime] = None  # 修改日期
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary."""
+        """转换为字典格式"""
         return {
             "norm_id": self.norm_id,
             "name": self.name,
@@ -59,18 +67,18 @@ class Norm:
 
 @dataclass
 class SystemicEvent:
-    """Represents a system-level event."""
+    """表示体系级事件"""
 
-    event_id: str
-    event_type: str
-    description: str
-    participants: List[str]
-    impact_level: float  # 0-1, systemic impact
-    timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    event_id: str  # 事件唯一标识符
+    event_type: str  # 事件类型
+    description: str  # 事件描述
+    participants: List[str]  # 参与者列表
+    impact_level: float  # 体系影响程度（0-1）
+    timestamp: datetime = field(default_factory=datetime.now)  # 时间戳
+    metadata: Dict[str, Any] = field(default_factory=dict)  # 元数据
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary."""
+        """转换为字典格式"""
         return {
             "event_id": self.event_id,
             "event_type": self.event_type,
@@ -84,13 +92,15 @@ class SystemicEvent:
 
 class SystemicInteractionManager:
     """
-    Manages system-level interactions in the ABM simulation.
+    体系互动管理器类
 
-    Handles:
-    - International order shaping
-    - Norm evolution and diffusion
-    - Values competition
-    - Institutional reforms
+    管理ABM模拟中的体系级互动。
+
+    主要功能：
+    - 国际秩序塑造
+    - 规范演化与扩散
+    - 价值观竞争
+    - 制度改革
     """
 
     def __init__(
@@ -98,61 +108,61 @@ class SystemicInteractionManager:
         enable_logging: bool = True,
     ) -> None:
         """
-        Initialize systemic interaction manager.
+        初始化体系互动管理器
 
         Args:
-            enable_logging: Whether to enable detailed logging.
+            enable_logging: 是否启用详细日志
         """
-        self._agents: Dict[str, Agent] = {}
-        self._norms: Dict[str, Norm] = {}
-        self._systemic_events: List[SystemicEvent] = []
-        self._order_history: List[Dict[str, Any]] = []
+        self._agents: Dict[str, Agent] = {}  # 注册的代理字典
+        self._norms: Dict[str, Norm] = {}  # 规范字典
+        self._systemic_events: List[SystemicEvent] = []  # 体系事件列表
+        self._order_history: List[Dict[str, Any]] = []  # 秩序历史记录
 
         self._enable_logging = enable_logging
-        self._event_counter = 0
+        self._event_counter = 0  # 事件计数器
 
-        # Base norms
+        # 初始化基础规范
         self._initialize_base_norms()
 
     def _initialize_base_norms(self) -> None:
-        """Initialize base international norms."""
+        """初始化基础国际规范"""
         base_norms = [
             Norm(
                 norm_id="norm_sovereignty",
-                name="Sovereignty",
-                description="Respect for national sovereignty and territorial integrity",
+                name="尊重主权",
+                description="尊重国家主权和领土完整",
                 category="security",
                 strength=0.8,
                 adoption_level=0.9,
             ),
             Norm(
                 norm_id="norm_non_aggression",
-                name="Non-Aggression",
-                description="Prohibition of use of force except in self-defense",
+                name="不侵略",
+                description="除自卫外禁止使用武力",
                 category="security",
                 strength=0.85,
                 adoption_level=0.85,
             ),
             Norm(
                 norm_id="norm_self_determination",
-                name="Self-Determination",
-                description="Right of peoples to self-determination",
+                name="民族自决",
+                description="民族自决权",
                 category="human_rights",
                 strength=0.75,
                 adoption_level=0.8,
             ),
             Norm(
                 norm_id="norm_free_trade",
-                name="Free Trade",
-                description="Promotion of free and fair trade",
+                name="自由贸易",
+                description="促进公平自由的贸易",
                 category="economic",
                 strength=0.7,
                 adoption_level=0.75,
             ),
             Norm(
                 norm_id="norm_human_rights",
-                name="Human Rights",
-                description="Universal human rights and fundamental freedoms",
+                name="人权",
+                description="普遍人权和基本自由",
                 category="human_rights",
                 strength=0.8,
                 adoption_level=0.8,
@@ -164,34 +174,34 @@ class SystemicInteractionManager:
 
     def register_agent(self, agent: Agent) -> None:
         """
-        Register an agent with systemic manager.
+        向体系管理器注册代理
 
         Args:
-            agent: The agent to register.
+            agent: 要注册的代理
         """
         self._agents[agent.agent_id] = agent
-        logger.info(f"Registered agent for systemic interaction: {agent.name}")
+        logger.info(f"已注册代理用于体系互动: {agent.name}")
 
     def shape_international_order(
         self,
         round_id: int,
     ) -> Dict[str, Any]:
         """
-        Simulate international order shaping by great powers.
+        模拟大国对国际秩序的塑造
 
-        Leadership types influence order shaping:
-        - Wangdao: Promotes multipolar, rules-based order
-        - Hegemon: Maintains hegemonic order with institutional control
-        - Qiangquan: Seeks power concentration and hegemonic order
-        - Hunyong: Tends to support status quo
+        领导类型影响秩序塑造：
+        - 道义型(Wangdao): 推动多极、基于规则的秩序
+        - 霸权型(Hegemon): 通过制度控制维持霸权秩序
+        - 强权型(Qiangquan): 寻求权力集中和霸权秩序
+        - 昏庸型(Hunyong): 倾向于支持现状
 
         Args:
-            round_id: Current simulation round.
+            round_id: 当前模拟回合
 
         Returns:
-            Dictionary with order analysis and changes.
+            包含秩序分析和变化的字典
         """
-        # Get all great powers
+        # 获取所有大国
         great_powers = [
             agent for agent in self._agents.values()
             if agent.agent_type == AgentType.GREAT_POWER
@@ -200,21 +210,21 @@ class SystemicInteractionManager:
         if not great_powers:
             return {"order_type": "undefined", "power_distribution": {}}
 
-        # Analyze power distribution
+        # 分析权力分布
         power_indices = {
             gp.agent_id: gp.capability.get_capability_index() if gp.capability else 50
             for gp in great_powers
         }
 
-        # Determine order type based on power distribution and leadership
+        # 确定秩序类型
         order_type = self._determine_order_type(great_powers, power_indices)
 
-        # Order characteristics
+        # 分析秩序特征
         order_characteristics = self._analyze_order_characteristics(
             great_powers, order_type
         )
 
-        # Record order
+        # 记录秩序
         order_record = {
             "round": round_id,
             "order_type": order_type.value,
@@ -227,7 +237,7 @@ class SystemicInteractionManager:
 
         if self._enable_logging:
             logger.info(
-                f"Round {round_id}: International order type = {order_type.value}"
+                f"第 {round_id} 回合: 国际秩序类型 = {order_type.value}"
             )
 
         return order_record
@@ -238,43 +248,43 @@ class SystemicInteractionManager:
         power_indices: Dict[str, float],
     ) -> OrderType:
         """
-        Determine current international order type.
+        确定当前国际秩序类型
 
         Args:
-            great_powers: List of great power agents.
-            power_indices: Power capability indices.
+            great_powers: 大国代理列表
+            power_indices: 权力能力指数
 
         Returns:
-            The order type.
+            秩序类型
         """
         if len(great_powers) < 2:
             return OrderType.UNIPOLAR_HEGEMONIC
 
-        # Calculate power concentration
+        # 计算权力集中度
         total_power = sum(power_indices.values())
         max_power = max(power_indices.values())
         power_concentration = max_power / total_power
 
-        # Analyze leadership types
+        # 分析领导类型
         leadership_types = [
             gp.leadership_type.value if gp.leadership_profile else "unknown"
             for gp in great_powers
         ]
 
-        # Check for hegemon
+        # 检查霸权
         if power_concentration > 0.5:
             return OrderType.UNIPOLAR_HEGEMONIC
 
-        # Check for bipolar
+        # 检查两极
         sorted_powers = sorted(power_indices.values(), reverse=True)
         if len(sorted_powers) >= 2 and sorted_powers[0] > sorted_powers[1] * 1.5:
             return OrderType.BIPOLAR
 
-        # Check for multipolar (multiple relatively balanced powers)
+        # 检查多极（多个相对平衡的大国）
         if power_concentration < 0.4 and len(great_powers) >= 3:
             return OrderType.MULTIPOLAR
 
-        # Default: hierarchical
+        # 默认：等级秩序
         return OrderType.HIERARCHICAL
 
     def _analyze_order_characteristics(
@@ -283,23 +293,23 @@ class SystemicInteractionManager:
         order_type: OrderType,
     ) -> Dict[str, Any]:
         """
-        Analyze characteristics of the current order.
+        分析当前秩序的特征
 
         Args:
-            great_powers: List of great power agents.
-            order_type: The order type.
+            great_powers: 大国代理列表
+            order_type: 秩序类型
 
         Returns:
-            Dictionary with order characteristics.
+            包含秩序特征的字典
         """
         characteristics = {
             "order_type": order_type.value,
-            "stability": 0.5,  # Will be calculated
-            "norm_consensus": 0.5,  # Will be calculated
-            "conflict_level": 0.3,  # Will be calculated
+            "stability": 0.5,  # 稳定性（待计算）
+            "norm_consensus": 0.5,  # 规范共识度（待计算）
+            "conflict_level": 0.3,  # 冲突水平（待计算）
         }
 
-        # Calculate stability based on leadership type distribution
+        # 根据领导类型分布计算稳定性
         leadership_profiles = {}
         for gp in great_powers:
             if gp.leadership_profile:
@@ -308,16 +318,16 @@ class SystemicInteractionManager:
 
         total = sum(leadership_profiles.values())
 
-        # Wangdao leadership increases stability
+        # 道义型领导增加稳定性
         wangdao_ratio = leadership_profiles.get("wangdao", 0) / total if total > 0 else 0
         hunyong_ratio = leadership_profiles.get("hunyong", 0) / total if total > 0 else 0
 
         characteristics["stability"] = 0.5 + wangdao_ratio * 0.3 + hunyong_ratio * 0.2
 
-        # Calculate norm consensus
+        # 计算规范共识度
         characteristics["norm_consensus"] = self._calculate_norm_consensus(leadership_profiles)
 
-        # Calculate conflict level
+        # 计算冲突水平
         qiangquan_ratio = leadership_profiles.get("qiangquan", 0) / total if total > 0 else 0
         hegemon_ratio = leadership_profiles.get("hegemon", 0) / total if total > 0 else 0
 
@@ -330,19 +340,19 @@ class SystemicInteractionManager:
         leadership_profiles: Dict[str, int],
     ) -> float:
         """
-        Calculate norm consensus level.
+        计算规范共识水平
 
         Args:
-            leadership_profiles: Count of each leadership type.
+            leadership_profiles: 各领导类型的数量
 
         Returns:
-            Consensus level (0-1).
+            共识水平（0-1）
         """
         total = sum(leadership_profiles.values())
         if total == 0:
             return 0.5
 
-        # Wangdao and Hunyong contribute to norm consensus
+        # 道义型和昏庸型有助于规范共识
         wangdao = leadership_profiles.get("wangdao", 0)
         hunyong = leadership_profiles.get("hunyong", 0)
 
@@ -353,37 +363,37 @@ class SystemicInteractionManager:
         round_id: int,
     ) -> Dict[str, Any]:
         """
-        Simulate evolution of international norms.
+        模拟国际规范的演化
 
-        Processes:
-        - New norm proposals
-        - Norm strengthening/weakening
-        - Old norm obsolescence
-        - Norm diffusion across the system
+        处理过程：
+        - 新规范提案
+        - 规范强化/弱化
+        - 旧规范过时
+        - 规范在体系中的扩散
 
         Args:
-            round_id: Current simulation round.
+            round_id: 当前模拟回合
 
         Returns:
-            Dictionary with norm evolution results.
+            包含规范演化结果的字典
         """
         evolution_results = {
             "round": round_id,
-            "new_norms": [],
-            "strengthened_norms": [],
-            "weakened_norms": [],
-            "obsolete_norms": [],
+            "new_norms": [],  # 新规范
+            "strengthened_norms": [],  # 强化规范
+            "weakened_norms": [],  # 弱化规范
+            "obsolete_norms": [],  # 过时规范
         }
 
-        # Get norm proposals from great powers
+        # 从大国收集规范提案
         norm_proposals = self._collect_norm_proposals()
 
-        # Process each proposal
+        # 处理每个提案
         for proposal in norm_proposals:
             result = self._process_norm_proposal(proposal, round_id)
             evolution_results["new_norms"].append(result)
 
-        # Strengthen/weaken existing norms
+        # 强化/弱化现有规范
         for norm_id, norm in list(self._norms.items()):
             change = self._evaluate_norm_change(norm, round_id)
             if change > 0:
@@ -393,7 +403,7 @@ class SystemicInteractionManager:
                 norm.strength = max(0.0, norm.strength - 0.05)
                 evolution_results["weakened_norms"].append(norm_id)
 
-        # Check for obsolete norms
+        # 检查过时规范
         obsolete = self._identify_obsolete_norms()
         for norm_id in obsolete:
             norm = self._norms.pop(norm_id)
@@ -401,20 +411,20 @@ class SystemicInteractionManager:
 
         if self._enable_logging:
             logger.info(
-                f"Round {round_id}: Norm evolution - "
-                f"{len(evolution_results['new_norms'])} new, "
-                f"{len(evolution_results['strengthened_norms'])} strengthened, "
-                f"{len(evolution_results['obsolete_norms'])} obsolete"
+                f"第 {round_id} 回合: 规范演化 - "
+                f"{len(evolution_results['new_norms'])} 个新规范, "
+                f"{len(evolution_results['strengthened_norms'])} 个强化, "
+                f"{len(evolution_results['obsolete_norms'])} 个过时"
             )
 
         return evolution_results
 
     def _collect_norm_proposals(self) -> List[Dict[str, Any]]:
         """
-        Collect norm proposals from all agents.
+        从所有代理收集规范提案
 
         Returns:
-            List of norm proposals.
+            规范提案列表
         """
         proposals = []
 
@@ -422,9 +432,9 @@ class SystemicInteractionManager:
             if agent.agent_type != AgentType.GREAT_POWER:
                 continue
 
-            # Check agent history for norm proposals
+            # 检查代理历史中的规范提案
             history = agent.get_history()
-            for entry in history[-10:]:  # Last 10 entries
+            for entry in history[-10:]:  # 最近10条记录
                 if entry.event_type == "norm_proposal" or "norm" in str(entry.event_type).lower():
                     if entry.metadata:
                         proposals.append({
@@ -441,34 +451,34 @@ class SystemicInteractionManager:
         round_id: int,
     ) -> Dict[str, Any]:
         """
-        Process a norm proposal.
+        处理规范提案
 
         Args:
-            proposal: The norm proposal.
-            round_id: Current round.
+            proposal: 规范提案
+            round_id: 当前回合
 
         Returns:
-            Processing result.
+            处理结果
         """
         agent_id = proposal.get("agent_id", "")
         leadership_type = proposal.get("leadership_type", "unknown")
         proposal_data = proposal.get("proposal", {})
 
-        # Calculate adoption based on leadership type
-        base_adoption = 0.3  # Base adoption level
+        # 根据领导类型计算采纳度
+        base_adoption = 0.3  # 基础采纳度
 
         if leadership_type == "wangdao":
-            base_adoption += 0.4  # Wangdao norms gain traction
+            base_adoption += 0.4  # 道义型规范易于获得支持
         elif leadership_type == "hegemon":
-            base_adoption += 0.3  # Hegemon norms also gain traction
+            base_adoption += 0.3  # 霸权型规范也易于获得支持
         elif leadership_type == "hunyong":
-            base_adoption += 0.1  # Hunyong norms struggle
-        # Qiangquan norms get no bonus
+            base_adoption += 0.1  # 昏庸型规范难以获得支持
+        # 强权型规范没有额外加成
 
-        # Create new norm
+        # 创建新规范
         norm = Norm(
             norm_id=f"norm_{round_id}_{agent_id}_{len(self._norms)}",
-            name=proposal_data.get("name", "Unnamed Norm"),
+            name=proposal_data.get("name", "未命名规范"),
             description=proposal_data.get("description", ""),
             category=proposal_data.get("category", "general"),
             strength=proposal_data.get("strength", 0.5),
@@ -487,38 +497,38 @@ class SystemicInteractionManager:
 
     def _evaluate_norm_change(self, norm: Norm, round_id: int) -> float:
         """
-        Evaluate how a norm should change based on system state.
+        评估规范应如何变化
 
         Args:
-            norm: The norm to evaluate.
-            round_id: Current round.
+            norm: 要评估的规范
+            round_id: 当前回合
 
         Returns:
-            Change amount (-1 to 1).
+            变化量（-1到1）
         """
-        # Base change is zero
+        # 基础变化为零
         change = 0.0
 
-        # Check if originating agent maintains consistency
+        # 检查发起代理是否保持一致性
         if norm.originator:
             agent = self._agents.get(norm.originator)
             if agent and agent.leadership_profile:
                 lt = agent.leadership_profile.leadership_type.value
 
-                # Wangdao norms strengthen over time if maintained
+                # 道义型规范随时间强化（如果维持）
                 if lt == "wangdao":
                     change += 0.02
-                # Hegemon norms may strengthen
+                # 霸权型规范可能强化
                 elif lt == "hegemon":
                     change += 0.01
-                # Other norms may weaken
+                # 其他规范可能弱化
                 else:
                     change -= 0.01
 
-        # Check recent events affecting norm
+        # 检查影响规范的最近事件
         recent_events = [
             e for e in self._systemic_events[-20:]
-            if e.timestamp > (datetime.now().timestamp() - 86400)  # Last day
+            if e.timestamp > (datetime.now().timestamp() - 86400)  # 最近一天
         ]
 
         norm_violations = sum(
@@ -533,21 +543,21 @@ class SystemicInteractionManager:
 
     def _identify_obsolete_norms(self) -> List[str]:
         """
-        Identify norms that have become obsolete.
+        识别已过时的规范
 
         Returns:
-            List of obsolete norm IDs.
+            过时规范ID列表
         """
         obsolete = []
 
         for norm_id, norm in self._norms.items():
-            # Norm is obsolete if strength is very low
+            # 规范如果强度很低则过时
             if norm.strength < 0.2:
                 obsolete.append(norm_id)
                 continue
 
-            # Check age (norms over 50 rounds old may be obsolete)
-            # Simplified - use strength as primary indicator
+            # 检查年龄（超过50回合的规范可能过时）
+            # 简化实现：主要使用强度作为主要指标
 
         return obsolete
 
@@ -556,21 +566,21 @@ class SystemicInteractionManager:
         round_id: int,
     ) -> Dict[str, Any]:
         """
-        Simulate values-based diplomacy and competition.
+        模拟基于价值观的外交和竞争
 
-        Leadership types influence values competition:
-        - Wangdao: Promotes universal values, human rights
-        - Hegemon: Promotes liberal democratic values
-        - Qiangquan: May challenge universal values
-        - Hunyong: Avoids values confrontation
+        领导类型影响价值观竞争：
+        - 道义型(Wangdao): 推广普世价值和人权
+        - 霸权型(Hegemon): 推广自由民主价值观
+        - 强权型(Qiangquan): 可能挑战普世价值
+        - 昏庸型(Hunyong): 避免价值观对抗
 
         Args:
-            round_id: Current simulation round.
+            round_id: 当前模拟回合
 
         Returns:
-            Dictionary with values competition results.
+            包含价值观竞争结果的字典
         """
-        # Get great powers
+        # 获取大国
         great_powers = [
             agent for agent in self._agents.values()
             if agent.agent_type == AgentType.GREAT_POWER and agent.leadership_profile
@@ -579,11 +589,11 @@ class SystemicInteractionManager:
         if not great_powers:
             return {"values_clusters": {}, "conflicts": []}
 
-        # Identify values clusters
+        # 识别价值观集群
         values_clusters = {
-            "universal_humanist": [],  # Wangdao-aligned
-            "liberal_democratic": [],  # Hegemon-aligned
-            "pragmatic_nationalist": [],  # Qiangquan/Hunyong-aligned
+            "universal_humanist": [],  # 道义型对齐
+            "liberal_democratic": [],  # 霸权型对齐
+            "pragmatic_nationalist": [],  # 强权型/昏庸型对齐
         }
 
         for gp in great_powers:
@@ -596,15 +606,15 @@ class SystemicInteractionManager:
             else:
                 values_clusters["pragmatic_nationalist"].append(gp.agent_id)
 
-        # Identify values conflicts
+        # 识别价值观冲突
         conflicts = self._identify_values_conflicts(great_powers)
 
-        # Create systemic event
+        # 创建体系事件
         if conflicts:
             event = SystemicEvent(
                 event_id=f"values_conflict_{round_id}",
                 event_type="values_competition",
-                description=f"Values-based competition between clusters",
+                description=f"价值观集群之间的竞争",
                 participants=[gp.agent_id for gp in great_powers],
                 impact_level=len(conflicts) / len(great_powers),
                 metadata={
@@ -617,8 +627,8 @@ class SystemicInteractionManager:
 
         if self._enable_logging:
             logger.info(
-                f"Round {round_id}: Values competition - "
-                f"{len(conflicts)} conflicts identified"
+                f"第 {round_id} 回合: 价值观竞争 - "
+                f"识别到 {len(conflicts)} 个冲突"
             )
 
         return {
@@ -633,13 +643,13 @@ class SystemicInteractionManager:
         great_powers: List[Agent],
     ) -> List[Dict[str, Any]]:
         """
-        Identify values conflicts between great powers.
+        识别大国之间的价值观冲突
 
         Args:
-            great_powers: List of great power agents.
+            great_powers: 大国代理列表
 
         Returns:
-            List of conflict descriptions.
+            冲突描述列表
         """
         conflicts = []
 
@@ -651,7 +661,7 @@ class SystemicInteractionManager:
                 lt1 = gp1.leadership_profile.leadership_type.value
                 lt2 = gp2.leadership_profile.leadership_type.value
 
-                # Check for incompatible leadership types
+                # 检查不兼容的领导类型
                 incompatible_pairs = [
                     ("wangdao", "qiangquan"),
                     ("qiangquan", "wangdao"),
@@ -662,7 +672,7 @@ class SystemicInteractionManager:
                         "agent1": gp1.agent_id,
                         "agent2": gp2.agent_id,
                         "type": "values_incompatibility",
-                        "description": f"{lt1} vs {lt2} values conflict",
+                        "description": f"{lt1} 与 {lt2} 价值观冲突",
                     })
 
         return conflicts
@@ -672,13 +682,13 @@ class SystemicInteractionManager:
         values_clusters: Dict[str, List[str]],
     ) -> Optional[str]:
         """
-        Identify the dominant values cluster.
+        识别主导价值观集群
 
         Args:
-            values_clusters: Values cluster membership.
+            values_clusters: 价值观集群成员资格
 
         Returns:
-            Dominant cluster name or None.
+            主导集群名称或None
         """
         max_size = 0
         dominant = None
@@ -692,10 +702,10 @@ class SystemicInteractionManager:
 
     def get_system_state(self) -> Dict[str, Any]:
         """
-        Get current systemic state summary.
+        获取当前体系状态摘要
 
         Returns:
-            Dictionary with systemic state information.
+            包含体系状态信息的字典
         """
         return {
             "norms": {k: v.to_dict() for k, v in self._norms.items()},
@@ -707,34 +717,34 @@ class SystemicInteractionManager:
 
     def get_norm(self, norm_id: str) -> Optional[Norm]:
         """
-        Get a specific norm by ID.
+        根据ID获取特定规范
 
         Args:
-            norm_id: The norm ID.
+            norm_id: 规范ID
 
         Returns:
-            The norm if found, None otherwise.
+            规范对象（如果找到）
         """
         return self._norms.get(norm_id)
 
     def get_all_norms(self) -> List[Norm]:
         """
-        Get all current norms.
+        获取所有当前规范
 
         Returns:
-            List of all norms.
+            所有规范列表
         """
         return list(self._norms.values())
 
     def get_norms_by_category(self, category: str) -> List[Norm]:
         """
-        Get norms filtered by category.
+        按类别获取规范
 
         Args:
-            category: The category to filter by.
+            category: 要筛选的类别
 
         Returns:
-            List of norms in the category.
+            该类别中的规范列表
         """
         return [
             norm for norm in self._norms.values()
@@ -746,13 +756,13 @@ class SystemicInteractionManager:
         limit: Optional[int] = None,
     ) -> List[SystemicEvent]:
         """
-        Get systemic events.
+        获取体系事件
 
         Args:
-            limit: Maximum number of events to return.
+            limit: 最多返回的事件数
 
-From Returns:
-            List of systemic events.
+        Returns:
+            体系事件列表
         """
         if limit:
             return self._systemic_events[-limit:]
