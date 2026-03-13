@@ -4,8 +4,7 @@
 Git提交用户名: yangyh-2025
 Git提交邮箱: yangyuhang2667@163.com
 """
-from
- pydantic import BaseModel, Field
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 
