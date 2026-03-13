@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moral-realism-simulation"
+version = "0.1.0"
+description = "基于道义现实主义的LLM驱动社会模拟仿真系统"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "yangyh-2025", email = "yangyuhang2667@163.com"}
+]
+keywords = ["simulation", "LLM", "international-relations", "agent-based-modeling"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+[project.urls]
+Homepage = "https://github.com/yangyh-2025/moral-realism"
+Repository = "https://github.com/yangyh-2025/moral-realism.git"
+Issues = "https://github.com/yangyh-2025/moral-realism/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+    "isort>=5.12.0",
+]
+
+[tool.setuptools]
+packages = ["config", "core", "entities", "observation", "workflows", "utils"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
