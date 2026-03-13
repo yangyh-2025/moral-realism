@@ -4,7 +4,7 @@ FastAPI 后端应用 - 核心API服务
 Git提交用户名: yangyh-2025
 Git提交邮箱: yangyuhang2667@163.com
 """
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from typing import List
@@ -28,55 +28,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# WebSocket 管理器
-class ConnectionManager:
-    """WebSocket连接管理器"""
-
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-
-    async def send_personal_message(self, message: dict, websocket: WebSocket):
-        await websocket.send_json(message)
-
-    async def broadcast(self, message: dict):
-        for connection in self.active_connections:
-            try:
-                await connection.send_json(message)
-            except:
-                self.disconnect(connection)
-
-manager = ConnectionManager()
-
 # 导入并注册API路由
 from backend.api.simulation import router as simulation_router
 from backend.api.agents import router as agents_router
 from backend.api.events import router as events_router
 from backend.api.data import router as data_router
 from backend.api.export import router as export_router
+from backend.api.ws import router as ws_router
 
 app.include_router(simulation_router, prefix="/api/simulation", tags=["仿真管理"])
 app.include_router(agents_router, prefix="/api/agents", tags=["智能体管理"])
 app.include_router(events_router, prefix="/api/events", tags=["事件管理"])
 app.include_router(data_router, prefix="/api/data", tags=["数据查询"])
 app.include_router(export_router, prefix="/api/export", tags=["结果导出"])
-
-# WebSocket 端点
-@app.websocket("/ws/simulation")
-async def websocket_endpoint(websocket: WebSocket):
-    """仿真状态实时推送"""
-    await manager.connect(websocket)
-    try:
-        while True:
-            await websocket.receive_text()
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+app.include_router(ws_router, prefix="/api/ws", tags=["WebSocket"])
 
 if __name__ == "__main__":
     # 开发模式启动
