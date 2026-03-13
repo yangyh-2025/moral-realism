@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import json
 
-from config.validator import LeaderType
+from config.leader_types import LeaderType
 from entities.power_system import PowerMetrics, PowerTier
 
 from enum import Enum
