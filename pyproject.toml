@@ -1,115 +1,56 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "moral-realism-abm"
-version = "0.4.0"
+name = "moral-realism-simulation"
+version = "0.1.0"
 description = "基于道义现实主义的LLM驱动社会模拟仿真系统"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
 authors = [
     {name = "yangyh-2025", email = "yangyuhang2667@163.com"}
 ]
-readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.9"
-keywords = ["abm", "llm", "international-relations", "simulation"]
+keywords = ["simulation", "LLM", "international-relations", "agent-based-modeling"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-]
-
-dependencies = [
-    "fastapi>=0.104.0",
-    "uvicorn>=0.24.0",
-    "pydantic>=2.5.0",
-    "pydantic-settings>=2.1.0",
-    "openai>=1.3.0",
-    "httpx>=0.25.0",
-    "websockets>=12.0",
-    "python-multipart>=0.0.6",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.4.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.1.0",
-    "black>=23.11.0",
-    "isort>=5.12.0",
-    "flake8>=6.1.0",
-    "mypy>=1.7.0",
-    "pre-commit>=3.5.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/yangyh-2025/moral-realism"
-Repository = "https://github.com/yangyh-2025/moral-realism"
+Repository = "https://github.com/yangyh-2025/moral-realism.git"
 Issues = "https://github.com/yangyh-2025/moral-realism/issues"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["config*", "core*", "entities*", "observation*", "services*", "backend*", "api*"]
-exclude = ["tests*", "frontend*"]
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+    "isort>=5.12.0",
+]
+
+[tool.setuptools]
+packages = ["config", "core", "entities", "observation", "workflows", "utils"]
 
 [tool.black]
 line-length = 100
-target-version = ['py39', 'py310', 'py311', 'py312']
+target-version = ["py39", "py310", "py311"]
 include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | node_modules
-  | frontend
-)/
-'''
 
 [tool.isort]
 profile = "black"
 line_length = 100
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
 
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-check_untyped_defs = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
-strict_optional = true
-
-[[tool.mypy.overrides]]
-module = [
-    "tests.*",
-]
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = "test_*.py"
-python_classes = "Test*"
-python_functions = "test_*"
-asyncio_mode = "auto"
+disallow_untyped_defs = true
