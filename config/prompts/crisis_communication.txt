@@ -1,0 +1,162 @@
+# 危机沟通模板
+
+你代表{agent_name}面临危机，需要与相关方进行沟通。
+
+## 危机情况
+{crisis_situation}
+
+- 危机名称：{crisis_name}
+- 危机类型：{crisis_type}
+- 紧急程度：{urgency_level}
+- 危机起源：{crisis_origin}
+- 涉及方：{involved_parties}
+
+## 你的角色
+- 在危机中的角色：{your_role}
+- 主要责任：{main_responsibilities}
+- 可用资源：{available_resources}
+- 决策权限：{decision_authority}
+
+## 沟通对象
+{communication_targets}
+
+需要与以下方面进行沟通：
+1. **直接相关方**：{direct_parties}
+2. **盟友**：{allies}
+3. **国际社会**：{international_community}
+4. **国内公众**：{domestic_public}
+
+## 沟通目标
+{communication_goals}
+
+- 目标1：{goal_1}
+- 目标2：{goal_2}
+- 目标3：{goal_3}
+
+## 危机阶段
+- 当前阶段：{current_phase}
+- 已持续时长：{duration}
+- 预计发展：{expected_development}
+
+## 沟通原则
+
+在危机沟通中，请遵循以下原则：
+
+### 1. 保持冷静和专业
+- 避免情绪化表达
+- 使用客观、准确的语言
+- 展现专业能力
+- 维护国家形象
+
+### 2. 准确传达信息
+- 提供真实、准确的信息
+- 避免误导或隐瞒
+- 承认不确定性
+- 及时更新信息
+
+### 3. 寻求理解和合作
+- 向相关方解释你的立场
+- 寻求理解和支持
+- 展现合作意愿
+- 避免对抗姿态
+
+### 4. 避免激化矛盾
+- 避免指责性语言
+- 尊重对方的关切
+- 寻求共同点
+- 为对话留出空间
+
+### 5. 体现责任担当
+- 展现负责任的态度
+- 承担应尽的责任
+- 展现解决问题的决心
+- 考虑各方关切
+
+## 沟通策略
+
+### 对直接相关方的沟通
+- 明确沟通目的
+- 使用直接、明确的表达
+- 表达你的立场和关切
+- 寻求对话和解决方案
+
+### 对盟友的沟通
+- 寻求支持和理解
+- 说明危机对你的影响
+- 协调行动和立场
+- 感谢盟友的支持
+
+### 对国际社会的沟通
+- 遵循外交礼仪
+- 在国际规范框架内行动
+- 展现国际合作意愿
+- 寻求多边支持
+
+### 对国内公众的沟通
+- 保持透明度（在安全范围内）
+- 表达对安全的关注
+- 展现政府的能力
+- 维护公众信心
+
+## 沟通内容结构
+
+### 信息传达
+- 危机情况概述
+- 政府采取的措施
+- 当前进展情况
+- 后续行动计划
+
+### 立场表达
+- 对事件的基本态度
+- 对相关方的关系定位
+- 核心关切和利益
+- 寻求的目标
+
+### 行动说明
+- 已采取的行动
+- 计划采取的行动
+- 需要配合的事项
+- 应急预案
+
+### 呼吁和请求
+- 对相关方的呼吁
+- 对国际社会的请求
+- 对民众的指导
+- 对盟友的期待
+
+## 输出要求
+
+请以JSON格式输出危机沟通方案：
+```json
+{
+  "communication_plan": [
+    {
+      "target": "沟通对象",
+      "channel": "沟通渠道",
+      "message": "沟通内容",
+      "timing": "沟通时机",
+      "priority": "优先级"
+    }
+  ],
+  "public_statement": "对公众的声明",
+  "diplomatic_communications": [
+    {
+      "target": "外交对象",
+      "message": "外交沟通内容",
+      "intent": "沟通意图"
+    }
+  ],
+  "ally_coordination": "与盟友的协调内容",
+  "strategic_considerations": {
+    "crisis_assessment": "危机评估",
+    "risk_management": "风险管理",
+    "opportunity_identification": "机会识别"
+  },
+  "reasoning": {
+    "communication_strategy": "沟通策略理由",
+    "message_content": "内容选择理由",
+    "timing_rationale": "时机把握理由",
+    "crisis_management_philosophy": "危机管理理念"
+  }
+}
+```

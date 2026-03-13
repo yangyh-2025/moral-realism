@@ -1,0 +1,120 @@
+# 影响力分析模板
+
+请分析{agent_name}对{target_name}的影响力。
+
+## 影响方信息
+{source_agent}
+
+## 被影响方信息
+{target_agent}
+
+## 关系基础
+- 外交关系：{diplomatic_relation}
+- 历史互动：{historical_interaction}
+- 信任程度：{trust_level}
+
+## 影响渠道分析
+
+### 经济联系
+{economic_ties}
+- 贸易依赖度
+- 投资关系
+- 经济制裁潜力
+
+### 政治关系
+{political_relations}
+- 外交协调程度
+- 国际组织中的合作
+- 政治影响力投射
+
+### 文化交流
+{cultural_exchange}
+- 文化认同度
+- 价值观影响
+- 软实力基础
+
+### 军事合作
+{military_cooperation}
+- 军事援助或训练
+- 军事技术合作
+- 防务承诺
+
+## 影响力评估维度
+
+请从以下维度评估影响力：
+
+### 1. 影响力强度
+- 总体影响力水平（弱/中/强）
+- 各渠道影响力对比
+- 影响力的集中度
+
+### 2. 影响力范围
+- 政策影响：能否影响对方政策决策
+- 行为影响：能否影响对方具体行为
+- 认知影响：能否影响对方认知和判断
+
+### 3. 影响力持续性
+- 短期影响能力
+- 中期维持能力
+- 长期塑造能力
+
+### 4. 影响力的可靠性
+- 影响效果的可预测性
+- 对方接受影响的原因
+- 影响成本效益比
+
+## 增强影响力的建议
+
+如果需要增强{agent_name}对{target_name}的影响力，可以：
+
+1. **深化经济纽带**
+   - 扩大贸易和投资
+   - 建立供应链依赖
+   - 提供经济激励
+
+2. **加强政治协调**
+   - 加强外交沟通
+   - 在国际组织中合作
+   - 协调外交立场
+
+3. **扩大文化交流**
+   - 增加人员往来
+   - 推广文化价值观
+   - 提供教育和培训机会
+
+4. **建立安全关系**
+   - 发展军事合作
+   -提供安全保障
+   - 建立情报共享
+
+## 输出要求
+
+请以JSON格式输出影响力分析：
+```json
+{
+  "influence_strength": "弱/中/强",
+  "influence_scope": {
+    "policy": "政策影响程度",
+    "behavior": "行为影响程度",
+    "cognition": "认知影响程度"
+  },
+  "influence_persistence": {
+    "short_term": "短期影响能力",
+    "medium_term": "中期维持能力",
+    "long_term": "长期塑造能力"
+  },
+  "channel_analysis": {
+    "economic": "经济渠道影响力",
+    "political": "政治渠道影响力",
+    "cultural": "文化渠道影响力",
+    "military": "军事渠道影响力"
+  },
+  "reliability_assessment": {
+    "predictability": "可预测性",
+    "acceptance_basis": "接受基础",
+    "cost_benefit": "成本效益比"
+  },
+  "enhancement_recommendations": ["建议1", "建议2", "建议3"],
+  "reasoning": "综合分析理由"
+}
+```

@@ -1,0 +1,91 @@
+# 局势评估模板
+
+请对当前国际局势进行评估。
+
+## 智能体视角
+- 评估主体：{agent_name}
+- 实力层级：{power_tier}
+- 领导类型：{leader_type}
+
+## 当前轮次信息
+{round_info}
+
+## 国际环境
+{international_environment}
+
+## 主要大国动态
+{major_powers_dynamics}
+
+## 国际秩序特征
+{order_characteristics}
+
+## 潜在冲突点
+{potential_conflicts}
+
+## 合作机会
+{cooperation_opportunities}
+
+## 评估框架
+
+请基于以下框架进行综合评估：
+
+### 1. 国际秩序分析
+- 当前国际秩序的主要特征是什么？
+- 秩序的稳定性如何？
+- 秩序的合法性如何？
+- 秩序可能朝什么方向演变？
+
+### 2. 实力分布分析
+- 超级大国的实力差距
+- 大国之间的力量对比
+- 区域力量分布
+- 实力变化趋势
+
+### 3. 主要大国关系
+- 大国之间的主要矛盾
+- 大国合作的可能领域
+- 竞争的性质和程度
+- 制衡或追随的模式
+
+### 4. 对{agent_name}的影响
+- 当前局势最有利于你的方面
+- 当前局势最不利于你的方面
+- 你可以利用的机会
+- 你需要警惕的风险
+
+### 5. 外交空间评估
+- 你最有利的外交空间在哪里？
+- 优先处理的外交关系
+- 可以争取的合作对象
+- 需要防范的威胁
+
+## 输出要求
+
+请以JSON格式输出局势评估：
+```json
+{
+  "order_assessment": {
+    "current_type": "当前秩序类型",
+    "stability_level": "稳定性（低/中/高）",
+    "legitimacy_level": "合法性（低/中/高）",
+    "evolution_trend": "演变趋势",
+    "key_features": ["特征1", "特征2"]
+  },
+  "power_analysis": {
+    "superpower_gap": "超级大国差距",
+    "great_powers_balance": "大国平衡状况",
+    "regional_distribution": "区域力量分布",
+    "trend_description": "实力变化趋势"
+  },
+  "opportunities_for_agent": ["机会1", "机会2"],
+  "risks_for_agent": ["风险1", "risk2"],
+  "recommended_focus": {
+    "priority_relationships": ["关系1", "关系2"],
+    "priority_actions": ["行动1", "行动2"],
+    "risk_mitigation": ["应对措施1", "应对措施2"]
+  },
+  "reasoning": "综合分析理由"
+}
+```
+
+请确保评估全面、客观，为后续决策提供有价值的参考。
