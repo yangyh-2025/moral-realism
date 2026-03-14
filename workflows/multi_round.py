@@ -174,7 +174,7 @@ class WorkflowRecovery:
             checkpoint_dir: 检查点目录
         """
         self.checkpoint_dir = checkpoint_dir
-        os.makedirs(checkpoint_dir, exist_ok=True=True)
+        os.makedirs(checkpoint_dir, exist_ok=True)
 
     def save_checkpoint(
         self,

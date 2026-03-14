@@ -441,7 +441,7 @@ class MetricsCache:
 
         return None
 
-    def cache_metrics(self, simulation_id: str: int, metrics: MetricsResult):
+    def cache_metrics(self, simulation_id: str, metrics: MetricsResult):
         """
         缓存指标
 

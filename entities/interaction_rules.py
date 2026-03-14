@@ -1023,7 +1023,6 @@ class InteractionTracker:
         """获取互动类型计数"""
         type_counts = {}
         for record in self._history:
-:
             interaction_type = record["interaction"].get("interaction_type")
             type_counts[interaction_type] = type_counts.get(interaction_type, 0) + 1
 

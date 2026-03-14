@@ -566,7 +566,7 @@ class ExperimentAnalyzer:
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        if format format == "json":
+        if format == "json":
             output_dir = "data/experiments/exports"
             os.makedirs(output_dir, exist_ok=True)
             filename = f"results_{timestamp}.json"
