@@ -65,3 +65,14 @@ htmlcov/
 .coverage
 .coverage.*
 *.cover
+
+# Worktrees (development only)
+agent-*-worktree/
+
+# Old acceptance reports (keep only latest)
+phase1_acceptance_report.md
+phase1_acceptance_report_final.md
+phase2_acceptance_report.md
+phase2_final_acceptance_report.md
+phase2_setup_report.md
+phase3_setup_report.md
