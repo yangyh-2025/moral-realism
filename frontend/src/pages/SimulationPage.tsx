@@ -49,7 +49,7 @@ const SimulationList: React.FC = () => {
   const filteredSimulations = simulations.filter(sim => {
     if (filter === 'all') return true;
     if (filter === 'running') return sim.is_running;
-    if (filter === 'paused')' return sim.is_paused;
+    if (filter === 'paused') return sim.is_paused;
     if (filter === 'completed') return sim.status === 'completed';
     return true;
   });
@@ -377,7 +377,7 @@ const NewSimulationForm: React.FC = () => {
         type: 'error',
         title: '配置错误',
         message: '请先配置智能体',
-      }));
+      });
       return;
     }
 
@@ -393,14 +393,14 @@ const NewSimulationForm: React.FC = () => {
         type: 'success',
         title: '创建成功',
         message: '仿真已创建',
-      }));
+      });
     } catch (error) {
       dispatch(addNotification({
         type: 'error',
         title: '创建失败',
         message: '无法创建仿真',
-      }));
-    }));
+      });
+    }
   };
 
   return (
