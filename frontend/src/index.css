@@ -2,11 +2,16 @@
  * 全局样式
  *
  * Git提交用户名: yangyh-2025
- * Git提交邮箱: yangyuhang@163.com
+ * Git提交邮箱: yangyuhang26@163.com
  */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 导入设计令牌 */
+@import './styles/tokens.css';
+
+/* 基础样式重置和优化 */
 
 /* 基础样式重置和优化 */
 * {

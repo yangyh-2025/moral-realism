@@ -4,7 +4,7 @@
  * 用于捕获React组件树错误并显示友好的错误信息
  *
  * Git提交用户名: yangyh-2025
- * Git提交邮箱: yangyuhang@163.com
+ * Git提交邮箱: yangyuhang26@163.com
  */
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 
@@ -45,7 +45,6 @@ export class ErrorBoundary extends Component<Props, State> {
 
     this.setState({ errorInfo });
 
-    // 调用外部错误处理函数
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
@@ -57,67 +56,61 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      // 使用自定义的fallback组件
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      // 默认错误UI
       return (
-        <div className="error-fallback min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="max-w-lg w-full bg-white rounded-lg shadow-xl p-8">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+          <div className="max-w-lg w-full bg-white rounded-xl shadow-lg p-8">
             <div className="text-center">
-              {/* 错误图标 */}
               <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-8 h-8 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
 
               <h2 className="text-2xl font-bold text-gray-900 mb-2">出错了</h2>
-              <p className="text-gray-600 mb-4">应用程序遇到了一个意外错误</p>
+              <p className="text-gray-600 mb-6">应用程序遇到了一个意外错误</p>
 
-              {/* 错误信息 */}
-              {this.state.error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                  <p className="text-sm font-medium text-red-800 mb-2">{this.state.error.message}</p>
-                  {process.env.NODE_ENV === 'development' && this.state.error.stack && (
+              {this.state.error && {
+                <div className="bg-red-50 border border-error-light rounded-lg p-4 mb-6">
+                  <p className="text-sm font-medium text-error-dark mb-2">{this.state.error.message}</p>
+                  {process.env.NODE_ENV === 'development' && this.state.error.stack && {
                     <details className="mt-2">
-                      <summary className="text-xs text-red-700 cursor-pointer">查看堆栈跟踪</summary>
-                      <pre className="mt-2 text-xs text-red-700 overflow-auto max-h-40">
+                      <summary className="text-xs text-error cursor-pointer hover:text-error-dark">查看堆栈跟踪</summary>
+                      <pre className="mt-2 text-xs text-error-dark overflow-auto max-h-40 bg-red-100 p-2 rounded">
                         {this.state.error.stack}
                       </pre>
                     </details>
-                  )}
+                  }}
                 </div>
-              )}
+              }}
 
-              {/* 操作按钮 */}
-              <div className="flex gap-3 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
                   onClick={this.handleReset}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
                 >
                   重新加载
                 </button>
                 <button
                   onClick={() => window.location.href = '/'}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
                 >
                   返回首页
                 </button>
               </div>
             </div>
 
-            {/* 开发环境下的额外信息 */}
-            {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
-              <div className="mt-6 pt-6 border-t">
+            {process.env.NODE_ENV === 'development' && this.state.errorInfo && {
+              <div className="mt-6 pt-6 border-t border-gray-200">
                 <p className="text-xs font-medium text-gray-500 mb-2">组件堆栈：</p>
                 <pre className="text-xs text-gray-600 overflow-auto max-h-40 bg-gray-50 p-3 rounded">
                   {this.state.errorInfo.componentStack}
                 </pre>
               </div>
-            )}
+            }}
           </div>
         </div>
       );

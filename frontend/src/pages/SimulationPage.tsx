@@ -2,7 +2,7 @@
  * 仿真管理页面
  *
  * Git提交用户名: yangyh-2025
- * Git提交邮箱: yangyuhang26@163.com
+ * Git提交邮箱: yangyuhari2667@163.com
  */
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
@@ -15,25 +15,34 @@ import {
   resetSimulation,
   fetchSimulationState,
   setCurrentSimulation,
-  clearError,
 } from '../store/slices/simulationSlice';
-import { setAgents, setSelectedAgent } from '../store/slices/agentsSlice';
-import { setEventConfig } from '../store/slices/eventsSlice';
 import { setActivePanel, addNotification } from '../store/slices/uiSlice';
-import { simulationAPI } from '../services/simulation';
 import api from '../services/api';
+import { Card, CardHeader, CardBody } from '../components/ui/cards/Card';
+import { StatCard } from '../components/ui/cards/StatCard';
+import { Button } from '../components/ui/buttons/Button';
+import { Input } from '../components/ui/form/Input';
+import { Textarea } from '../components/ui/form/Textarea';
+import { Badge } from '../components/ui/data/Badge';
+import { ProgressBar } from '../components/ui/data/ProgressBar';
+import { Alert } from '../components/ui/feedback/Alert';
+import { Spinner } from '../components/ui/feedback/Spinner';
+import { EmptyState } from '../components/ui/data/EmptyState';
+import { RefreshIcon, PlayIcon, PauseIcon, StopIcon } from '../components/ui/icons';
 
 // 仿真列表组件
 const SimulationList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [simulations, setSimulations] = useState<any[]>([]);
   const [filter, setFilter] = useState('all');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetchSimulations();
   }, []);
 
   const fetchSimulations = async () => {
+    setIsLoading(true);
     try {
       const response = await api.get('/simulation/list');
       setSimulations(response.data);
@@ -43,6 +52,8 @@ const SimulationList: React.FC = () => {
         title: '加载失败',
         message: '无法加载仿真列表',
       }));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -55,41 +66,57 @@ const SimulationList: React.FC = () => {
   });
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">仿真列表</h2>
-        <div className="flex gap-2">
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-4 py-2 border rounded-lg"
-          >
-            <option value="all">全部</option>
-            <option value="running">运行中</option>
-            <option value="paused">已暂停</option>
-            <option value="completed">已完成</option>
-          </select>
-          <button
-            onClick={fetchSimulations}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-          >
-            刷新
-          </button>
-        </div>
-      </div>
-
-      <div className="grid gap-4">
-        {filteredSimulations.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            暂无仿真记录
+    <Card>
+      <CardHeader
+        title="仿真列表"
+        rightContent={
+          <div className="flex gap-2">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option value="all">全部</option>
+              <option value="running">运行中</option>
+              <option value="paused">已暂停</option>
+              <option value="completed">已完成</option>
+            </select>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={fetchSimulations}
+              disabled={isLoading}
+              leftIcon={<RefreshIcon size={16} />}
+            >
+              刷新
+            </Button>
           </div>
+        }
+      />
+
+      <CardBody>
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Spinner />
+          </div>
+        ) : filteredSimulations.length === 0 ? (
+          <EmptyState
+            title="暂无仿真记录"
+            description="创建您的第一个仿真开始探索"
+            action={{
+              label: '新建仿真',
+              onClick: () => dispatch(setActivePanel('simulation')),
+            }}
+          />
         ) : (
-          filteredSimulations.map((sim) => (
-            <SimulationCard key={sim.id} simulation={sim} />
-          ))
+          <div className="grid gap-4">
+            {filteredSimulations.map((sim) => (
+              <SimulationCard key={sim.id} simulation={sim} />
+            ))}
+          </div>
         )}
-      </div>
-    </div>
+      </CardBody>
+    </Card>
   );
 };
 
@@ -103,48 +130,50 @@ const SimulationCard: React.FC<{ simulation: any }> = ({ simulation }) => {
   };
 
   const getStatusBadge = () => {
-    if (simulation.is_running) return <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">运行中</span>;
-    if (simulation.is_paused) return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">已暂停</span>;
-    if (simulation.status === 'completed') return <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm">已完成</span>;
-    return <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">未开始</span>;
+    if (simulation.is_running) return <Badge variant="success">运行中</Badge>;
+    if (simulation.is_paused) return <Badge variant="warning">已暂停</Badge>;
+    if (simulation.status === 'completed') return <Badge variant="default">已完成</Badge>;
+    return <Badge variant="info">未开始</Badge>;
   };
 
   return (
-    <div
-      className="border rounded-lg p-4 hover:shadow-md cursor-pointer transition-shadow"
+    <Card
+      className="cursor-pointer hover:shadow-md transition-shadow"
       onClick={handleSelect}
     >
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-lg font-semibold">{simulation.name}</h3>
-          <p className="text-sm text-gray-600">ID: {simulation.id}</p>
+      <CardBody>
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">{simulation.name}</h3>
+            <p className="text-sm text-gray-500 mt-1">ID: {simulation.id}</p>
+          </div>
+          {getStatusBadge()}
         </div>
-        {getStatusBadge()}
-      </div>
-      <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-        <div>
-          <span className="text-gray-500">轮次:</span>
-          <span className="ml-2 font-medium">{simulation.current_round}/{simulation.total_rounds}</span>
+        <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <span className="text-gray-500">轮次:</span>
+            <span className="ml-2 font-medium text-gray-900">{simulation.current_round}/{simulation.total_rounds}</span>
+          </div>
+          <div>
+            <span className="text-gray-500">智能体:</span>
+            <span className="ml-2 font-medium text-gray-900">{simulation.agent_count}</span>
+          </div>
+          <div>
+            <span className="text-gray-500">创建时间:</span>
+            <span className="ml-2 font-medium text-gray-900">
+              {new Date(simulation.created_at).toLocaleString('zh-CN')}
+            </span>
+          </div>
         </div>
-        <div>
-          <span className="text-gray-arez-500">智能体:</span>
-          <span className="ml-2 font-medium">{simulation.agent_count}</span>
-        </div>
-        <div>
-          <span className="text-gray-500">创建时间:</span>
-          <span className="ml-2 font-medium">
-            {new Date(simulation.created_at).toLocaleString('zh-CN')}
-          </span>
-        </div>
-      </div>
-    </div>
+      </CardBody>
+    </Card>
   );
 };
 
 // 仿真详情组件
 const SimulationDetail: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { currentSimulation, status, progress, isLoading } = useSelector((state: RootState) => state.simulation);
+  const { currentSimulation, status, isLoading } = useSelector((state: RootState) => state.simulation);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -208,6 +237,8 @@ const SimulationDetail: React.FC = () => {
   };
 
   const handleStop = async () => {
+    if (!confirm('确定要停止仿真吗？')) return;
+
     try {
       await dispatch(stopSimulation()).unwrap();
       dispatch(addNotification({
@@ -248,13 +279,18 @@ const SimulationDetail: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* 控制面板 */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">{currentSimulation.name}</h2>
-          <div className="flex gap-2">
+      <Card>
+        <CardHeader
+          title={currentSimulation.name}
+          subtitle={currentSimulation.description}
+        />
+        <CardBody>
+          <div className="flex flex-wrap gap-2 mb-6">
             {!status.is_running && (
-              <button
+              <Button
+                variant="success"
+                leftIcon={<PlayIcon size={16} />}
+                loading={isLoading}
                 onClick={() => {
                   const config = {
                     total_rounds: currentSimulation.total_rounds,
@@ -263,94 +299,94 @@ const SimulationDetail: React.FC = () => {
                   };
                   handleStart(config);
                 }}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                disabled={isLoading}
               >
                 启动
-              </button>
+              </Button>
             )}
             {status.is_running && !status.is_paused && (
-              <button
+              <Button
+                variant="warning"
+                leftIcon={<PauseIcon size={16} />}
+                loading={isLoading}
                 onClick={handlePause}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
-                disabled={isLoading}
               >
                 暂停
-              </button>
+              </Button>
             )}
             {status.is_paused && (
-              <button
+              <Button
+                variant="primary"
+                leftIcon={<PlayIcon size={16} />}
+                loading={isLoading}
                 onClick={handleResume}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                disabled={isLoading}
               >
                 继续
-              </button>
+              </Button>
             )}
             {status.is_running && (
-              <button
+              <Button
+                variant="danger"
+                leftIcon={<StopIcon size={16} />}
+                loading={isLoading}
                 onClick={handleStop}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                disabled={isLoading}
               >
                 停止
-              </button>
+              </Button>
             )}
-            <button
+            <Button
+              variant="ghost"
+              loading={isLoading}
               onClick={handleReset}
-              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-              disabled={isLoading}
             >
               重置
-            </button>
+            </Button>
           </div>
-        </div>
 
-        {/* 进度条 */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm text-gray-600 mb-2">
-            <span>当前轮次: {status.current_round} / {currentSimulation.total_rounds}</span>
-            <span>{progress.percentage}%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-500 h-2 rounded-full transition-all"
-              style={{ width: `${progress.percentage}%` }}
+          <ProgressBar
+            value={status.current_round}
+            max={currentSimulation.total_rounds}
+            label="当前进度"
+            showLabel
+            variant={status.is_running ? 'success' : 'default'}
+            className="mb-6"
+          />
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard
+              title="实力模式"
+              value={status.power_pattern}
+              variant="primary"
+            />
+            <StatCard
+              title="秩序类型"
+              value={status.order_type}
+              variant="info"
+            />
+            <StatCard
+              title="活跃事件"
+              value={status.active_events}
+              variant="warning"
+            />
+            <StatCard
+              title="状态"
+              value={status.is_running ? (status.is_paused ? '暂停' : '运行中') : '停止'}
+              variant={status.is_running ? 'success' : 'default'}
             />
           </div>
-        </div>
+        </CardBody>
+      </Card>
 
-        {/* 状态指标 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">实力模式</div>
-            <div className="text-xl font-semibold">{status.power_pattern}</div>
+      <Card>
+        <CardHeader title="实时指标" />
+        <CardBody>
+          <div className="text-center py-12">
+            <EmptyState
+              title="图表待实现"
+              description="实时数据可视化功能正在开发中"
+            />
           </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">秩序类型</div>
-            <div className="text-xl font-semibold">{status.order_type}</div>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">活跃事件</div>
-            <div className="text-xl font-semibold">{status.active_events}</div>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">状态</div>
-            <div className="text-xl font-semibold">
-              {status.is_running ? (status.is_paused ? '暂停' : '运行中') : '停止'}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 实时指标图表 */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-xl font-bold mb-4">实时指标</h3>
-        {/* 这里可以集成实时图表组件 */}
-        <div className="text-center text-gray-500 py-8">
-          图表组件待实现
-        </div>
-      </div>
+        </CardBody>
+      </Card>
     </div>
   );
 };
@@ -359,7 +395,6 @@ const SimulationDetail: React.FC = () => {
 const NewSimulationForm: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { agents } = useSelector((state: RootState) => state.agents);
-  const { eventConfig } = useSelector((state: RootState) => state.events);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -385,7 +420,6 @@ const NewSimulationForm: React.FC = () => {
       const response = await api.post('/simulation/create', {
         ...formData,
         agents: agents.map(a => a.id),
-        events: eventConfig,
       });
 
       dispatch(startSimulation(formData));
@@ -404,127 +438,86 @@ const NewSimulationForm: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold mb-6">新建仿真</h2>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* 基本信息 */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">基本信息</h3>
+    <Card>
+      <CardHeader title="新建仿真" />
+      <CardBody>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              仿真名称
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg"
-              required
-            />
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">基本信息</h3>
+            <div className="space-y-4">
+              <Input
+                label="仿真名称"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+                fullWidth
+              />
+              <Textarea
+                label="描述"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
+                fullWidth
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              描述
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg"
-              rows={3}
-            />
-          </div>
-        </div>
 
-        {/* 仿真配置 */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">仿真配置</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mbarez-2">
-                总轮次
-              </label>
-              <input
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">仿真配置</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
                 type="number"
+                label="总轮次"
                 value={formData.total_rounds}
                 onChange={(e) => setFormData({ ...formData, total_rounds: parseInt(e.target.value) })}
-                className="w-full px-4 py-2 border rounded-lg"
-                min="1"
+                min={1}
                 required
+                fullWidth
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                轮次时长（月）
-              </label>
-              <input
+              <Input
                 type="number"
+                label="轮次时长（月）"
                 value={formData.round_duration}
                 onChange={(e) => setFormData({ ...formData, round_duration: parseInt(e.target.value) })}
-                className="w-full px-4 py-2 border rounded-lg"
-                min="1"
+                min={1}
                 required
+                fullWidth
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                随机事件概率
-              </label>
-              <input
+              <Input
                 type="number"
+                label="随机事件概率"
                 value={formData.random_event_prob}
                 onChange={(e) => setFormData({ ...formData, random_event_prob: parseFloat(e.target.value) })}
-                className="w-full px-4 py-2 border rounded-lg"
-                min="0"
-                max="1"
-                step="0.01"
+                min={0}
+                max={1}
+                step={0.01}
                 required
+                fullWidth
               />
             </div>
           </div>
-        </div>
 
-        {/* 配置提示 */}
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-blue-700">
-                创建仿真前，请确保已配置智能体和事件。仿真将使用当前的智能体配置和事件配置。
-              </p>
-            </div>
+          <Alert variant="info" title="配置提示">
+            创建仿真前，请确保已配置智能体和事件。仿真将使用当前的智能体配置和事件配置。
+          </Alert>
+
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => dispatch(setActivePanel('agents'))}
+            >
+              配置智能体
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+            >
+              创建仿真
+            </Button>
           </div>
-        </div>
-
-        {/* 提交按钮 */}
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => dispatch(setActivePanel('agents'))}
-            className="px-6 py-2 border rounded-lg hover:bg-gray-50"
-          >
-            配置智能体
-          </button>
-          <button
-            type="button"
-            onClick={() => dispatch(setActivePanel('events'))}
-            className="px-6 py-2 border rounded-lg hover:bg-gray-50"
-          >
-            配置事件
-          </button>
-          <button
-            type="submit"
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-          >
-            创建仿真
-          </button>
-        </div>
-      </form>
-    </div>
+        </form>
+      </CardBody>
+    </Card>
   );
 };
 
