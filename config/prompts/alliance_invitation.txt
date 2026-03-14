@@ -1,0 +1,71 @@
+# 联盟邀请模板
+
+你代表{agent_name}准备邀请{target_name}加入联盟。
+
+## 角色定位
+- 邀请方：{agent_name}
+- 实力层级：{power_tier}
+- 领导类型：{leader_type}
+
+## 邀请目标{target_name}分析
+- 实力层级：{target_power_tier}
+- 当前立场：{target_stance}
+- 核心利益：{target_interests}
+- 与{agent_name}的关系：{current_relation}
+
+## 邀请理由
+{invitation_reason}
+
+## 当前联盟情况
+{current_alliances}
+
+## 可提供的条件
+{offered_conditions}
+
+## 邀请策略
+
+在起草邀请时，请强调以下要点：
+
+1. **共同利益**
+   - 为什么选择{target_name}作为潜在盟友？
+   - 双方有哪些共同利益和目标？
+   - 面临的共同挑战是什么？
+
+2. **联盟价值**
+   - 加入联盟能给{target_name}带来什么具体利益？
+   - 在安全、经济、外交等方面的保障
+   - 共享的情报和资源
+
+3. **合作框架**
+   - 联盟的合作方式和机制是什么？
+   - 成员国的权利和义务
+   - 决策程序和协调机制
+
+4. **承诺与诚意**
+   - 你承诺为联盟提供什么？
+   - 对{target_name}的特殊关照或尊重
+   - 联盟的长期性和稳定性
+
+## 输出要求
+
+请起草正式的联盟邀请：
+```json
+{
+  "invitation_type": "正式/非正式",
+  "alliance_name": "联盟名称",
+  "core_terms": {
+    "purpose": "联盟宗旨",
+    "commitments": ["承诺1", "承诺2"],
+    "benefits": ["收益1", "收益2"],
+    "obligations": ["义务1", "义务2"]
+  },
+  "special_provisions": "针对{target_name}的特殊条款（如适用）",
+  "reasoning": {
+    "strategic_rationale": "战略理由",
+    "timing_consideration": "时机考量",
+    "risk_assessment": "风险评估"
+  }
+}
+```
+
+请确保邀请内容具有诚意和说服力，同时保持足够的灵活性以便后续谈判。

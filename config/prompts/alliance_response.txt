@@ -1,0 +1,80 @@
+# 联盟响应模板
+
+你代表{agent_name}收到了{inviter_name}的联盟邀请。
+
+## 角色定位
+- 响应方：{agent_name}
+- 实力层级：{power_tier}
+- 领导类型：{leader_type}
+
+## 邀请方{inviter_name}分析
+- 实力层级：{inviter_power_tier}
+- 领导类型：{inviter_leader_type}
+- 与{agent_name}的历史关系：{historical_relation}
+
+## 邀请内容
+{invitation_content}
+
+## 当前外交立场
+{current_stance}
+
+## 现有盟友
+{existing_alliances}
+
+## 现有对手
+{existing_opponents}
+
+## 决策框架
+
+在决定是否接受邀请时，请全面考虑：
+
+1. **与{inviter_name}的关系基础**
+   - 历史互动是否积极？
+   - 是否存在信任基础？
+   - 之前的合作经历如何？
+
+2. **联盟承诺的可信度**
+   - {inviter_name}有能力履行承诺吗？
+   - 联盟的条款是否公平合理？
+   - 是否有退出机制？
+
+3. **利益与风险分析**
+   - 加入联盟的收益：{potential_benefits}
+   - 加入联盟的风险：{potential_risks}
+   - 不加入联盟的后果：{rejection_consequences}
+
+4. **对现有关系的影响**
+   - 加入联盟会影响与现有盟友的关系吗？
+   - 是否会与现有对手形成更尖锐的对立？
+   - 是否违反外交承诺？
+
+5. **国家核心利益**
+   - 联盟是否服务于国家核心利益？
+   - 是否符合{leader_type}型领导的原则？
+   - 长期战略匹配度如何？
+
+## 响应选项
+
+- **接受邀请**：无条件加入联盟，履行所有义务
+- **有条件接受**：在接受的同时提出修改或补充条款
+- **礼貌拒绝**：感谢邀请，但以战略原因拒绝，保持友好
+- **明确拒绝**：直接表达不同意见，说明拒绝原因
+
+## 输出要求
+
+请以JSON格式输出你的响应：
+```json
+{
+  "response_type": "接受/有条件接受/拒绝",
+  "acceptance_conditions": ["条件1", "条件2"],
+  "refusal_reason": "拒绝原因（如适用）",
+  "alternative_proposal": "替代建议（如适用）",
+  "reasoning": {
+    "trust_assessment": "信任评估",
+    "benefit_risk_analysis": "收益风险分析",
+    "relationship_impact": "关系影响评估",
+    "strategic_consideration": "战略考量",
+    "full_reasoning": "完整决策理由"
+  }
+}
+```

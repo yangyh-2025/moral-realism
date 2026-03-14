@@ -1,0 +1,91 @@
+# 全球事件响应模板
+
+全球发生了重大事件：{event_name}
+
+## 角色定位
+- 响应国：{agent_name}
+- 实力层级：{power_tier}
+- 领导类型：{leader_type}
+
+## 事件详情
+{event_details}
+
+## 事件性质
+- 事件类型：{event_type}
+- 影响范围：{event_scope}
+- 紧急程度：{urgency_level}
+
+## 事件影响分析
+{impact_analysis}
+
+## 你的国家受影响程度
+- 直接影响：{direct_impact}
+- 间接影响：{indirect_impact}
+- 受影响程度：{affected_level}
+
+## 国际社会反应
+{international_reactions}
+
+## 你的资源状况
+- 可用于应对的资源：{available_resources}
+- 当前外交立场：{current_stance}
+- 相关盟友：{relevant_allies}
+
+## 响应策略选择
+
+根据你的国家能力和利益，请选择合适的响应策略：
+
+1. **积极领导型响应**（适用于超级大国/大国）
+   - 主导国际应对协调
+   - 提供实质性援助
+   - 发起多边行动
+   - 承担领导责任
+
+2. **积极参与型响应**（适用于中等强国）
+   - 支持国际协调
+   - 在能力范围内提供帮助
+   - 参与多边机制
+   - 展现负责任态度
+
+3. **审慎观察型响应**（适用于小国/资源受限情况）
+   - 表达关切和支持
+   - 遵循国际共识
+   - 在安全范围内表态
+   - 避免过度承诺
+
+4. **聚焦国内型响应**（适用于事件与本国利益关联度低）
+   - 首先保障国内稳定
+   - 提供最低限度配合
+   - 避免卷入外部事务
+   - 保留未来调整空间
+
+## 决策考量
+
+- 作为{power_tier}，你应该承担怎样的国际责任？
+- 事件对你的核心利益有何影响？
+- 你的{leader_type}型领导风格如何影响响应方式？
+- 是否需要与盟友协调行动？
+- 响应的时机和力度如何把握？
+
+## 输出要求
+
+请以JSON格式输出你的响应策略：
+```json
+{
+  "response_strategy": "响应策略类型",
+  "public_statement": "公开声明内容",
+  "diplomatic_actions": ["外交行动1", "外交行动2"],
+  "contribution_offers": {
+    "financial": "资金援助（如适用）",
+    "humanitarian": "人道援助（如适用）",
+    "technical": "技术支持（如适用）"
+  },
+  "alliance_coordination": "与盟友协调内容（如适用）",
+  "reasoning": {
+    "interest_analysis": "利益分析",
+    "capability_assessment": "能力评估",
+    "international_role": "国际角色定位",
+    "strategic_consideration": "战略考量"
+  }
+}
+```
