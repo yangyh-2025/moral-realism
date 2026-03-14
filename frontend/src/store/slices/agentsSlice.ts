@@ -81,7 +81,7 @@ const agentsSlice = createSlice({
     setSelectedAgent: (state, action: PayloadAction<Agent | null>) => {
       state.selectedAgent = action.payload;
     },
-    updateAgentRelations: (state, action: PayloadAction<Record<string, Relation[]>>>) => {
+    updateAgentRelations: (state, action: PayloadAction<Record<string, Relation[]>>) => {
       state.agentRelations = { ...state.agentRelations, ...action.payload };
     },
     updateAgentPower: (state, action: PayloadAction<{agentId: string; power: PowerMetrics}>) => {

@@ -60,7 +60,7 @@ const uiSlice = createSlice({
     setActivePanel: (state, action: PayloadAction<ActivePanel>) => {
       state.activePanel = action.payload;
     },
-    addNotification: (state, action: PayloadAction<Omit<Notification, 'id' | 'timestamp'>>>) => {
+    addNotification: (state, action: PayloadAction<Omit<Notification, 'id' | 'timestamp'>>) => {
       const notification: Notification = {
         id: `notification-${Date.now()}-${Math.random()}`,
         ...action.payload,
