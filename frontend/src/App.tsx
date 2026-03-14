@@ -2,7 +2,7 @@
  * 主应用组件
  *
  * Git提交用户名: yangyh-2025
- * Git提交邮箱: yangyuhang26@163.com
+ * Git提交邮箱: yangyuhang@163.com
  */
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -13,6 +13,7 @@ import SimulationPage from './pages/SimulationPage';
 import AgentsPage from './pages/AgentsPage';
 import ExportPage from './pages/ExportPage';
 import { getWebSocketClient, disconnectWebSocket } from './services/websocket';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // 侧边栏组件
 const Sidebar: React.FC = () => {
@@ -121,14 +122,16 @@ function AppContent() {
 
 function App() {
   return (
-    <Provider store={store}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/*" element={<AppContent />} />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </Provider>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/*" element={<AppContent />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </Provider>
+    </ErrorBoundary>
   );
 }
 

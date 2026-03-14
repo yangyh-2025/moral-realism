@@ -1,0 +1,120 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "refresh": "Refresh",
+    "export": "Export",
+    "import": "Import",
+    "settings": "Settings",
+    "help": "Help",
+    "about": "About",
+    "version": "Version",
+    "language": "Language"
+  },
+  "app": {
+    "title": "Moral Realism Simulation System",
+    "shortTitle": "DRS",
+    "running": "Simulation Running",
+    "stopped": "Simulation Stopped",
+    "paused": "Simulation Paused"
+  },
+  "menu": {
+    "dashboard": "Dashboard",
+    "simulation": "Simulation Management",
+    "agents": "Agent Configuration",
+    "events": "Event Management",
+    "export": "Result Export",
+    "settings": "System Settings"
+  },
+  "simulation": {
+    "title": "Simulation Management",
+    "create": "Create Simulation",
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "reset": "Reset",
+    "status": "Status",
+    "running": "Running",
+    "stopped": "Stopped",
+    "paused": "Paused",
+    "configuration": "Configuration",
+    "parameters": "Parameters",
+    "time": "Time",
+    "step": "Step",
+    "duration": "Duration",
+    "description": "Create and manage simulation experiments"
+  },
+  "agents": {
+    "title": "Agent Configuration",
+    "addAgent": "Add Agent",
+    "removeAgent": "Remove Agent",
+    "name": "Name",
+    "type": "Type",
+    "power": "Power Value",
+    "position": "Position",
+    "relations": "Relations",
+    "configuration": "Configuration",
+    "description": "Configure agent parameters and relations"
+  },
+  "events": {
+    "title": "Event Management",
+    "addEvent": "Add Event",
+    "removeEvent": "Remove Event",
+    "name": "Name",
+    "type": "Type",
+    "priority": "Priority",
+    "timing": "Timing",
+    "impact": "Impact",
+    "description": "Manage simulation periodic events"
+  },
+  "export": {
+    "title": "Result Export",
+    "format": "Format",
+    "exportData": "Export Data",
+    "exportReport": "Export Report",
+    "exportCharts": "Export Charts",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "description": "Export simulation results and analysis reports"
+  },
+  "settings": {
+    "title": "System Settings",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "language": "Language",
+    "notifications": "Notifications",
+    "performance": "Performance",
+    "description": "Configure system preferences"
+  },
+  "charts": {
+    "powerTrend": "Power Trend",
+    "decisionTimeline": "Decision Timeline",
+    "interactionHeatmap": "Interaction Heatmap",
+    "relationNetwork": "Relation Network",
+    "metricsDashboard": "Metrics Dashboard"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidNumber": "Please enter a valid number",
+    "invalidEmail": "Please enter a valid email",
+    "minLength": "Minimum {min} characters required",
+    "maxLength": "Maximum {max} characters allowed"
+  },
+  "notifications": {
+    "simulationStarted": "Simulation started",
+    "simulationPaused": "Simulation paused",
+    "simulationStopped": "Simulation stopped",
+    "dataSaved": "Data saved",
+    "errorOccurred": "An error occurred"
+  }
+}
