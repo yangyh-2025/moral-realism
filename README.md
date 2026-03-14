@@ -44,9 +44,36 @@
 
 - Python 3.9+
 - Node.js 16+
-- Docker 和 Docker Compose（推荐）
+- Docker 和 Docker Compose（可选）
 
-### 方式一：Docker 部署（推荐）
+### 方式一：一键启动（推荐）
+
+```bash
+# 1. 克隆仓库
+git clone <repository-url>
+cd ABM-v0.4.0
+
+# 2. 配置环境变量
+cp .env.example .env
+# 编辑 .env 文件，填入您的 SiliconFlow API 密钥
+
+# 3. 一键启动
+# Windows 用户:
+start.bat
+
+# Linux/macOS 用户:
+chmod +x start.sh
+./start.sh
+```
+
+启动后会自动：
+- 创建并激活 Python 虚拟环境
+- 安装所有依赖（首次运行）
+- 启动后端服务（http://localhost:8000）
+- 启动前端服务（http://localhost:5173）
+- 自动打开浏览器访问前端界面
+
+### 方式二：Docker 部署
 
 ```bash
 # 1. 克隆仓库
