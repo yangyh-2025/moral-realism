@@ -124,7 +124,7 @@ app.include_router(agents_router, prefix="/api/agents", tags=["智能体管理"]
 app.include_router(events_router, prefix="/api/events", tags=["事件管理"])
 app.include_router(data_router, prefix="/api/data", tags=["数据查询"])
 app.include_router(export_router, prefix="/api/export", tags=["结果导出"])
-app.include_router(ws_router, prefix="/api/ws", tags=["WebSocket"])
+app.include_router(ws_router, prefix="/ws", tags=["WebSocket"])
 app.include_router(health_router, tags=["健康检查"])
 
 

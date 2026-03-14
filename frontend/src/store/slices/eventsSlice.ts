@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 事件状态管理
  *
  * Git提交用户名: yangyh-2025
@@ -78,7 +78,7 @@ const eventsSlice = createSlice({
         state.events[index] = action.payload;
       }
     },
-    deactivateEvent: (state, action: PayloadAction) => {
+    deactivateEvent: (state, action: PayloadAction<string>) => {
       const event = state.events.find(e => e.id === action.payload);
       if (event) {
         event.is_active = false;
@@ -90,10 +90,10 @@ const eventsSlice = createSlice({
     addUserEvent: (state, action: PayloadAction<UserEvent>) => {
       state.userEvents.push(action.payload);
     },
-    deleteUserEvent: (state, action: PayloadAction) => {
+    deleteUserEvent: (state, action: PayloadAction<string>) => {
       state.userEvents = state.userEvents.filter(e => e.id !== action.payload);
     },
-    setEventConfig: (state, action: PayloadAction<Partial<EventConfig>>>) => {
+    setEventConfig: (state, action: PayloadAction<Partial<EventConfig>>) => {
       state.eventConfig = { ...state.eventConfig, ...action.payload };
     },
     clearEvents: (state) => {

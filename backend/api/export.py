@@ -325,7 +325,7 @@ class ExportService:
 _export_service = ExportService()
 
 
-@router.post("/export/simulation/{simulation_id}", response_model=ExportResult)
+@router.post("/simulation/{simulation_id}", response_model=ExportResult)
 async def export_simulation(
     simulation_id: str,
     format: ExportFormat = ExportFormat.JSON,
@@ -349,7 +349,7 @@ async def export_simulation(
     )
 
 
-@router.post("/export", response_model=ExportResult)
+@router.post("/", response_model=ExportResult)
 async def export_data(request: ExportRequest):
     """
     导出数据（通用接口）
@@ -367,7 +367,7 @@ async def export_data(request: ExportRequest):
     )
 
 
-@router.get("/export/download/{filename}")
+@router.get("/download/{filename}")
 async def download_export(filename: str):
     """
     下载导出的文件
@@ -411,7 +411,7 @@ async def download_export(filename: str):
     )
 
 
-@router.get("/export/templates")
+@router.get("/templates")
 async def get_export_templates():
     """
     获取导出模板
@@ -461,7 +461,7 @@ async def get_export_templates():
     }
 
 
-@router.get("/export/formats")
+@router.get("/formats")
 async def get_export_formats():
     """
     获取支持的导出格式

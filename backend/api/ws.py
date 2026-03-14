@@ -300,7 +300,7 @@ def get_event_pusher() -> RealTimeEventPusher:
     return _event_pusher
 
 
-@router.websocket("/ws/simulation/{simulation_id}")
+@router.websocket("/simulation/{simulation_id}")
 async def simulation_websocket(websocket: WebSocket, simulation_id: str):
     """
     仿真WebSocket端点

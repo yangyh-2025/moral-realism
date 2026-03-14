@@ -65,7 +65,7 @@ _events_store: Dict[str, Event] = {}
 _event_config = EventConfig()
 
 
-@router.get("/events", response_model=List[Event])
+@router.get("/", response_model=List[Event])
 async def list_events(simulation_id: Optional[str] = None):
     """
     列出所有事件
@@ -84,7 +84,7 @@ async def list_events(simulation_id: Optional[str] = None):
     return events
 
 
-@router.get("/events/{event_id}", response_model=Event)
+@router.get("/{event_id}", response_model=Event)
 async def get_event(event_id: str):
     """
     获取事件详情
@@ -101,7 +101,7 @@ async def get_event(event_id: str):
     return _events_store[event_id]
 
 
-@router.post("/events", response_model=Event)
+@router.post("/", response_model=Event)
 async def create_event(event: Event):
     """
     创建事件
@@ -122,7 +122,7 @@ async def create_event(event: Event):
     return event
 
 
-@router.post("/events/trigger", response_model=EventResult)
+@router.post("/trigger", response_model=EventResult)
 async def trigger_event(request: TriggerRequest):
     """
     触发事件
@@ -165,7 +165,7 @@ async def trigger_event(request: TriggerRequest):
     )
 
 
-@router.post("/events/config", response_model=EventConfig)
+@router.post("/config", response_model=EventConfig)
 async def update_event_config(config: EventConfig):
     """
     更新事件配置
@@ -181,7 +181,7 @@ async def update_event_config(config: EventConfig):
     return _event_config
 
 
-@router.get("/events/config", response_model=EventConfig)
+@router.get("/config", response_model=EventConfig)
 async def get_event_config():
     """
     获取事件配置
@@ -192,7 +192,7 @@ async def get_event_config():
     return _event_config
 
 
-@router.get("/events/history/{simulation_id}", response_model=List[Event])
+@router.get("/history/{simulation_id}", response_model=List[Event])
 async def get_event_history(
     simulation_id: str,
     event_type: Optional[EventType] = None,
@@ -223,7 +223,7 @@ async def get_event_history(
     return events[:limit]
 
 
-@router.put("/events/{event_id}")
+@router.put("/{event_id}")
 async def update_event(event_id: str, event: Event):
     """
     更新事件
@@ -246,7 +246,7 @@ async def update_event(event_id: str, event: Event):
     return event
 
 
-@router.delete("/events/{event_id}")
+@router.delete("/{event_id}")
 async def delete_event(event_id: str):
     """
     删除事件
@@ -261,7 +261,7 @@ async def delete_event(event_id: str):
     return {"message": f"事件 {event_id} 已删除"}
 
 
-@router.post("/events/batch", response_model=List[Event])
+@router.post("/batch", response_model=List[Event])
 async def create_events_batch(events: List[Event]):
     """
     批量创建事件
@@ -287,7 +287,7 @@ async def create_events_batch(events: List[Event]):
     return created_events
 
 
-@router.post("/events/{event_id}/activate")
+@router.post("/{event_id}/activate")
 async def activate_event(event_id: str):
     """
     激活事件
@@ -304,7 +304,7 @@ async def activate_event(event_id: str):
     return {"message": f"事件 {event_id} 已激活"}
 
 
-@router.post("/events/{event_id}/deactivate")
+@router.post("/{event_id}/deactivate")
 async def deactivate_event(event_id: str):
     """
     停用事件

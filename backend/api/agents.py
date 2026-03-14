@@ -64,7 +64,7 @@ class BatchCreateResponse(BaseModel):
 _agents_store: Dict[str, Agent] = {}
 
 
-@router.post("/agents", response_model=Agent)
+@router.post("/", response_model=Agent)
 async def create_agent(config: AgentConfig, simulation_id: Optional[str] = None):
     """
     创建智能体
@@ -100,7 +100,7 @@ async def create_agent(config: AgentConfig, simulation_id: Optional[str] = None)
     return agent
 
 
-@router.get("/agents", response_model=List[Agent])
+@router.get("/", response_model=List[Agent])
 async def list_agents(
     simulation_id: Optional[str] = None,
     leader_type: Optional[str] = None,
@@ -131,7 +131,7 @@ async def list_agents(
     return agents
 
 
-@router.get("/agents/{agent_id}", response_model=Agent)
+@router.get("/{agent_id}", response_model=Agent)
 async def get_agent(agent_id: str):
     """
     获取智能体
@@ -148,7 +148,7 @@ async def get_agent(agent_id: str):
     return _agents_store[agent_id]
 
 
-@router.put("/agents/{agent_id}", response_model=Agent)
+@router.put("/{agent_id}", response_model=Agent)
 async def update_agent(agent_id: str, config: AgentConfig):
     """
     更新智能体
@@ -186,7 +186,7 @@ async def update_agent(agent_id: str, config: AgentConfig):
     return updated
 
 
-@router.delete("/agents/{agent_id}")
+@router.delete("/{agent_id}")
 async def delete_agent(agent_id: str):
     """
     删除智能体
@@ -201,7 +201,7 @@ async def delete_agent(agent_id: str):
     return {"message": f"智能体 {agent_id} 已删除"}
 
 
-@router.post("/agents/batch", response_model=BatchCreateResponse)
+@router.post("/batch", response_model=BatchCreateResponse)
 async def create_agents_batch(request: BatchCreateRequest):
     """
     批量创建智能体
@@ -256,7 +256,7 @@ async def create_agents_batch(request: BatchCreateRequest):
     )
 
 
-@router.get("/agents/simulation/{simulation_id}", response_model=List[Agent])
+@router.get("/simulation/{simulation_id}", response_model=List[Agent])
 async def list_agents_by_simulation(simulation_id: str):
     """
     列出指定仿真的所有智能体
@@ -275,7 +275,7 @@ async def list_agents_by_simulation(simulation_id: str):
     return agents
 
 
-@router.post("/agents/{agent_id}/alliances/add")
+@router.post("/{agent_id}/alliances/add")
 async def add_alliance(agent_id: str, alliance_id: str):
     """
     添加盟友
@@ -296,7 +296,7 @@ async def add_alliance(agent_id: str, alliance_id: str):
     return {"message": "盟友已添加", "alliances": agent.alliances}
 
 
-@router.post("/agents/{agent_id}/alliances/remove")
+@router.post("/{agent_id}/alliances/remove")
 async def remove_alliance(agent_id: str, alliance_id: str):
     """
     移除盟友

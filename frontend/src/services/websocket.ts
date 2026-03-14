@@ -425,11 +425,12 @@ let wsClient: WebSocketClient | null = null;
 
 export const getWebSocketClient = (url?: string, dispatch?: AppDispatch): WebSocketClient => {
   if (!wsClient) {
-    const wsUrl = url || import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/simulation';
+    const wsUrl = url || import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/simulation/default';
     wsClient = new WebSocketClient(wsUrl, dispatch);
   }
   return wsClient;
 };
+
 
 export const disconnectWebSocket = (): void => {
   if (wsClient) {

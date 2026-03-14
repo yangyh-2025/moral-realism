@@ -190,7 +190,7 @@ const simulationSlice = createSlice({
 
     // Reset simulation
     builder
-      .addCaseCase(resetSimulation.fulfilled, (state) => {
+      .addCase(resetSimulation.fulfilled, (state) => {
         state.status.current_round = 0;
         state.status.is_running = false;
         state.status.is_paused = false;
@@ -204,7 +204,7 @@ const simulationSlice = createSlice({
       .addCase(fetchSimulationState.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(fetchState.fulfilled, (state, action) => {
+      .addCase(fetchSimulationState.fulfilled, (state, action) => {
         state.isLoading = false;
         state.status = action.payload;
       })

@@ -84,3 +84,11 @@ phase3_final_acceptance_report.md
 第二三阶段任务分配完善.md
 技术方案.md
 test_backend_api.py
+
+# Startup scripts
+start.bat
+start.sh
+
+# Temporary files
+run.py
+*.tsconfig.node.json

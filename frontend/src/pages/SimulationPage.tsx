@@ -377,7 +377,7 @@ const NewSimulationForm: React.FC = () => {
         type: 'error',
         title: '配置错误',
         message: '请先配置智能体',
-      });
+      }));
       return;
     }
 
@@ -393,13 +393,13 @@ const NewSimulationForm: React.FC = () => {
         type: 'success',
         title: '创建成功',
         message: '仿真已创建',
-      });
+      }));
     } catch (error) {
       dispatch(addNotification({
         type: 'error',
         title: '创建失败',
         message: '无法创建仿真',
-      });
+      }));
     }
   };
 

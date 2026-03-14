@@ -7,7 +7,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider, useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from './store';
+import { store, RootState, AppDispatch } from './store';
 import { setActivePanel } from './store/slices/uiSlice';
 import SimulationPage from './pages/SimulationPage';
 import AgentsPage from './pages/AgentsPage';
@@ -82,13 +82,15 @@ function AppContent() {
 
   // 初始化WebSocket连接
   useEffect(() => {
+    // 确保WebSocket客户端只创建一次
     const wsClient = getWebSocketClient(undefined, dispatch);
     wsClient.connect().catch(err => console.error('WebSocket connect failed:', err));
 
     return () => {
-      disconnectWebSocket();
+      // 不在这里断开，保持连接全局可用
     };
-  }, [dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 根据当前活动面板渲染内容
   const renderContent = () => {
