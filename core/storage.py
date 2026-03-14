@@ -136,6 +136,28 @@ class StorageEngine:
                 ON metrics(simulation_id, round)
             """)
 
+            # 额外的性能优化索引
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_agent_id
+                ON agent_states(agent_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_simulation_id
+                ON agent_states(simulation_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_decision_agent
+                ON decisions(agent_id)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_interaction_round
+                ON interactions(simulation_id, round)
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_speech_round
+                ON speeches(simulation_id, round)
+            """)
+
             conn.commit()
 
     def save_simulation_start(self, simulation_id: str, config: Dict) -> None:
@@ -201,3 +223,231 @@ class StorageEngine:
                 datetime.now().isoformat()
             ))
             conn.commit()
+
+    def save_simulation_end(
+        self,
+        simulation_id: str,
+        total_rounds: int,
+        status: str = "completed"
+    ) -> None:
+        """保存仿真结束记录"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE simulations
+                SET end_time = ?, total_rounds = ?, status = ?
+                WHERE simulation_id = ?
+            """, (
+                datetime.now().isoformat(),
+                total_rounds,
+                status,
+                simulation_id
+            ))
+            conn.commit()
+
+    def batch_save_decisions(self, decisions: List[Dict]) -> None:
+        """
+        批量保存决策记录（性能优化）
+
+        Args:
+            decisions: 决策记录列表
+        """
+        if not decisions:
+            return
+
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+
+            for decision in decisions:
+                reasoning = decision.get('reasoning')
+                cursor.execute("""
+                    INSERT INTO decisions
+                    (simulation_id, round, agent_id, function_name,
+                     function_args, validation_result, reasoning,
+                     situation_analysis, strategic_consideration,
+                     expected_outcome, alternatives, full_reasoning, timestamp)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    decision['simulation_id'],
+                    decision['round'],
+                    decision['agent_id'],
+                    decision['function_name'],
+                    json.dumps(decision['function_args']),
+                    json.dumps(decision['validation_result']),
+                    json.dumps(reasoning) if reasoning else None,
+                    reasoning.get('situation_analysis') if reasoning else None,
+                    reasoning.get('strategic_consideration') if reasoning else None,
+                    reasoning.get('expected_outcome') if reasoning else None,
+                    json.dumps(reasoning.get('alternatives')) if reasoning and 'alternatives' in reasoning else None,
+                    reasoning.get('full_reasoning') if reasoning else None,
+                    datetime.now().isoformat()
+                ))
+
+            conn.commit()
+
+    def get_agent_states_paginated(
+        self,
+        simulation_id: str,
+        page: int = 1,
+        page_size: int = 100,
+        round: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        分页查询智能体状态（性能优化）
+
+        Args:
+            simulation_id: 仿真ID
+            page: 页码
+            page_size: 每页大小
+            round: 轮次（可选）
+
+        Returns:
+            分页结果
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+
+            # 计算总数
+            if round is not None:
+                cursor.execute("""
+                    SELECT COUNT(*)
+                    FROM agent_states
+                    WHERE simulation_id = ? AND round = ?
+                """, (simulation_id, round))
+            else:
+                cursor.execute("""
+                    SELECT COUNT(*)
+                    FROM agent_states
+                    WHERE simulation_id = ?
+                """, (simulation_id,))
+            total = cursor.fetchone()[0]
+
+            # 计算分页
+            offset = (page - 1) * page_size
+            total_pages = (total + page_size - 1) // page_size if page_size > 0 else 1
+
+            # 查询数据
+            if round is not None:
+                cursor.execute("""
+                    SELECT agent_id, agent_type, state_data, round, timestamp
+                    FROM agent_states
+                    WHERE simulation_id = ? AND round = ?
+                    ORDER BY id
+                    LIMIT ? OFFSET ?
+                """, (simulation_id, round, page_size, offset))
+            else:
+                cursor.execute("""
+                    SELECT agent_id, agent_type, state_data, round, timestamp
+                    FROM agent_states
+                    WHERE simulation_id = ?
+                    ORDER BY id
+                    LIMIT ? OFFSET ?
+                """, (simulation_id, page_size, offset))
+
+            rows = cursor.fetchall()
+            data = [
+                {
+                    "agent_id": row[0],
+                    "agent_type": row[1],
+                    "state_data": json.loads(row[2]),
+                    "round": row[3],
+                    "timestamp": row[4]
+                }
+                for row in rows
+            ]
+
+            return {
+                "data": data,
+                "pagination": {
+                    "page": page,
+                    "page_size": page_size,
+                    "total": total,
+                    "total_pages": total_pages,
+                    "has_next": page < total_pages,
+                    "has_prev": page > 1
+                }
+            }
+
+    def get_metrics_paginated(
+        self,
+        simulation_id: str,
+        page: int = 1,
+        page_size: int = 100,
+        metric_type: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        分页查询指标数据（性能优化）
+
+        Args:
+            simulation_id: 仿真ID
+            page: 页码
+            page_size: 每页大小
+            metric_type: 指标类型（可选）
+
+        Returns:
+            分页结果
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+
+            # 计算总数
+            if metric_type is not None:
+                cursor.execute("""
+                    SELECT COUNT(*)
+                    FROM metrics
+                    WHERE simulation_id = ? AND metric_type = ?
+                """, (simulation_id, metric_type))
+            else:
+                cursor.execute("""
+                    SELECT COUNT(*)
+                    FROM metrics
+                    WHERE simulation_id = ?
+                """, (simulation_id,))
+            total = cursor.fetchone()[0]
+
+            # 计算分页
+            offset = (page - 1) * page_size
+            total_pages = (total + page_size - 1) // page_size if page_size > 0 else 1
+
+            # 查询数据
+            if metric_type is not None:
+                cursor.execute("""
+                    SELECT metric_type, metric_name, metric_value, round, metadata, timestamp
+                    FROM metrics
+                    WHERE simulation_id = ? AND metric_type = ?
+                    ORDER BY id
+                    LIMIT ? OFFSET ?
+                """, (simulation_id, metric_type, page_size, offset))
+            else:
+                cursor.execute("""
+                    SELECT metric_type, metric_name, metric_value, round, metadata, timestamp
+                    FROM metrics
+                    WHERE simulation_id = ?
+                    ORDER BY id
+                    LIMIT ? OFFSET ?
+                """, (simulation_id, page_size, offset))
+
+            rows = cursor.fetchall()
+            data = [
+                {
+                    "metric_type": row[0],
+                    "metric_name": row[1],
+                    "metric_value": row[2],
+                    "round": row[3],
+                    "metadata": json.loads(row[4]) if row[4] else None,
+                    "timestamp": row[5]
+                }
+                for row in rows
+            ]
+
+            return {
+                "data": data,
+                "pagination": {
+                    "page": page,
+                    "page_size": page_size,
+                    "total": total,
+                    "total_pages": total_pages,
+                    "has_next": page < total_pages,
+                    "has_prev": page > 1
+                }
+            }

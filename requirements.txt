@@ -7,6 +7,9 @@ websockets>=12.0
 python-multipart>=0.0.6
 numpy>=1.24.0
 
+# 日志和性能优化
+structlog>=23.2.0
+
 # 可视化（可选）
 plotly>=5.14.0
 
