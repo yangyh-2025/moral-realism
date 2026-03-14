@@ -76,3 +76,10 @@ phase2_acceptance_report.md
 phase2_final_acceptance_report.md
 phase2_setup_report.md
 phase3_setup_report.md
+phase3_final_acceptance_report.md
+
+# Development documents
+并行开发任务分配.md
+第二三阶段任务分配完善.md
+技术方案.md
+test_backend_api.py
