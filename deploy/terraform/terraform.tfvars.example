@@ -1,0 +1,28 @@
+# Terraform变量示例文件
+# 复制此文件为 terraform.tfvars 并填入实际值
+
+# AWS配置
+aws_region = "us-east-1"
+environment = "prod"
+
+# Kubernetes配置
+kubernetes_version = "1.28"
+
+# VPC配置
+vpc_cidr = "10.0.0.0/16"
+
+# EKS节点配置
+node_min_size = 2
+node_max_size = 10
+node_desired_size = 3
+
+# 数据库配置 (重要: 使用强密码!)
+db_username = "abm_user"
+db_password = "your-strong-password-here"
+
+# ACM证书ARN (HTTPS需要)
+acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# 功能开关
+enable_monitoring = true
+enable_autoscaling = true
