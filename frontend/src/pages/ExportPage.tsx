@@ -250,7 +250,7 @@ const ExportPreview: React.FC<{ data: any; config: ExportOptions }> = ({ data, c
     } else {
       setSortField(field);
       setSortOrder('asc');
-    });
+    }
   };
 
   const getColumns = () => {

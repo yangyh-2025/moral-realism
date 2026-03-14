@@ -597,10 +597,10 @@ const PowerTierVisualization: React.FC = () => {
       <div className="mt-4 text-sm text-gray-600">
         <p>基于正态分布方法动态划分实力层级：</p>
         <ul className="list-disc list-inside mt-2 space-y-1">
-          <li>超级大国：z > 2.0</li>
-          <li>大国：1.5 < z ≤ 2.0</li>
-          <li>中等强国：0.5 < z ≤ 1.5</li>
-          <li>小国：z ≤ 0.5</li>
+          <li>超级大国：z &gt; 2.0</li>
+          <li>大国：1.5 &lt; z &le; 2.0</li>
+          <li>中等强国：0.5 &lt; z &le; 1.5</li>
+          <li>小国：z &le; 0.5</li>
         </ul>
       </div>
     </div>
