@@ -1,0 +1,93 @@
+# 生产环境配置
+# Git提交用户名: yangyh-2025
+# Git提交邮箱: yangyuhang2667@163.com
+
+app:
+  name: "道义现实主义社会模拟仿真系统"
+  env: production
+  version: "1.7.0"
+  debug: false
+
+# LLM 配置
+llm:
+  provider: siliconflow
+  model: deepseek-ai/DeepSeek-V3.2
+  base_url: https://api.siliconflow.cn/v1
+  temperature: 0.7
+  max_tokens: 4096
+  timeout: 60
+  retry_attempts: 3
+  retry_delay: 2
+  # API 密钥应通过环境变量 LLM_API_KEY 配置
+
+# 数据库配置
+database:
+  type: sqlite
+  path: data/database.db
+  pool_size: 20
+  max_overflow: 10
+  timeout: 30
+  journal_mode: WAL
+  synchronous: NORMAL
+
+# 仿真配置
+simulation:
+  total_rounds: 200
+  round_duration_months: 6
+  leader_term_rounds: 4
+  random_event_probability: 0.1
+  enable_user_events: true
+  auto_save_interval: 5
+
+# 性能配置
+performance:
+  max_concurrent_requests: 10
+  cache_enabled: true
+  cache_ttl: 3600
+  cache_max_size: 1000
+  workers: 4
+
+# 日志配置
+logging:
+  level: INFO
+  format: json
+  file: logs/app.log
+  rotation: daily
+  retention: 30
+
+# 安全配置
+security:
+  api_key_required: true
+  rate_limit_enabled: true
+  rate_limit: 100  # 每分钟请求数
+  rate_limit_window: 60
+  cors_origins:
+    - https://yourdomain.com
+  max_request_size: 10485760  # 10MB
+
+# 监控配置
+monitoring:
+  enabled: true
+  metrics_interval: 60
+  health_check_interval: 30
+  alert_rules:
+    - name: high_memory_usage
+      condition: "memory_percent > 80"
+      severity: warning
+    - name: high_cpu_usage
+      condition: "cpu_percent > 90"
+      severity: critical
+
+# 存储配置
+storage:
+  backup_enabled: true
+  backup_interval: 3600
+  backup_retention: 7  # 天数
+  backup_path: backups
+
+# API 配置
+api:
+  host: 0.0.0.0
+  port: 8000
+  docs_enabled: false  # 生产环境禁用文档
+  redoc_enabled: false
