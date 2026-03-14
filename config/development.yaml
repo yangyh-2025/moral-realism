@@ -1,0 +1,82 @@
+# 开发环境配置
+# Git提交用户名: yangyh-2025
+# Git提交邮箱: yangyuhang2667@163.com
+
+app:
+  name: "道义现实主义社会模拟仿真系统"
+  env: development
+  version: "1.7.0-dev"
+  debug: true
+
+# LLM 配置
+llm:
+  provider: siliconflow
+  model: deepseek-ai/DeepSeek-V3.2
+  base_url: https://api.siliconflow.cn/v1
+  temperature: 0.8  # 开发时使用较高温度以获得更多样性
+  max_tokens: 2048   # 开发时减少 token 以加快响应
+  timeout: 30
+  retry_attempts: 3
+  retry_delay: 1
+
+# 数据库配置
+database:
+  type: sqlite
+  path: data/database.db
+  pool_size: 5
+  max_overflow: 2
+  timeout: 10
+  journal_mode: WAL
+  synchronous: NORMAL
+
+# 仿真配置
+simulation:
+  total_rounds: 50   # 开发时使用较少轮次
+  round_duration_months: 6
+  leader_term_rounds: 4
+  random_event_probability: 0.1
+  enable_user_events: true
+  auto_save_interval: 2  # 开发时更频繁保存
+
+# 性能配置
+performance:
+  max_concurrent_requests: 5
+  cache_enabled: true
+  cache_ttl: 1800      # 较短的缓存时间
+  cache_max_size: 500
+  workers: 1           # 开发环境单 worker 便于调试
+
+# 日志配置
+logging:
+  level: DEBUG          # 开发环境使用详细日志
+  format: human-readable
+  file: logs/app.log
+  rotation: daily
+  retention: 7
+
+# 安全配置
+security:
+  api_key_required: false  # 开发环境不要求 API 密钥
+  rate_limit_enabled: false  # 开发环境禁用速率限制
+  cors_origins:
+    - http://localhost:3000
+    - http://127.0.0.1:3000
+  max_request_size: 10485760
+
+# 监控配置
+monitoring:
+  enabled: false  # 开发环境禁用监控
+  metrics_interval: 30
+
+# 存储配置
+storage:
+  backup_enabled: false  # 开发环境禁用自动备份
+  backup_path: backups
+
+# API 配置
+api:
+  host: 0.0.0.0
+  port: 8000
+  docs_enabled: true   # 开发环境启用文档
+  redoc_enabled: true
+  reload: true        # 启用热重载

@@ -1,0 +1,75 @@
+# 测试环境配置
+# Git提交用户名:：yangyh-2025
+# Git提交邮箱: yangyuhang2667@163.com
+
+app:
+  name: "道义现实主义社会模拟仿真系统"
+  env: test
+  version: "1.7.0-test"
+  debug: true
+
+# LLM 配置 - 测试使用模拟 LLM
+llm:
+  provider: mock
+  model: test-model
+  base_url: http://localhost:8080
+  temperature: 0
+  max_tokens: 1024
+  timeout: 5
+  retry_attempts: 1
+  retry_delay: 0.5
+
+# 数据库配置 - 测试使用内存数据库
+database:
+  type: sqlite
+  path: ":memory:"  # 内存数据库
+  pool_size: 1
+  max_overflow: 0
+  timeout: 5
+  journal_mode: MEMORY
+  synchronous: OFF
+
+# 仿真配置
+simulation:
+  total_rounds: 10   # 测试使用最少轮次
+  round_duration_months: 6
+  leader_term_rounds: 2
+  random_event_probability: 0  # 测试禁用随机事件
+  enable_user_events: false
+  auto_save_interval: 100  # 测试不自动保存
+
+# 性能配置
+performance:
+  max_concurrent_requests: 10
+  cache_enabled: false  # 测试禁用缓存
+  workers: 1
+
+# 日志配置
+logging:
+  level: WARNING       # 测试减少日志输出
+  format: human-readable
+  file: null  # 测试不写文件
+  capture: true  # 捕获日志用于测试验证
+
+# 安全配置
+security:
+  api_key_required: false
+  rate_limit_enabled: false
+  cors_origins:
+    - http://localhost:3000
+  max_request_size: 10485760
+
+# 监控配置
+monitoring:
+  enabled: false
+
+# 存储配置
+storage:
+  backup_enabled: false
+
+# API 配置
+api:
+  host: 127.0.0.1  # 测试使用 localhost
+  port: 8000
+  docs_enabled: true
+  redoc_enabled: false

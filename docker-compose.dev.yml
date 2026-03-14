@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # 后端服务（开发模式）
+  backend:
+    build:
+      context: .
+      target: development
+    container_name: moral-realism-backend-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - MORAL_REALISM_LLM_API_KEY=${LLM_API_KEY}
+      - MORAL_REALISM_LLM_PROVIDER=${LLM_PROVIDER:-siliconflow}
+      - MORAL_REALISM_DATABASE_PATH=/app/data/database.db
+      - MORAL_REALISM_LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+    volumes:
+      - ./data:/app/data
+      - .:/app  # 挂载源代码实现热重载
+    networks:
+      - moral-realism-dev-network
+    restart: on-failure
+
+  # 前端服务（开发模式）
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    container_name: moral-realism-frontend-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+      - VITE_WS_URL=ws://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+    networks:
+      - moral-realism-dev-network
+    restart: on-failure
+
+networks:
+  moral-realism-dev-network:
+    driver: bridge

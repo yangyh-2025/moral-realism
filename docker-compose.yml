@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build:
+      context: .
+      target: production
+    container_name: moral-realism-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - MORAL_REALISM_LLM_API_KEY=${LLM_API_KEY}
+      - MORAL_REALISM_LLM_PROVIDER=${LLM_PROVIDER:-siliconflow}
+      - MORAL_REALISM_LLM_MODEL=${LLM_MODEL:-deepseek-ai/DeepSeek-V3.2}
+      - MORAL_REALISM_DATABASE_PATH=/app/data/database.db
+      - MORAL_REALISM_LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+    networks:
+      - moral-realism-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # 前端服务
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+    container_name: moral-realism-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - moral-realism-network
+    restart: unless-stopped
+
+  # Redis (可选，用于缓存和生产环境)
+  redis:
+    image: redis:7-alpine
+    container_name: moral-realism-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - moral-realism-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # 数据库备份服务 (定时任务)
+  backup:
+    image: alpine:latest
+    container_name: moral-realism-backup
+    volumes:
+      - ./data:/app/data
+      - ./backups:/app/backups
+    command: |
+      sh -c '
+        while true; do
+          timestamp=$$(date +%Y%m%d_%H%M%S)
+          cp /app/data/database.db /app/backups/backup_$$timestamp.db
+          gzip /app/backups/backup_$$timestamp.db
+          # 保留最近 7 天的备份
+          find /app/backups -name "backup_*.db.gz" -mtime +7 -delete
+          echo "Backup completed: $$timestamp"
+          sleep 86400
+        done
+      '
+    networks:
+      - moral-realism-network
+    restart: unless-stopped
+
+networks:
+  moral-realism-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+    driver: local
