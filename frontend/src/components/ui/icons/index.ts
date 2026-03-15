@@ -4,7 +4,7 @@
  * Git提交用户名: yangyh-2025
  * Git提交邮箱: yangyuhang26@163.com
  */
-export { default as: Icon } from './Icon';
+export { default as Icon } from './Icon';
 export { default as DashboardIcon } from './DashboardIcon';
 export { default as SimulationIcon } from './SimulationIcon';
 export { default as AgentsIcon } from './AgentsIcon';

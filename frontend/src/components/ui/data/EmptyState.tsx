@@ -24,7 +24,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   const defaultIcon = (
     <svg
-      className="w-16 h-16 text-gray-300 mx-auto"
+      className="w-16 h-16 text-blue-200 mx-auto"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -54,7 +54,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       {action && (
         <button
           onClick={action.onClick}
-          className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-colors font-medium shadow-sm"
         >
           {action.label}
         </button>
@@ -63,4 +63,5 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   );
 };
 
+export { EmptyState };
 export default EmptyState;

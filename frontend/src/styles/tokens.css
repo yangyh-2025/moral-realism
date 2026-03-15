@@ -9,53 +9,65 @@
 :root {
   /* ==================== 颜色系统 ==================== */
 
-  /* 主色调 */
-  --color-primary: #0F172A;        /* Slate 900 */
+  /* 主色调 - 蓝色系 */
+  --color-primary: #1E3A8A;        /* Blue 900 - 深蓝 */
   --color-primary-foreground: #FFFFFF;
 
   /* 交互元素 */
-  --color-accent: #3B82F6;          /* Blue 500 */
+  --color-accent: #3B82F6;          /* Blue 500 - 主蓝色 */
   --color-accent-foreground: #FFFFFF;
-  --color-accent-hover: #2563EB;     /* Blue 600 */
-  --color-accent-active: #1D4ED8;    /* Blue 700 */
+  --color-accent-hover: #2563EB;     /* Blue 600 - 悬停 */
+  --color-accent-active: #1D4ED8;    /* Blue 700 - 激活 */
 
-  /* 状态颜色 */
-  --color-success: #10B981;          /* Green 500 */
+  /* 蓝色完整色阶 */
+  --color-blue-50: #EFF6FF;
+  --color-blue-100: #DBEAFE;
+  --color-blue-200: #BFDBFE;
+  --color-blue-300: #93C5FD;
+  --color-blue-400: #60A5FA;
+  --color-blue-500: #3B82F6;
+  --color-blue-600: #2563EB;
+  --color-blue-700: #1D4ED8;
+  --color-blue-800: #1E40AF;
+  --color-blue-900: #1E3A8A;
+
+  /* 状态颜色 - 与蓝色协调 */
+  --color-success: #059669;          /* Green 600 */
   --color-success-foreground: #FFFFFF;
-  --color-success-light: #D1FAE5;   /* Green 100 */
+  --color-success-light: #ECFDF5;   /* Green 50 */
   --color-success-dark: #047857;     /* Green 700 */
 
-  --color-warning: #F59E0B;          /* Amber 500 */
+  --color-warning: #D97706;          /* Amber 600 */
   --color-warning-foreground: #FFFFFF;
-  --color-warning-light: #FEF3C7;    /* Amber 100 */
+  --color-warning-light: #FFFBEB;    /* Amber 50 */
   --color-warning-dark: #B45309;      /* Amber 700 */
 
-  --color-error: #EF4444;            /* Red 500 */
+  --color-error: #DC2626;            /* Red 600 */
   --color-error-foreground: #FFFFFF;
-  --color-error-light: #FEE2E2;       /* Red 100 */
+  --color-error-light: #FEF2F2;       /* Red 50 */
   --color-error-dark: #B91C1C;         /* Red 700 */
 
-  --color-info: #6B7280;             /* Gray 500 */
+  --color-info: #0284C7;             /* Blue 600 */
   --color-info-foreground: #FFFFFF;
-  --color-info-light: #E5E7EB;        /* Gray 200 */
-  --color-info-dark: #374151;         /* Gray 700 */
+  --color-info-light: #F0F9FF;        /* Blue 50 */
+  --color-info-dark: #075985;         /* Blue 700 */
 
   /* 中性色 */
-  --color-text-primary: #0F172A;     /* Slate 900 */
-  --color-text-secondary: #475569;    /* Slate 600 */
-  --color-text-tertiary: #94A3B8;    /* Slate 400 */
+  --color-text-primary: #1F2937;     /* Gray 800 */
+  --color-text-secondary: #4B5563;    /* Gray 600 */
+  --color-text-tertiary: #9CA3AF;    /* Gray Gray 400 */
   --color-text-inverse: #FFFFFF;
 
-  --color-border: #E2E8F0;           /* Slate 200 */
-  --color-border-hover: #CBD5E1;      /* Slate 300 */
-  --color-color-border-active: #94A3B8; /* Slate 400 */
+  --color-border: #E5E7EB;           /* Gray 200 */
+  --color-border-hover: #D1D5DB;      /* Gray 300 */
+  --color-border-active: #9CA3AF;      /* Gray 400 */
 
-  --color-surface: #F8FAFC;           /* Slate 50 */
-  --color-surface-hover: #F1F5F9;     /* Slate 100 */
-  --color-surface-active: #E2E8F0;     /* Slate 200 */
+  --color-surface: #FFFFFF;           /* White */
+  --color-surface-hover: #F3F4F6;     /* Gray 100 */
+  --color-surface-active: #E5E7EB;     /* Gray 200 */
 
-  --color-background: #FFFFFF;
-  --color-background-secondary: #F8FAFC;
+  --color-background: #F9FAFB;       /* Gray 50 */
+  --color-background-secondary: #FFFFFF;
 
   /* ==================== 字体系统 ==================== */
 
@@ -100,14 +112,16 @@
   --radius-md: 0.5rem;     /* 8px */
   --radius-lg: 0.75rem;    /* 12px */
   --radius-xl: 1rem;      /* 16px */
+  --radius-2xl: 1.25rem;  /* 20px */
   --radius-full: 9999px;
 
-  /* ==================== 阴影 ==================== */
+  /* ==================== 阴影 - 更柔和精致 ==================== */
 
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.06);
+  --shadow-blue: 0 4px 14px 0 rgba(59, 130, 246, 0.15);
 
   /* ==================== 过渡动画 ==================== */
 
@@ -119,7 +133,7 @@
 
   --z-index-dropdown: 1000;
   --z-index-sticky: 1020;
-  --z-index-fixed: r1030;
+  --z-index-fixed: 1030;
   --z-index-modal-backdrop: 1040;
   --z-index-modal: 1050;
   --z-index-popover: 1060;
@@ -147,7 +161,7 @@
 
   --color-border: #334155;
   --color-border-hover: #475569;
-  --color-color-border-active: #64748B;
+  --color-border-active: #64748B;
 
   --color-surface: #1E293B;
   --color-surface-hover: #334155;
@@ -160,4 +174,5 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  --shadow-blue: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
 }

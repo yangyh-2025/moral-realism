@@ -29,13 +29,13 @@ const Input: React.FC<InputProps> = ({
     bg-white text-gray-900
     placeholder:text-gray-400
     transition-all duration-200
-    focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
+    focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500
     disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed
   `;
 
   const errorClasses = error
-    ? 'border-error focus:ring-error'
-    : 'border-gray-300 hover:border-gray-400';
+    ? 'border-red-500 focus:ring-red-200 focus:border-red-500'
+    : 'border-gray-200 hover:border-gray-300';
 
   const widthClasses = fullWidth ? 'w-full' : '';
 
@@ -57,7 +57,7 @@ const Input: React.FC<InputProps> = ({
       />
 
       {error && (
-        <p className="mt-2 text-sm text-error">{error}</p>
+        <p className="mt-2 text-sm text-red-600">{error}</p>
       )}
 
       {helperText && !error && (
@@ -67,4 +67,5 @@ const Input: React.FC<InputProps> = ({
   );
 };
 
+export { Input };
 export default Input;

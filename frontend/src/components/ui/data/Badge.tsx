@@ -24,28 +24,28 @@ const Badge: React.FC<BadgeProps> = ({
 }) => {
   const variantStyles = {
     default: {
-      bg: 'bg-gray-100',
-      text: 'text-gray-800',
-      border: 'border-gray-200',
+      bg: 'bg-blue-50',
+      text: 'text-blue-700',
+      border: 'border-blue-200',
     },
     success: {
-      bg: 'bg-green-100',
-      text: 'text-green-800',
+      bg: 'bg-green-50',
+      text: 'text-green-700',
       border: 'border-green-200',
     },
     warning: {
-      bg: 'bg-amber-100',
-      text: 'text-amber-800',
+      bg: 'bg-amber-50',
+      text: 'text-amber-700',
       border: 'border-amber-200',
     },
     error: {
-      bg: 'bg-red-100',
-      text: 'text-red-800',
+      bg: 'bg-red-50',
+      text: 'text-red-700',
       border: 'border-red-200',
     },
     info: {
-      bg: 'bg-blue-100',
-      text: 'text-blue-800',
+      bg: 'bg-blue-50',
+      text: 'text-blue-700',
       border: 'border-blue-200',
     },
   };
@@ -74,4 +74,5 @@ const Badge: React.FC<BadgeProps> = ({
   );
 };
 
+export { Badge };
 export default Badge;

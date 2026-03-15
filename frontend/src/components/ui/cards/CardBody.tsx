@@ -14,10 +14,11 @@ const CardBody: React.FC<CardBodyProps> = ({
   ...props
 }) => {
   return (
-    <div className={`px-6 py-4 ${className}`} {...props}>
+    <div className={`px-6 py-4 bg-white ${className}`} {...props}>
       {children}
     </div>
   );
 };
 
+export { CardBody };
 export default CardBody;

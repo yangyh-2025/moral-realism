@@ -12,14 +12,19 @@ import { setActivePanel, toggleSidebar, toggleTheme } from './store/slices/uiSli
 import SimulationPage from './pages/SimulationPage';
 import AgentsPage from './pages/AgentsPage';
 import ExportPage from './pages/ExportPage';
+import Dashboard from './pages/Dashboard';
+import EventManager from './pages/EventManager';
+import ComparisonAnalysis from './pages/ComparisonAnalysis';
+import SystemSettings from './pages/SystemSettings';
 import { getWebSocketClient, disconnectWebSocket } from './services/websocket';
 import ErrorBoundary from './components/ErrorBoundary';
+import ToastContainer from './components/ui/notifications/ToastContainer';
 import {
   DashboardIcon,
   SimulationIcon,
   AgentsIcon,
   EventsIcon,
-  ExportXIcon,
+  ExportIcon,
   SettingsIcon,
   MenuIcon,
   XIcon,
@@ -37,6 +42,7 @@ const Sidebar: React.FC = () => {
     { id: 'simulation', label: '仿真管理', icon: SimulationIcon },
     { id: 'agents', label: '智能体配置', icon: AgentsIcon },
     { id: 'events', label: '事件管理', icon: EventsIcon },
+    { id: 'comparison', label: '对比分析', icon: ExportIcon },
     { id: 'export', label: '结果导出', icon: ExportIcon },
     { id: 'settings', label: '系统设置', icon: SettingsIcon },
   ];
@@ -53,27 +59,27 @@ const Sidebar: React.FC = () => {
         className={`
           ${sidebarOpen ? 'w-64' : 'w-16'}
           transition-all duration-300 ease-in-out
-          bg-white border-r border-gray-200 shadow-sm
+          bg-blue-900 border-r border-blue-800 shadow-md
           hidden md:flex
           flex-col h-full
         `}
       >
         {/* 标题 */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-blue-800">
           <div className="flex items-center justify-between">
             {sidebarOpen && (
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="text-xl font-bold text-white">
                 道义现实主义仿真系统
               </h1>
             )}
             {!sidebarOpen && (
-              <span className="text-xl font-bold text-primary">DRS</span>
+              <span className="text-xl font-bold text-blue-100">DRS</span>
             )}
           </div>
           {status.is_running && sidebarOpen && (
             <div className="mt-3 flex items-center gap-2">
-              <span className="w-2 h-2 bg-success rounded-full animate-pulse"></span>
-              <span className="text-sm text-gray-600">仿真运行中</span>
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse-blue"></span>
+              <span className="text-sm text-blue-100 font-medium">仿真运行中</span>
             </div>
           )}
         </div>
@@ -91,15 +97,15 @@ const Sidebar: React.FC = () => {
                       w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
                       transition-all duration-200
                       ${activePanel === item.id
-                        ? 'bg-accent text-white shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        ? 'bg-blue-100 text-blue-900 font-medium shadow-sm'
+                        : 'text-blue-100 hover:bg-white/10 hover:text-white'
                       }
                     `}
                     aria-label={item.label}
                     aria-current={activePanel === item.id ? 'page' : undefined}
                   >
                     <span className="flex-shrink-0"><IconComponent size={20} /></span>
-                    {sidebarOpen && <span className="font-medium">{item.label}</span>}
+                    {sidebarOpen && <span>{item.label}</span>}
                   </button>
                 </li>
               );
@@ -111,7 +117,7 @@ const Sidebar: React.FC = () => {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md border border-gray-200"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-900 rounded-lg shadow-md border border-blue-800 text-white"
         aria-label={mobileMenuOpen ? '关闭菜单' : '打开菜单'}
       >
         {mobileMenuOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
@@ -127,32 +133,32 @@ const Sidebar: React.FC = () => {
           <aside
             className="
               md:hidden fixed top-0 left-0 bottom-0 w-72
-              bg-white shadow-xl z-50
+              bg-blue-900 shadow-xl z-50
               flex flex-col animate-slide-in
             "
           >
-            {/* Mobile Header */}
-            <div className="p-4 border-b border-gray-200">
+            {/* Mobile: 标题 */}
+            <div className="p-4 border-b border-blue-800">
               <div className="flex items-center justify-between">
-                <h1 className="text-xl font-bold text-gray-900">
+                <h1 className="text-xl font-bold text-white">
                   道义现实主义仿真系统
                 </h1>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-1 hover:bg-gray-100 rounded-lg"
+                  className="p-1 hover:bg-white/10 rounded-lg text-blue-100"
                 >
                   <XIcon size={24} />
                 </button>
               </div>
               {status.is_running && (
                 <div className="mt-3 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-success rounded-full animate-pulse"></span>
-                  <span className="text-sm text-gray-600">仿真运行中</span>
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse-blue"></span>
+                  <span className="text-sm text-blue-100 font-medium">仿真运行中</span>
                 </div>
               )}
             </div>
 
-            {/* Mobile Menu */}
+            {/* Mobile 菜单 */}
             <nav className="flex-1 py-4">
               <ul className="space-y-1 px-2">
                 {menuItems.map((item) => {
@@ -165,13 +171,13 @@ const Sidebar: React.FC = () => {
                           w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
                           transition-all duration-200
                           ${activePanel === item.id
-                            ? 'bg-accent text-white shadow-sm'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            ? 'bg-blue-100 text-blue-900 font-medium shadow-sm'
+                            : 'text-blue-100 hover:bg-white/10 hover:text-white'
                           }
                         `}
                       >
                         <span className="flex-shrink-0"><IconComponent size={20} /></span>
-                        <span className="font-medium">{item.label}</span>
+                        <span>{item.label}</span>
                       </button>
                     </li>
                   );
@@ -212,18 +218,24 @@ function AppContent() {
   const renderContent = () => {
     switch (activePanel) {
       case 'dashboard':
-        return <SimulationPage />;
+        return <Dashboard />;
       case 'simulation':
         return <SimulationPage />;
       case 'agents':
         return <AgentsPage />;
+      case 'events':
+        return <EventManager />;
+      case 'comparison':
+        return <ComparisonAnalysis />;
       case 'export':
         return <ExportPage />;
+      case 'settings':
+        return <SystemSettings />;
       default:
         return (
           <div className="flex flex-col items-center justify-center py-20">
             <svg
-              className="w-24 h-24 text-gray-300 mb-4"
+              className="w-24 h-24 text-blue-200 mb-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -263,6 +275,7 @@ function App() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </BrowserRouter>
+        <ToastContainer />
       </Provider>
     </ErrorBoundary>
   );

@@ -20,7 +20,7 @@ const Card: React.FC<CardProps> = ({
 }) => {
   const variantStyles = {
     default: 'bg-white',
-    elevated: 'bg-white shadow-md',
+    elevated: 'bg-white shadow-sm',
     outlined: 'bg-white border border-gray-200',
   };
 
@@ -29,7 +29,7 @@ const Card: React.FC<CardProps> = ({
       className={`
         ${variantStyles[variant]}
         rounded-lg overflow-hidden
-        ${hoverable ? 'hover:shadow-lg transition-shadow duration-200' : ''}
+        ${hoverable ? 'hover:shadow-blue hover:-translate-y-0.5 transition-all duration-200' : ''}
         ${className}
       `}
       {...props}
@@ -39,4 +39,5 @@ const Card: React.FC<CardProps> = ({
   );
 };
 
+export { Card };
 export default Card;

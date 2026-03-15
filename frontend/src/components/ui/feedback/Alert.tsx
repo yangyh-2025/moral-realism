@@ -26,26 +26,26 @@ const Alert: React.FC<AlertProps> = ({
   const variantStyles = {
     success: {
       bg: 'bg-green-50',
-      border: 'border-green-200',
-      icon: 'text-green-500',
+      border: 'border-green-500',
+      icon: 'text-green-600',
       iconBg: 'bg-green-100',
     },
     warning: {
       bg: 'bg-amber-50',
-      border: 'border-amber-200',
-      icon: 'text-amber-500',
+      border: 'border-amber-500',
+      icon: 'text-amber-600',
       iconBg: 'bg-amber-100',
     },
     error: {
       bg: 'bg-red-50',
-      border: 'border-red-200',
-      icon: 'text-red-500',
+      border: 'border-red-500',
+      icon: 'text-red-600',
       iconBg: 'bg-red-100',
     },
     info: {
       bg: 'bg-blue-50',
-      border: 'border-blue-200',
-      icon: 'text-blue-500',
+      border: 'border-blue-500',
+      icon: 'text-blue-600',
       iconBg: 'bg-blue-100',
     },
   };
@@ -78,7 +78,7 @@ const Alert: React.FC<AlertProps> = ({
   return (
     <div
       className={`
-        ${styles.bg} border ${styles.border} border-l-4 rounded-lg p-4
+        ${styles.bg} border border-l-4 ${styles.border} rounded-lg p-4
         ${className}
       `}
       role="alert"
@@ -118,4 +118,5 @@ const Alert: React.FC<AlertProps> = ({
   );
 };
 
+export { Alert };
 export default Alert;

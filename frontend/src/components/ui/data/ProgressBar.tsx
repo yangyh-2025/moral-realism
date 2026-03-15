@@ -29,19 +29,19 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 
   const variantStyles = {
     default: {
-      bg: 'bg-blue-500',
+      bg: 'bg-gradient-to-r from-blue-500 to-blue-600',
       bgLight: 'bg-blue-100',
     },
     success: {
-      bg: 'bg-green-500',
+      bg: 'bg-gradient-to-r from-green-500 to-green-600',
       bgLight: 'bg-green-100',
     },
     warning: {
-      bg: 'bg-amber-500',
+      bg: 'bg-gradient-to-r from-amber-500 to-amber-600',
       bgLight: 'bg-amber-100',
     },
     error: {
-      bg: 'bg-red-500',
+      bg: 'bg-gradient-to-r from-red-500 to-red-600',
       bgLight: 'bg-red-100',
     },
   };
@@ -90,4 +90,5 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   );
 };
 
+export { ProgressBar };
 export default ProgressBar;

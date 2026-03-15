@@ -14,7 +14,7 @@ export interface SpinnerProps {
 
 const Spinner: React.FC<SpinnerProps> = ({
   size = 'md',
-  color = 'currentColor',
+  color = '#3B82F6', // 默认蓝色
   className = '',
 }) => {
   const sizes = {
@@ -47,4 +47,5 @@ const Spinner: React.FC<SpinnerProps> = ({
   );
 };
 
+export { Spinner };
 export default Spinner;

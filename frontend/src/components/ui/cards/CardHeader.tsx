@@ -28,7 +28,7 @@ const CardHeader: React.FC<CardHeaderProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex-1">
           {title && (
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-800">
               {title}
             </h3>
           )}
@@ -38,7 +38,7 @@ const CardHeader: React.FC<CardHeaderProps> = ({
             </p>
           )}
           {children && !title && (
-            <div className="text-lg font-semibold text-gray-900">
+            <div className="text-lg font-semibold text-gray-800">
               {children}
             </div>
           )}
@@ -53,4 +53,5 @@ const CardHeader: React.FC<CardHeaderProps> = ({
   );
 };
 
+export { CardHeader };
 export default CardHeader;

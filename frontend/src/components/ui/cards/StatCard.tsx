@@ -32,35 +32,35 @@ const StatCard: React.FC<StatCardProps> = ({
   const variantStyles = {
     success: {
       bg: 'bg-green-50',
-      icon: 'bg-green-100 text-green-600',
+      icon: 'bg-green-100 text-green-600 border border-green-200',
       text: 'text-green-700',
     },
     warning: {
       bg: 'bg-amber-50',
-      icon: 'bg-amber-100 text-amber-600',
+      icon: 'bg-amber-100 text-amber-600 border border-amber-200',
       text: 'text-amber-700',
     },
     error: {
       bg: 'bg-red-50',
-      icon: 'bg-red-100 text-red-600',
+      icon: 'bg-red-100 text-red-600 border border-red-200',
       text: 'text-red-700',
     },
     info: {
       bg: 'bg-blue-50',
-      icon: 'bg-blue-100 text-blue-600',
+      icon: 'bg-blue-100 text-blue-600 border border-blue-200',
       text: 'text-blue-700',
     },
     primary: {
-      bg: 'bg-gray-50',
-      icon: 'bg-gray-100 text-gray-600',
-      text: 'text-gray-700',
+      bg: 'bg-blue-50',
+      icon: 'bg-blue-100 text-blue-600 border border-blue-200',
+      text: 'text-blue-900',
     },
   };
 
   const styles = variantStyles[variant];
 
   return (
-    <Card className={`${styles.bg} hover:shadow-md transition-shadow duration-200`}>
+    <Card className={`${styles.bg} hover:shadow-blue transition-shadow duration-200`}>
       <div className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -89,4 +89,5 @@ const StatCard: React.FC<StatCardProps> = ({
   );
 };
 
+export { StatCard };
 export default StatCard;

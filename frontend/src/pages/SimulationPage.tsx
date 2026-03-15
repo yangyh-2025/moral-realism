@@ -18,7 +18,9 @@ import {
 } from '../store/slices/simulationSlice';
 import { setActivePanel, addNotification } from '../store/slices/uiSlice';
 import api from '../services/api';
-import { Card, CardHeader, CardBody } from '../components/ui/cards/Card';
+import { Card } from '../components/ui/cards/Card';
+import { CardHeader } from '../components/ui/cards/CardHeader';
+import { CardBody } from '../components/ui/cards/CardBody';
 import { StatCard } from '../components/ui/cards/StatCard';
 import { Button } from '../components/ui/buttons/Button';
 import { Input } from '../components/ui/form/Input';
