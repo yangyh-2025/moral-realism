@@ -841,9 +841,6 @@ MORAL_REALISM_LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4/
 项目已提供便捷启动脚本 `run.py`，可同时启动前后端服务：
 
 ```bash
-# 进入项目根目录
-cd C:\Users\yangy\myfile\python\ABM\v0.4.0
-
 # 运行启动脚本（虚拟环境已配置）
 python run.py
 ```
