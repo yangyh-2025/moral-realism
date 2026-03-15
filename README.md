@@ -1891,9 +1891,10 @@ ABM-v0.4.0/
 
 ## 👥 联系方式
 
-- **项目主页**: [GitHub Repository]
-- **问题反馈**: [GitHub Issues]
-- **讨论区**: [GitHub Discussions]
+- **项目主页**: https://github.com/yangyh-2025/moral-realism
+- **问题反馈**: https://github.com/yangyh-2025/moral-realism/issues
+- **Email**: yangyuhang2667@163.com
+- **Address**: 国际关系学院 (University of International Relations) 国际政治系，北京市海淀区青龙桥街道坡上村 12 号
 
 ---
 
