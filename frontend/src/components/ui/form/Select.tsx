@@ -12,12 +12,17 @@ export interface SelectOption {
   disabled?: boolean;
 }
 
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps {
   label?: string;
   error?: string;
   helperText?: string;
   fullWidth?: boolean;
+  disabled?: boolean;
+  className?: string;
+  id?: string;
+  value?: string;
   options: SelectOption[];
+  onChange: (value: string) => void;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -25,10 +30,12 @@ const Select: React.FC<SelectProps> = ({
   error,
   helperText,
   fullWidth = true,
-  options,
+  disabled = false,
   className = '',
   id,
-  ...props
+  value,
+  options,
+  onChange,
 }) => {
   const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -60,8 +67,10 @@ const Select: React.FC<SelectProps> = ({
 
       <select
         id={selectId}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
         className={`${baseClasses} ${errorClasses} ${widthClasses} ${className}`}
-        {...props}
       >
         {options.map((option) => (
           <option
@@ -85,4 +94,5 @@ const Select: React.FC<SelectProps> = ({
   );
 };
 
+export { Select };
 export default Select;

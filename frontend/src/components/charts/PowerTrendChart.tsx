@@ -18,7 +18,7 @@ interface ChartData {
 }
 
 interface PowerTrendChartProps {
-  data: ChartData;
+  data?: ChartData;
   height?: number;
   responsive?: boolean;
 }
@@ -30,11 +30,19 @@ const PowerTrendChart: React.FC<PowerTrendChartProps> = ({
 }) => {
   const chartRef = useRef<HTMLDivElement>(null);
 
+  // Default data if not provided
+  const defaultData: ChartData = {
+    rounds: [1, 2, 3, 4, 5],
+    agents: [],
+  };
+
+  const chartData = data || defaultData;
+
   useEffect(() => {
     if (!chartRef.current) return;
 
-    const traces = data.agents.map(agent => ({
-      x: data.rounds,
+    const traces = chartData.agents.map(agent => ({
+      x: chartData.rounds,
       y: agent.data,
       type: 'scatter',
       mode: 'lines+markers',
@@ -96,7 +104,7 @@ const PowerTrendChart: React.FC<PowerTrendChartProps> = ({
         Plot.purge(chartRef.current);
       }
     };
-  }, [data, height, responsive]);
+  }, [chartData, height, responsive]);
 
   return <div ref={chartRef} style={{ height }} />;
 };

@@ -22,10 +22,27 @@ interface Metrics {
 }
 
 interface MetricsDashboardProps {
-  metrics: Metrics;
+  metrics?: Metrics;
 }
 
 const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
+  // Default metrics if not provided
+  const defaultMetrics: Metrics = {
+    power_concentration: 0,
+    norm_validity: 50,
+    conflict_level: 20,
+    order_type: 'mixed',
+    power_distribution: {
+      superpower: 1,
+      great_power: 3,
+      middle_power: 5,
+      small_power: 10,
+    },
+    alliance_stability: 40,
+    regime_dominance: 30,
+  };
+
+  const metricsData = metrics || defaultMetrics;
   const getOrderTypeInfo = (orderType: string) => {
     const info: Record<string, {label: string; description: string; color: string}> = {
       hegemonic: {
@@ -57,7 +74,7 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
     return info[orderType] || { label: '未判定', description: '秩序尚未明确', color: 'gray' };
   };
 
-  const orderInfo = getOrderTypeInfo(metrics.order_type);
+  const orderInfo = getOrderTypeInfo(metricsData.order_type);
 
   const createGauge = (value: number, max: number = 100) => {
     const percentage = (value / max) * 100;
@@ -88,7 +105,6 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
       {/* 秩序类型指示器 */}
       <div className={`bg-${orderInfo.color}-50 border-l-4 border-${orderInfo.color}-400 p-6 rounded-lg`}>
         <div className="flex items-center gap-4">
-">
           <div className={`text-4xl ${orderInfo.color === 'red' ? 'text-red-500' : ''}`}>
             {orderInfo.color === 'purple' && '👑'}
             {orderInfo.color === 'blue' && '⚖️'}
@@ -110,10 +126,10 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="text-sm text-gray-600 mb-2">实力集中度</div>
           <div className="flex justify-center mb-3">
-            {createGauge(metrics.power_concentration)}
+            {createGauge(metricsData.power_concentration)}
           </div>
           <div className="text-xs text-gray-500 text-center">
-            {metrics.power_concentration > 60 ? '高度集中' : '分散'}
+            {metricsData.power_concentration > 60 ? '高度集中' : '分散'}
           </div>
         </div>
 
@@ -121,10 +137,10 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="text-sm text-gray-600 mb-2">规范有效性</div>
           <div className="flex justify-center mb-3">
-            {createGauge(metrics.norm_validity)}
+            {createGauge(metricsData.norm_validity)}
           </div>
           <div className="text-xs text-gray-500 text-center">
-            {metrics.norm_validity > 60 ? '有效' : '薄弱'}
+            {metricsData.norm_validity > 60 ? '有效' : '薄弱'}
           </div>
         </div>
 
@@ -132,10 +148,10 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="text-sm text-gray-600 mb-2">冲突水平</div>
           <div className="flex justify-center mb-3">
-            {createGauge(metrics.conflict_level)}
+            {createGauge(metricsData.conflict_level)}
           </div>
           <div className="text-xs text-gray-500 text-center">
-            {metrics.conflict_level > 60 ? '高冲突' : '低冲突'}
+            {metricsData.conflict_level > 60 ? '高冲突' : '低冲突'}
           </div>
         </div>
 
@@ -143,10 +159,10 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="text-sm text-gray-600 mb-2">联盟稳定性</div>
           <div className="flex justify-center mb-3">
-            {createGauge(metrics.alliance_stability)}
+            {createGauge(metricsData.alliance_stability)}
           </div>
           <div className="text-xs text-gray-500 text-center">
-            {metrics.alliance_stability > 60 ? '稳定' : '不稳定'}
+            {metricsData.alliance_stability > 60 ? '稳定' : '不稳定'}
           </div>
         </div>
       </div>
@@ -156,12 +172,12 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
         <h3 className="text-lg font-semibold mb-4">实力层级分布</h3>
         <div className="space-y-3">
           {[
-            { tier: '超级大国', count: metrics.power_distribution.superpower, color: 'bg-purple-500' },
-            { tier: '大国', count: metrics.power_distribution.great_power, color: 'bg-blue-500' },
-            { tier: '中等强国', count: metrics.power_distribution.middle_power, color: 'bg-green-500' },
-            { tier: '小国', count: metrics.power_distribution.small_power, color: 'bg-gray-400' },
+            { tier: '超级大国', count: metricsData.power_distribution.superpower, color: 'bg-purple-500' },
+            { tier: '大国', count: metricsData.power_distribution.great_power, color: 'bg-blue-500' },
+            { tier: '中等强国', count: metricsData.power_distribution.middle_power, color: 'bg-green-500' },
+            { tier: '小国', count: metricsData.power_distribution.small_power, color: 'bg-gray-400' },
           ].map(({ tier, count, color }) => {
-            const total = Object.values(metrics.power_distribution).reduce((a, b) => a + b, 0);
+            const total = Object.values(metricsData.power_distribution).reduce((a, b) => a + b, 0);
             const percentage = total > 0 ? (count / total) * 100 : 0;
 
             return (
@@ -186,30 +202,30 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4">趋势分析</h3>
         <div className="space-y-2">
-          {metrics.power_concentration > 60 && (
+          {metricsData.power_concentration > 60 && (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-yellow-500">⚠️</span>
               <span>实力高度集中，可能形成霸权秩序</span>
             </div>
           )}
-          {metrics.conflict_level > 60 && (
+          {metricsData.conflict_level > 60 && (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-red-500">⚠️</span>
               <span>冲突水平较高，需要关注国际稳定</span>
             </div>
-          ))}
-          {metrics.norm_validity > 60 && metrics.conflict_level < 40 && (
+          )}
+          {metricsData.norm_validity > 60 && metricsData.conflict_level < 40 && (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-green-500">✅</span>
               <span>规范有效且冲突低，制度秩序稳定</span>
             </div>
-          ))}
-          {metrics.alliance_stability > 60 && (
+          )}
+          {metricsData.alliance_stability > 60 && (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-green-500">✅</span>
               <span>联盟结构稳定，有利于维持秩序</span>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

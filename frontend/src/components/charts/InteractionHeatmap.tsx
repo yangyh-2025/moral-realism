@@ -26,8 +26,8 @@ interface INTERFACE_HeatmapProps {
 }
 
 const InteractionHeatmap: React.FC<InteractionHeatmapProps> = ({
-  agents,
-  interactions,
+  agents = [],
+  interactions = [],
   height = 500,
 }) => {
   const chartRef = useRef<HTMLDivElement>(null);
@@ -104,10 +104,14 @@ const InteractionHeatmap: React.FC<InteractionHeatmapProps> = ({
   }, [agents, interactions, filterType, height]);
 
   // 获取唯一互动类型
-  const uniqueTypes = Array.from(new Set(interactions.map(i => i.interaction_type)));
+  const uniqueTypes = interactions && interactions.length > 0
+    ? Array.from(new Set(interactions.map(i => i.interaction_type)))
+    : [];
 
   // 计算统计信息
-  const totalInteractions = interactions.reduce((sum, i) => sum + i.count, 0);
+  const totalInteractions = interactions && interactions.length > 0
+    ? interactions.reduce((sum, i) => sum + i.count, 0)
+    : 0;
   const typeStats = uniqueTypes.map(type => ({
     type,
     count: interactions.filter(i => i.interaction_type === type).reduce((sum, i) => sum + i.count, 0),

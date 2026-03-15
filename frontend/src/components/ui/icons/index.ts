@@ -25,3 +25,6 @@ export { default as ChevronLeftIcon } from './ChevronLeftIcon';
 export { default as ChevronRightIcon } from './ChevronRightIcon';
 export { default as ChevronUpIcon } from './ChevronUpIcon';
 export { default as ChevronDownIcon } from './ChevronDownIcon';
+export { default as CheckIcon } from './CheckIcon';
+export { default as XArrow } from './XArrow';
+export { default as SaveIcon } from './SaveIcon';

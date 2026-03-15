@@ -22,14 +22,14 @@ interface Relation {
 }
 
 interface RelationNetworkGraphProps {
-  agents: Agent[];
-  relations: Relation[];
+  agents?: Agent[];
+  relations?: Relation[];
   height?: number;
 }
 
 const RelationNetworkGraph: React.FC<RelationNetworkGraphProps> = ({
-  agents,
-  relations,
+  agents = [],
+  relations = [],
   height = 600,
 }) => {
   const chartRef = useRef<HTMLDivElement>(null);
@@ -120,8 +120,8 @@ const RelationNetworkGraph: React.FC<RelationNetworkGraphProps> = ({
         xanchor: 'left',
       },
       margin: {
-        l'': 20,
-        r': 120,
+        l: 20,
+        r: 120,
         t: 60,
         b: 40,
       },

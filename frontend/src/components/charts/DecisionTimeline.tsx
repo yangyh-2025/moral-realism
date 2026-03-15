@@ -12,21 +12,21 @@ interface Decision {
   agent_name: string;
   round: number;
   action_type: string;
-  target_id?:?: string;
+  target_id?: string;
   reasoning: string;
   timestamp: string;
 }
 
 interface DecisionTimelineProps {
-  decisions: Decision[];
+  decisions?: Decision[];
   height?: string;
 }
 
 const DecisionTimeline: React.FC<DecisionTimelineProps> = ({
-  decisions,
+  decisions = [],
   height = '600px',
 }) => {
-  const [searchTerm) = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -128,7 +128,7 @@ const DecisionTimeline: React.FC<DecisionTimelineProps> = ({
                   {getActionIcon(decision.action_type)}
                 </div>
 
-                {'' 决策信息 */}
+                {/* 决策信息 */}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="font-semibold">{decision.agent_name}</span>

@@ -8,7 +8,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export type Theme = 'light' | 'dark';
 
-export type ActivePanel = 'dashboard' | 'simulation' | 'agents' | 'events' | 'export' | 'settings';
+export type ActivePanel = 'dashboard' | 'simulation' | 'agents' | 'events' | 'comparison' | 'export' | 'settings';
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error';
 

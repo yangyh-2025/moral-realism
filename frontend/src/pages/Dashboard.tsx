@@ -25,7 +25,9 @@ import {
 } from '../components/charts';
 import { StatCard } from '../components/ui/cards/StatCard';
 import { Badge } from '../components/ui/data/Badge';
-import { Card, CardHeader, CardBody } from '../components/ui/cards/Card';
+import { Card } from '../components/ui/cards/Card';
+import { CardHeader } from '../components/ui/cards/CardHeader';
+import { CardBody } from '../components/ui/cards/CardBody';
 import { Spinner } from '../components/ui/feedback/Spinner';
 import { Alert } from '../components/ui/feedback/Alert';
 
@@ -82,7 +84,7 @@ export const Dashboard: React.FC = () => {
       {/* 页面标题和刷新按钮 */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="仪表板">仪表板</h1>
+          <h1 className="text-2xl font-bold text-gray-900">仪表板</h1>
           <p className="text-sm text-gray-600 mt-1">
             实时监控仿真状态和关键指标
           </p>
@@ -133,7 +135,7 @@ export const Dashboard: React.FC = () => {
             <div>
               <h3 className="text-sm font-medium text-gray-600 mb-2">秩序类型</h3>
               <Badge
-ser_variant={getOrderTypeBadgeVariant()}
+                variant={getOrderTypeBadgeVariant()}
                 label={status.order_type}
                 className="text-base px-4 py-2"
               />

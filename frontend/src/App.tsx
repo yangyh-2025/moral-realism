@@ -6,9 +6,10 @@
  */
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Provider, useDispatch, useSelector } from 'react-redux';
+import { Provider as ReduxProvider, useDispatch, useSelector } from 'react-redux';
 import { store, RootState, AppDispatch } from './store';
-import { setActivePanel, toggleSidebar, toggleTheme } from './store/slices/uiSlice';
+import { setActivePanel, toggleSidebar, toggleTheme, setTheme } from './store/slices/uiSlice';
+import { I18nProvider, useTranslation } from './i18n';
 import SimulationPage from './pages/SimulationPage';
 import AgentsPage from './pages/AgentsPage';
 import ExportPage from './pages/ExportPage';
@@ -35,16 +36,17 @@ const Sidebar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { sidebarOpen, activePanel, theme } = useSelector((state: RootState) => state.ui);
   const { status } = useSelector((state: RootState) => state.simulation);
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const menuItems = [
-    { id: 'dashboard', label: '仪表板', icon: DashboardIcon },
-    { id: 'simulation', label: '仿真管理', icon: SimulationIcon },
-    { id: 'agents', label: '智能体配置', icon: AgentsIcon },
-    { id: 'events', label: '事件管理', icon: EventsIcon },
-    { id: 'comparison', label: '对比分析', icon: ExportIcon },
-    { id: 'export', label: '结果导出', icon: ExportIcon },
-    { id: 'settings', label: '系统设置', icon: SettingsIcon },
+    { id: 'dashboard', labelKey: 'menu.dashboard', icon: DashboardIcon },
+    { id: 'simulation', labelKey: 'menu.simulation', icon: SimulationIcon },
+    { id: 'agents', labelKey: 'menu.agents', icon: AgentsIcon },
+    { id: 'events', labelKey: 'menu.events', icon: EventsIcon },
+    { id: 'comparison', labelKey: 'menu.comparison', icon: ExportIcon },
+    { id: 'export', labelKey: 'menu.export', icon: ExportIcon },
+    { id: 'settings', labelKey: 'menu.settings', icon: SettingsIcon },
   ];
 
   const handleMenuClick = (id: string) => {
@@ -69,17 +71,17 @@ const Sidebar: React.FC = () => {
           <div className="flex items-center justify-between">
             {sidebarOpen && (
               <h1 className="text-xl font-bold text-white">
-                道义现实主义仿真系统
+                {t('app.title')}
               </h1>
             )}
             {!sidebarOpen && (
-              <span className="text-xl font-bold text-blue-100">DRS</span>
+              <span className="text-xl font-bold text-blue-100">{t('app.shortTitle')}</span>
             )}
           </div>
           {status.is_running && sidebarOpen && (
             <div className="mt-3 flex items-center gap-2">
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse-blue"></span>
-              <span className="text-sm text-blue-100 font-medium">仿真运行中</span>
+              <span className="text-sm text-blue-100 font-medium">{t('app.running')}</span>
             </div>
           )}
         </div>
@@ -101,11 +103,11 @@ const Sidebar: React.FC = () => {
                         : 'text-blue-100 hover:bg-white/10 hover:text-white'
                       }
                     `}
-                    aria-label={item.label}
+                    aria-label={t(item.labelKey as any)}
                     aria-current={activePanel === item.id ? 'page' : undefined}
                   >
                     <span className="flex-shrink-0"><IconComponent size={20} /></span>
-                    {sidebarOpen && <span>{item.label}</span>}
+                    {sidebarOpen && <span>{t(item.labelKey as any)}</span>}
                   </button>
                 </li>
               );
@@ -118,7 +120,7 @@ const Sidebar: React.FC = () => {
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         className="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-900 rounded-lg shadow-md border border-blue-800 text-white"
-        aria-label={mobileMenuOpen ? '关闭菜单' : '打开菜单'}
+        aria-label={mobileMenuOpen ? t('common.close') : t('common.open')}
       >
         {mobileMenuOpen ? <XIcon size={24} /> : <MenuIcon size={24} />}
       </button>
@@ -141,7 +143,7 @@ const Sidebar: React.FC = () => {
             <div className="p-4 border-b border-blue-800">
               <div className="flex items-center justify-between">
                 <h1 className="text-xl font-bold text-white">
-                  道义现实主义仿真系统
+                  {t('app.title')}
                 </h1>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
@@ -153,7 +155,7 @@ const Sidebar: React.FC = () => {
               {status.is_running && (
                 <div className="mt-3 flex items-center gap-2">
                   <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse-blue"></span>
-                  <span className="text-sm text-blue-100 font-medium">仿真运行中</span>
+                  <span className="text-sm text-blue-100 font-medium">{t('app.running')}</span>
                 </div>
               )}
             </div>
@@ -177,7 +179,7 @@ const Sidebar: React.FC = () => {
                         `}
                       >
                         <span className="flex-shrink-0"><IconComponent size={20} /></span>
-                        <span>{item.label}</span>
+                        <span>{t(item.labelKey as any)}</span>
                       </button>
                     </li>
                   );
@@ -195,6 +197,7 @@ const Sidebar: React.FC = () => {
 function AppContent() {
   const dispatch = useDispatch<AppDispatch>();
   const { activePanel, theme } = useSelector((state: RootState) => state.ui);
+  const { t, setLanguage, language } = useTranslation();
 
   // 初始化WebSocket连接
   useEffect(() => {
@@ -247,7 +250,7 @@ function AppContent() {
                 d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
               />
             </svg>
-            <p className="text-gray-500 text-lg">该功能正在开发中...</p>
+            <p className="text-gray-500 text-lg">{t('app.stopped')}</p>
           </div>
         );
     }
@@ -268,15 +271,17 @@ function AppContent() {
 function App() {
   return (
     <ErrorBoundary>
-      <Provider store={store}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/*" element={<AppContent />} />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </BrowserRouter>
-        <ToastContainer />
-      </Provider>
+      <ReduxProvider store={store}>
+        <I18nProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/*" element={<AppContent />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </BrowserRouter>
+          <ToastContainer />
+        </I18nProvider>
+      </ReduxProvider>
     </ErrorBoundary>
   );
 }

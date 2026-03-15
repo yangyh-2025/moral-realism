@@ -65,3 +65,43 @@ async def reset_simulation():
 async def get_simulation_state():
     """获取仿真状态"""
     return simulation_state
+
+
+@router.get("/list")
+async def list_simulations():
+    """获取可用仿真列表"""
+    # 模拟数据返回 - 实际应从数据库查询
+    return {
+        "simulations": [
+            {
+                "id": "sim_001",
+                "name": "仿真实验 1 - 基准场景",
+                "status": "completed",
+                "total_rounds": 100,
+                "current_round": 100,
+                "created_at": "2026-03-10T10:00:00Z",
+                "order_type": "多极均衡",
+                "power_pattern": "渐进式增长"
+            },
+            {
+                "id": "sim_002",
+                "name": "仿真实验 2 - 高冲突场景",
+                "status": "completed",
+                "total_rounds": 100,
+                "current_round": 100,
+                "created_at": "2026-03-11T14:30:00Z",
+                "order_type": "两极对抗",
+                "power_pattern": "波动式增长"
+            },
+            {
+                "id": "sim_003",
+                "name": "仿真实验 3 - 道义干预场景",
+                "status": "running",
+                "total_rounds": 100,
+                "current_round": 65,
+                "created_at": "2026-03-12T09:15:00Z",
+                "order_type": "未判定",
+                "power_pattern": "未判定"
+            }
+        ]
+    }

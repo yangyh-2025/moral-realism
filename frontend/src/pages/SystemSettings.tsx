@@ -14,8 +14,12 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../store';
-import { addNotification } from '../store/slices/uiSlice';
-import { Card, CardBody, CardHeader } from '../components/ui/cards/Card';
+import { addNotification, setTheme } from '../store/slices/uiSlice';
+import { useTranslation } from '../i18n';
+import type { Language } from '../i18n';
+import { Card } from '../components/ui/cards/Card';
+import { CardBody } from '../components/ui/cards/CardBody';
+import { CardHeader } from '../components/ui/cards/CardHeader';
 import { Input } from '../components/ui/form/Input';
 import { Textarea } from '../components/ui/form/Textarea';
 import { Select } from '../components/ui/form/Select';
@@ -52,6 +56,7 @@ interface SystemSettings {
 
 export const SystemSettings: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const { t, language: i18nLanguage, setLanguage } = useTranslation();
 
   const [settings, setSettings] = useState<SystemSettings>({
     apiBaseUrl: 'http://localhost:8000',
@@ -90,29 +95,61 @@ export const SystemSettings: React.FC = () => {
     }
   };
 
+  // 安全的 JSON 字符串化函数，处理循环引用
+  const safeStringify = (obj: any, space?: number): string => {
+    const seen = new WeakSet();
+    return JSON.stringify(obj, (key, value) => {
+      if (typeof value === 'object' && value !== null) {
+        if (seen.has(value)) {
+          return '[Circular]';
+        }
+        seen.add(value);
+      }
+      return value;
+    }, space);
+  };
+
   const saveSettings = async () => {
     setIsSaving(true);
+    console.log('正在保存设置...', settings);
     try {
-      localStorage.setItem('systemSettings', JSON.stringify(settings));
+      const settingsJson = safeStringify(settings);
+      console.log('Settings JSON:', settingsJson);
+      localStorage.setItem('systemSettings', settingsJson);
+      console.log('已保存到 localStorage');
+
+      // 应用主题设置到 Redux store
+      if (settings.theme === 'light' || settings.theme === 'dark') {
+        dispatch(setTheme(settings.theme));
+      }
+
+      // 应用强调色到 CSS 变量
+      document.documentElement.style.setProperty('--color-accent', settings.accentColor);
+
+      // 应用语言设置到 i18n
+      const langCode = settings.language === 'zh-CN' ? 'zh' : 'en';
+      setLanguage(langCode);
+
       setHasUnsavedChanges(false);
       dispatch(addNotification({
         type: 'success',
-        title: '保存成功',
-        message: '系统设置已保存',
+        title: t('common.success'),
+        message: t('settings.saved'),
       }));
     } catch (error) {
+      console.error('保存设置失败:', error);
       dispatch(addNotification({
         type: 'error',
-        title: '保存失败',
-        message: '无法保存设置',
+        title: t('common.error'),
+        message: `${t('settings.saveFailed')}: ${error instanceof Error ? error.message : t('common.error')}`,
       }));
     } finally {
       setIsSaving(false);
     }
   };
 
-  const resetSettings = = () => {
-    if (!confirm('确定要重置所有设置为默认值吗？')) return;
+  const resetSettings = () => {
+    if (!confirm(t('settings.resetConfirm'))) return;
 
     const defaultSettings: SystemSettings = {
       apiBaseUrl: 'http://localhost:8000',
@@ -124,7 +161,7 @@ export const SystemSettings: React.FC = () => {
       defaultCheckpointInterval: 10,
       theme: 'light',
       accentColor: '#3B82F6',
-      language: 'zh-CN',
+      language: i18nLanguage === 'zh' ? 'zh-CN' : 'en-US',
       autoRefresh: true,
       refreshInterval: 2000,
       autoSave: true,
@@ -136,6 +173,7 @@ export const SystemSettings: React.FC = () => {
   };
 
   const handleSettingChange = (key: keyof SystemSettings, value: any) => {
+    console.log('Setting change:', key, 'value:', value, 'type:', typeof value);
     setSettings({ ...settings, [key]: value });
     setHasUnsavedChanges(true);
   };
@@ -146,8 +184,8 @@ export const SystemSettings: React.FC = () => {
       if (response.ok) {
         dispatch(addNotification({
           type: 'success',
-          title: '连接成功',
-          message: 'API服务器连接正常',
+          title: t('settings.connectionSuccess'),
+          message: t('settings.connectionSuccessMessage'),
         }));
       } else {
         throw new Error('Server returned error');
@@ -155,8 +193,8 @@ export const SystemSettings: React.FC = () => {
     } catch (error) {
       dispatch(addNotification({
         type: 'error',
-        title: '连接失败',
-        message: '无法连接到API服务器',
+        title: t('settings.connectionFailed'),
+        message: t('settings.connectionFailedMessage'),
       }));
     }
   };
@@ -166,9 +204,9 @@ export const SystemSettings: React.FC = () => {
       {/* 页面标题 */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">系统设置</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h1>
           <p className="text-sm text-gray-600 mt-1">
-            配置系统参数和偏好设置
+            {t('settings.description')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -176,7 +214,7 @@ export const SystemSettings: React.FC = () => {
             variant="ghost"
             onClick={resetSettings}
           >
-            重置默认
+            {t('settings.reset')}
           </Button>
           <Button
             variant="primary"
@@ -185,15 +223,15 @@ export const SystemSettings: React.FC = () => {
             leftIcon={<SaveIcon size={16} />}
             disabled={!hasUnsavedChanges}
           >
-            保存设置
+            {t('settings.save')}
           </Button>
         </div>
       </div>
 
       {/* 未保存提示 */}
       {hasUnsavedChanges && (
-        <Alert variant="warning" title="有未保存的更改">
-          请保存设置以使更改生效
+        <Alert variant="warning" title={t('settings.unsavedChanges')}>
+          {t('settings.unsavedChangesMessage')}
         </Alert>
       )}
 
@@ -201,22 +239,22 @@ export const SystemSettings: React.FC = () => {
       <div className="flex gap-2 border-b border-gray-200">
         <TabButton
           active={activeTab === 'api'}
-          label="API配置"
+          label={t('settings.apiConfig')}
           onClick={() => setActiveTab('api')}
         />
         <TabButton
           active={activeTab === 'simulation'}
-          label="仿真参数"
+          label={t('settings.simulationParams')}
           onClick={() => setActiveTab('simulation')}
         />
         <TabButton
           active={activeTab === 'display'}
-          label="显示设置"
+          label={t('settings.displaySettings')}
           onClick={() => setActiveTab('display')}
         />
         <TabButton
           active={activeTab === 'data'}
-          label="数据设置"
+          label={t('settings.dataSettings')}
           onClick={() => setActiveTab('data')}
         />
       </div>
@@ -259,12 +297,12 @@ const TabButton: React.FC<{
   active: boolean;
   label: string;
   onClick: () => void;
-}> = {
+}> = ({
   active, label, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 font-medium transition-colors border-bkt-2 ${
+      className={`px-4 py-2 font-medium transition-colors border-b-2 ${
         active
           ? 'border-accent text-accent'
           : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -281,16 +319,17 @@ const ApiSettings: React.FC<{
   onChange: (key: keyof SystemSettings, value: any) => void;
   onTestConnection: () => void;
 }> = ({ settings, onChange, onTestConnection }) => {
+  const { t } = useTranslation();
   return (
     <Card>
       <CardHeader
-        title="API配置"
-        subtitle="配置后端API连接参数"
+        title={t('settings.apiConfig')}
+        subtitle={t('settings.apiConfigDesc')}
       />
       <CardBody>
         <div className="space-y-4">
           <Input
-            label="API基础URL"
+            label={t('settings.apiBaseUrl')}
             value={settings.apiBaseUrl}
             onChange={(e) => onChange('apiBaseUrl', e.target.value)}
             placeholder="http://localhost:8000"
@@ -299,7 +338,7 @@ const ApiSettings: React.FC<{
 
           <Input
             type="number"
-            label="API超时时间（毫秒）"
+            label={t('settings.apiTimeout')}
             value={settings.apiTimeout}
             onChange={(e) => onChange('apiTimeout', parseInt(e.target.value))}
             min={1000}
@@ -308,7 +347,7 @@ const ApiSettings: React.FC<{
           />
 
           <Input
-            label="WebSocket URL"
+            label={t('settings.websocketUrl')}
             value={settings.websocketUrl}
             onChange={(e) => onChange('websocketUrl', e.target.value)}
             placeholder="ws://localhost:8000/ws"
@@ -321,7 +360,7 @@ const ApiSettings: React.FC<{
               onClick={onTestConnection}
               leftIcon={<RefreshIcon size={14} />}
             >
-              测试连接
+              {t('settings.testConnection')}
             </Button>
           </div>
         </div>
@@ -335,17 +374,19 @@ const SimulationSettings: React.FC<{
   settings: SystemSettings;
   onChange: (key: keyof SystemSettings, value: any) => void;
 }> = ({ settings, onChange }) => {
+  const { t } = useTranslation();
   return (
     <Card>
       <CardHeader
-        title="仿真参数默认值"
+        title={t('settings.simulationParams')}
+        subtitle={t('settings.simulationParamsDesc')}
         subtitle="设置新建仿真时的默认参数"
       />
       <CardBody>
         <div className="space-y-4">
           <Input
             type="number"
-            label="默认总轮数"
+            label={t('settings.defaultTotalRounds')}
             value={settings.defaultTotalRounds}
             onChange={(e) => onChange('defaultTotalRounds', parseInt(e.target.value))}
             min={1}
@@ -355,7 +396,7 @@ const SimulationSettings: React.FC<{
 
           <Input
             type="number"
-            label="默认轮次时长（月）"
+            label={t('settings.defaultRoundDuration')}
             value={settings.defaultRoundDuration}
             onChange={(e) => onChange('defaultRoundDuration', parseInt(e.target.value))}
             min={1}
@@ -365,7 +406,7 @@ const SimulationSettings: React.FC<{
 
           <Input
             type="number"
-            label="默认随机事件概率"
+            label={t('settings.defaultRandomEventProb')}
             value={settings.defaultRandomEventProb}
             onChange={(e) => onChange('defaultRandomEventProb', parseFloat(e.target.value))}
             min={0}
@@ -376,7 +417,7 @@ const SimulationSettings: React.FC<{
 
           <Input
             type="number"
-            label="默认检查点间隔"
+            label={t('settings.defaultCheckpointInterval')}
             value={settings.defaultCheckpointInterval}
             onChange={(e) => onChange('defaultCheckpointInterval', parseInt(e.target.value))}
             min={1}
@@ -393,34 +434,36 @@ const DisplaySettings: React.FC<{
   settings: SystemSettings;
   onChange: (key: keyof SystemSettings, value: any) => void;
 }> = ({ settings, onChange }) => {
+  const { t } = useTranslation();
+
   const themes = [
-    { value: 'light', label: '浅色' },
-    { value: 'dark', label: '深色' },
-    { value: 'auto', label: '自动' },
+    { value: 'light', label: t('settings.themeLight') },
+    { value: 'dark', label: t('settings.themeDark') },
+    { value: 'auto', label: t('settings.themeAuto') },
   ];
 
   const languages = [
-    { value: 'zh-CN', label: '简体中文' },
-    { value: 'en-US', label: 'English' },
+    { value: 'zh-CN', label: t('settings.languageZhCN') },
+    { value: 'en-US', label: t('settings.languageEnUS') },
   ];
 
   const accentColors = [
-    { value: '#3B82F6', label: '蓝色', color: '#3B82F6' },
-    { value: '#10B981', label: '绿色', color: '#10B981' },
-    { value: '#F59E0B', label: '橙色', color: '#F59E0B' },
-    { value: '#EF4444', label: '红色', color: '#EF4444' },
-    { value: '#8B5CF6', label: '紫色', color: '#8B5CF6' },
+    { value: '#3B82F6', label: t('settings.accentBlue'), color: '#3B82F6' },
+    { value: '#10B981', label: t('settings.accentGreen'), color: '#10B981' },
+    { value: '#F59E0B', label: t('settings.accentOrange'), color: '#F59E0B' },
+    { value: '#EF4444', label: t('settings.accentRed'), color: '#EF4444' },
+    { value: '#8B5CF6', label: t('settings.accentPurple'), color: '#8B5CF6' },
   ];
 
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader title="主题设置" />
+        <CardHeader title={t('settings.theme')} />
         <CardBody>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                主题模式
+                {t('settings.theme')}
               </label>
               <Select
                 value={settings.theme}
@@ -432,7 +475,7 @@ const DisplaySettings: React.FC<{
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                强调色
+                {t('settings.accentColor')}
               </label>
               <div className="flex flex-wrap gap-2">
                 {accentColors.map((color) => (
@@ -455,7 +498,7 @@ const DisplaySettings: React.FC<{
       </Card>
 
       <Card>
-        <CardHeader title="语言设置" />
+        <CardHeader title={t('settings.language')} />
         <CardBody>
           <Select
             value={settings.language}
@@ -467,11 +510,11 @@ const DisplaySettings: React.FC<{
       </Card>
 
       <Card>
-        <CardHeader title="自动刷新设置" />
+        <CardHeader title={t('settings.autoRefresh')} />
         <CardBody>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">启用自动刷新</span>
+              <span className="text-sm font-medium text-gray-700">{t('settings.autoRefresh')}</span>
               <Toggle
                 checked={settings.autoRefresh}
                 onChange={(checked) => onChange('autoRefresh', checked)}
@@ -481,7 +524,7 @@ const DisplaySettings: React.FC<{
             {settings.autoRefresh && (
               <Input
                 type="number"
-                label="刷新间隔（毫秒）"
+                label={t('settings.refreshInterval')}
                 value={settings.refreshInterval}
                 onChange={(e) => onChange('refreshInterval', parseInt(e.target.value))}
                 min={1000}
@@ -501,16 +544,17 @@ const DataSettings: React.FC<{
   settings: SystemSettings;
   onChange: (key: keyof SystemSettings, value: any) => void;
 }> = ({ settings, onChange }) => {
+  const { t } = useTranslation();
   return (
     <Card>
-      <CardHeader title="数据管理设置" />
+      <CardHeader title={t('settings.dataSettings')} />
       <CardBody>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium text-gray-700">自动保存</div>
+              <div className="text-sm font-medium text-gray-700">{t('settings.autoSave')}</div>
               <div className="text-xs text-gray-500 mt-1">
-                自动保存仿真进度和结果
+                {t('settings.autoSaveDesc')}
               </div>
             </div>
             <Toggle
@@ -521,7 +565,7 @@ const DataSettings: React.FC<{
 
           <Input
             type="number"
-            label="最大历史记录数"
+            label={t('settings.maxHistory')}
             value={settings.maxHistory}
             onChange={(e) => onChange('maxHistory', parseInt(e.target.value))}
             min={10}

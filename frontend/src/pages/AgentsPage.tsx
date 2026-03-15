@@ -27,6 +27,7 @@ const AgentList: React.FC = () => {
   const { agents, selectedAgent } = useSelector((state: RootState) => state.agents);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTier, setFilterTier] = useState<PowerTier | 'all'>('all');
+  const [showEditor, setShowEditor] = useState(false);
 
   useEffect(() => {
     fetchAgents();
@@ -98,7 +99,10 @@ const AgentList: React.FC = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">智能体管理</h2>
         <button
-          onClick={() => dispatch(setSelectedAgent(null))}
+          onClick={() => {
+            dispatch(setSelectedAgent(null));
+            setShowEditor(true);
+          }}
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
         >
           添加智能体
@@ -183,7 +187,10 @@ const AgentList: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
-                    onClick={() => dispatch(setSelectedAgent(agent))}
+                    onClick={() => {
+                      dispatch(setSelectedAgent(agent));
+                      setShowEditor(true);
+                    }}
                     className="text-indigo-600 hover:text-indigo-900 mr-4"
                   >
                     编辑
@@ -202,13 +209,13 @@ const AgentList: React.FC = () => {
       </div>
 
       {/* 智能体编辑器 */}
-      <AgentEditor />
+      {showEditor && <AgentEditor onClose={() => setShowEditor(false)} />}
     </div>
   );
 };
 
 // 智能体编辑器组件
-const AgentEditor: React.FC = () => {
+const AgentEditor: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { selectedAgent } = useSelector((state: RootState) => state.agents);
 
@@ -284,6 +291,7 @@ const AgentEditor: React.FC = () => {
         }));
       }
       dispatch(setSelectedAgent(null));
+      onClose();
     } catch (error) {
       dispatch(addNotification({
         type: 'error',
@@ -293,8 +301,6 @@ const AgentEditor: React.FC = () => {
     }
   };
 
-  if (!selectedAgent) return null;
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
@@ -303,7 +309,10 @@ const AgentEditor: React.FC = () => {
             {selectedAgent ? '编辑智能体' : '添加智能体'}
           </h3>
           <button
-            onClick={() => dispatch(setSelectedAgent(null))}
+            onClick={() => {
+              dispatch(setSelectedAgent(null));
+              onClose();
+            }}
             className="text-gray-400 hover:text-gray-600"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -480,7 +489,10 @@ const AgentEditor: React.FC = () => {
           <div className="flex justify-end gap-2">
             <button
               type="button"
-              onClick={() => dispatch(setSelectedAgent(null))}
+              onClick={() => {
+                dispatch(setSelectedAgent(null));
+                onClose();
+              }}
               className="px-6 py-2 border rounded-lg hover:bg-gray-50"
             >
               取消

@@ -7,7 +7,7 @@
 import React from 'react';
 import { Card } from './Card';
 
-export type StatCardVariant = 'success' | 'warning' | 'error' | 'info' | 'primary';
+export type StatCardVariant = 'success' | 'warning' | 'error' | 'info' | 'primary' | 'default';
 
 export interface StatCardProps {
   title: string;
@@ -54,6 +54,11 @@ const StatCard: React.FC<StatCardProps> = ({
       bg: 'bg-blue-50',
       icon: 'bg-blue-100 text-blue-600 border border-blue-200',
       text: 'text-blue-900',
+    },
+    default: {
+      bg: 'bg-gray-50',
+      icon: 'bg-gray-100 text-gray-600 border border-gray-200',
+      text: 'text-gray-900',
     },
   };
 

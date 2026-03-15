@@ -96,9 +96,11 @@ const Alert: React.FC<AlertProps> = ({
               {title}
             </h4>
           )}
-          <p className="text-sm text-gray-700">
-            {children}
-          </p>
+          {typeof children === 'string' || typeof children === 'number' ? (
+            <p className="text-sm text-gray-700">{children}</p>
+          ) : (
+            <div className="text-sm text-gray-700">{children}</div>
+          )}
         </div>
 
         {/* Close Button */}

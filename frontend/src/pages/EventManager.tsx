@@ -17,7 +17,9 @@ import { RootState, AppDispatch } from '../store';
 import { eventsAPI } from '../services/events';
 import { addNotification } from '../store/slices/uiSlice';
 import { Button } from '../components/ui/buttons/Button';
-import { Card, CardBody, CardHeader } from '../components/ui/cards/Card';
+import { Card } from '../components/ui/cards/Card';
+import { CardBody } from '../components/ui/cards/CardBody';
+import { CardHeader } from '../components/ui/cards/CardHeader';
 import { Input } from '../components/ui/form/Input';
 import { Textarea } from '../components/ui/form/Textarea';
 import { Alert } from '../components/ui/feedback/Alert';
@@ -479,7 +481,7 @@ const EventModal: React.FC<{
             variant="primary"
             onClick={onSubmit}
           >
-            {event ? ? '更新' : '创建'}
+            {event ? '更新' : '创建'}
           </Button>
         </div>
       </div>
