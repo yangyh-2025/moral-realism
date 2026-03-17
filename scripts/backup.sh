@@ -41,8 +41,13 @@ else
     exit 1
 fi
 
-# 获取文件大小
-FILE_SIZE=$(stat -f%z "$BACKUP_FILE" 2>/dev/null || stat -c%s "$BACKUP_FILE" 2>/dev/null || echo "unknown")
+# 获取文件大小（兼容不同平台）
+if command -v stat >/dev/null 2>&1; then
+    # 尝试使用stat -c（macOS/BSD）或stat -f（Linux）
+    FILE_SIZE=$(stat -c%s "$BACKUP_FILE" 2>/dev/null || stat -f%z "$BACKUP_FILE" 2>/dev/null || echo "unknown")
+else
+    FILE_SIZE="unknown"
+fi
 echo "备份文件大小: $FILE_SIZE bytes"
 
 # 压缩备份
@@ -59,7 +64,16 @@ fi
 # 清理旧备份
 echo ""
 echo "清理超过 $RETENTION_DAYS 天的旧备份..."
-DELETED_COUNT=$(find $BACKUP_DIR -name "backup_*.db.gz" -mtime +$RETENTION_DAYS -delete -print | wc -l)
+
+# 使用find -delete或手动删除
+if find "$BACKUP_DIR" -name "backup_*.db.gz" -mtime +$RETENTION_DAYS -delete -print 2>/dev/null; then
+    DELETED_COUNT=$(find "$BACKUP_DIR" -name "backup_*.db.gz" -mtime +$RETENTION_DAYS 2>/dev/null | wc -l)
+else
+    # 如果-delete不支持，手动删除
+    DELETED_COUNT=$(find "$BACKUP_DIR" -name "backup_*.db.gz" -mtime +$RETENTION_DAYS 2>/dev/null | wc -l)
+    find "$BACKUP_DIR" -name "backup_*.db.gz" -mtime +$RETENTION_DAYS -exec rm -f {} \; 2>/dev/null
+fi
+
 echo "已删除 $DELETED_COUNT 个旧备份文件"
 
 # 显示备份统计
@@ -67,8 +81,8 @@ echo ""
 echo "========================================="
 echo "备份统计"
 echo "========================================="
-BACKUP_COUNT=$(find $BACKUP_DIR -name "backup_*.db*" | wc -l)
-TOTAL_SIZE=$(du -sh $BACKUP_DIR 2>/dev/null | cut -f1 || echo "unknown")
+BACKUP_COUNT=$(find "$BACKUP_DIR" -name "backup_*.db*" 2>/dev/null | wc -l)
+TOTAL_SIZE=$(du -sh "$BACKUP_DIR" 2>/dev/null | cut -f1 || echo "unknown")
 echo "当前备份总数: $BACKUP_COUNT"
 echo "备份目录总大小: $TOTAL_SIZE"
 

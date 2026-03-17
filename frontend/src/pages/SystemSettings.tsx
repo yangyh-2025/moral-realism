@@ -380,7 +380,6 @@ const SimulationSettings: React.FC<{
       <CardHeader
         title={t('settings.simulationParams')}
         subtitle={t('settings.simulationParamsDesc')}
-        subtitle="设置新建仿真时的默认参数"
       />
       <CardBody>
         <div className="space-y-4">
@@ -430,6 +429,27 @@ const SimulationSettings: React.FC<{
 };
 
 // 显示设置组件
+// 开关组件
+const Toggle: React.FC<{
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}> = ({ checked, onChange }) => {
+  return (
+    <button
+      onClick={() => onChange(!checked)}
+      className={`relative w-12 h-6 rounded-full transition-colors ${
+        checked ? 'bg-accent' : 'bg-gray-300'
+      }`}
+    >
+      <div
+        className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+          checked ? 'left-7' : 'left-1'
+        }`}
+      />
+    </button>
+  );
+};
+
 const DisplaySettings: React.FC<{
   settings: SystemSettings;
   onChange: (key: keyof SystemSettings, value: any) => void;
@@ -575,27 +595,6 @@ const DataSettings: React.FC<{
         </div>
       </CardBody>
     </Card>
-  );
-};
-
-// 开关组件
-const Toggle: React.FC<{
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}> = ({ checked, onChange }) => {
-  return (
-    <button
-      onClick={() => onChange(!checked)}
-      className={`relative w-12 h-6 rounded-full transition-colors ${
-        checked ? 'bg-accent' : 'bg-gray-300'
-      }`}
-    >
-      <div
-        className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
-          checked ? 'left-7' : 'left-1'
-        }`}
-      />
-    </button>
   );
 };
 

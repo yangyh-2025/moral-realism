@@ -52,7 +52,7 @@ interface AgentsState {
 
 const initialState: AgentsState = {
   agents: [],
-  selected: null,
+  selectedAgent: null,
   agentRelations: {},
   isLoading: false,
   error: null,

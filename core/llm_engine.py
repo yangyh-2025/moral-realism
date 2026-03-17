@@ -165,14 +165,36 @@ class LLMEngine:
 
         self._call_count += 1
 
-        # 提取函数调用
+        # 提取函数调用（兼容新版和旧版API）
         if 'choices' in result and len(result['choices']) > 0:
             message = result['choices'][0].get('message', {})
-            if 'function_call' in message:
+            # 新版API使用tool_calls
+            if 'tool_calls' in message and message['tool_calls']:
+                tool_call = message['tool_calls'][0]
+                if 'function' in tool_call:
+                    function_call = tool_call['function']
+                    try:
+                        arguments = json.loads(function_call.get('arguments', '{}'))
+                        if not isinstance(arguments, dict):
+                            arguments = {}
+                    except (json.JSONDecodeError, TypeError):
+                        arguments = {}
+                    return {
+                        'function': function_call.get('name'),
+                        'arguments': arguments
+                    }
+            # 旧版API使用function_call
+            elif 'function_call' in message:
                 function_call = message['function_call']
+                try:
+                    arguments = json.loads(function_call.get('arguments', '{}'))
+                    if not isinstance(arguments, dict):
+                        arguments = {}
+                except (json.JSONDecodeError, TypeError):
+                    arguments = {}
                 return {
                     'function': function_call.get('name'),
-                    'arguments': json.loads(function_call.get('arguments', '{}'))
+                    'arguments': arguments
                 }
 
         # 如果没有函数调用，返回原始文本

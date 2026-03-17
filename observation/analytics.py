@@ -345,7 +345,8 @@ class InfluenceAnalyzer:
         }
 
         # 计算总影响力
-        total_influence = sum(influence_breakdown.values()) / len(influence_breakdown)
+        breakdown_len = len(influence_breakdown)
+        total_influence = sum(influence_breakdown.values()) / breakdown_len if breakdown_len > 0 else 0.0
 
         # 找出最有影响力的行动
         most_influential_actions = sorted(
@@ -547,7 +548,7 @@ class InfluenceAnalyzer:
 
         # 计算影响的平均值
         impacts = [a.get("impact_score", 0.5) for a in mutual_actions]
-        return np.mean(impacts)
+        return np.mean(impacts) if impacts else 0.0
 
 
 class ComparisonReport(BaseModel):
@@ -613,12 +614,14 @@ class ComparisonAnalyzer:
 
         for sim_id in sim_ids:
             result = self._simulation_results.get(sim_id)
-            if result and "metrics" in result:
+            if result and 'metrics' in result:
                 metrics = result["metrics"]
                 for category, metric_list in metrics.items():
                     for metric in metric_list:
                         name = metric.get("name", "unknown")
                         value = metric.get("value", 0)
+                        if name not in metrics_comparison:
+                            metrics_comparison[name] = {}
                         metrics_comparison[name][sim_id] = float(value)
 
         # 找出关键差异
@@ -789,7 +792,7 @@ class ComparisonAnalyzer:
         try:
             import json
 
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(comparison.model_dump(), f, indent=2, ensure_ascii=False)
 
             return True

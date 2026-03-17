@@ -19,7 +19,7 @@ async def get_round_data(round_number: int):
     """获取指定轮次数据"""
     return {"message": f"第{round_number}轮数据", "round": round_number, "data": {}}
 
-@router.get("/power-porrelations")
+@router.get("/power-correlations")
 async def get_power_correlations():
     """获取实力关联数据"""
     return {"message": "实力关联数据", "data": []}

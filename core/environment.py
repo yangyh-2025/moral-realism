@@ -12,6 +12,7 @@ import heapq
 from enum import IntEnum
 import logging
 from collections import deque
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -80,28 +81,30 @@ class EventScheduler:
             "total_cancelled": 0,
             "total_delayed": 0
         }
+        self._lock = threading.Lock()  # 线程锁
 
     def schedule(self, event: Event) -> str:
         """调度事件"""
-        if event.cancelled:
-            logger.warning(f"Event {event.event_id} is already cancelled, not scheduling")
+        with self._lock:
+            if event.cancelled:
+                logger.warning(f"Event {event.event_id} is already cancelled, not scheduling")
+                return event.event_id
+
+            if event.event_id in self._scheduled_events:
+                logger.warning(f"Event {event.event_id} already scheduled, updating")
+                self._cancel_internal(event.event_id)
+
+            # 使用优先级计数器确保相同优先级事件按插入顺序处理
+            priority_index = (event.priority.value, self._priority_counter)
+            event._priority_index = priority_index[0]
+
+            heapq.heappush(self._event_queue, event)
+            self._scheduled_events[event.event_id] = event
+            self._priority_counter += 1
+            self._execution_stats["total_scheduled"] += 1
+
+            logger.debug(f"Scheduled event: {event.event_id} with priority {event.priority.name}")
             return event.event_id
-
-        if event.event_id in self._scheduled_events:
-            logger.warning(f"Event {event.event_id} already scheduled, updating")
-            self.cancel(event.event_id)
-
-        # 使用优先级计数器确保相同优先级事件按插入顺序处理
-        priority_index = (event.priority.value, self._priority_counter)
-        event._priority_index = priority_index[0]
-
-        heapq.heappush(self._event_queue, event)
-        self._scheduled_events[event.event_id] = event
-        self._priority_counter += 1
-        self._execution_stats["total_scheduled"] += 1
-
-        logger.debug(f"Scheduled event: {event.event_id} with priority {event.priority.name}")
-        return event.event_id
 
     def schedule_delayed(
         self,
@@ -114,8 +117,8 @@ class EventScheduler:
         event.metadata["delayed_until"] = delay_rounds
         return self.schedule(event)
 
-    def cancel(self, event_id: str) -> bool:
-        """取消事件"""
+    def _cancel_internal(self, event_id: str) -> bool:
+        """内部取消事件（不获取锁）"""
         if event_id in self._scheduled_events:
             self._scheduled_events[event_id].cancelled = True
             del self._scheduled_events[event_id]
@@ -124,44 +127,50 @@ class EventScheduler:
             return True
         return False
 
+    def cancel(self, event_id: str) -> bool:
+        """取消事件"""
+        with self._lock:
+            return self._cancel_internal(event_id)
+
     def execute_next(
         self,
         current_round: int,
         context: Optional[Dict] = None
     ) -> Optional[Event]:
         """执行下一个事件"""
-        # 清理已取消的事件
-        while self._event_queue and self._event_queue[0].cancelled:
-            cancelled_event = heapq.heappop(self._event_queue)
-            logger.debug(f"Removed cancelled event from queue: {cancelled_event.event_id}")
+        with self._lock:
+            # 清理已取消的事件
+            while self._event_queue and self._event_queue[0].cancelled:
+                cancelled_event = heapq.heappop(self._event_queue)
+                logger.debug(f"Removed cancelled event from queue: {cancelled_event.event_id}")
 
-        if not self._event_queue:
-            return None
+            if not self._event_queue:
+                return None
 
-        # 检查延迟事件
-        next_event = self._event_queue[0]
-        target_round = next_event.metadata.get("target_round", current_round)
+            # 检查延迟事件
+            next_event = self._event_queue[0]
+            target_round = next_event.metadata.get("target_round", current_round)
 
-        if target_round > current_round:
-            logger.debug(f"Next event {next_event.event_id} scheduled for round {target_round}, current {current_round}")
-            return None
+            if target_round > current_round:
+                logger.debug(f"Next event {next_event.event_id} scheduled for round {target_round}, current {current_round}")
+                return None
 
-        # 执行事件
-        event = heapq.heappop(self._event_queue)
-        if event.event_id in self._scheduled_events:
-            del self._scheduled_events[event.event_id]
-        self._execution_stats["total_executed"] += 1
+            # 执行事件
+            event = heapq.heappop(self._event_queue)
+            if event.event_id in self._scheduled_events:
+                del self._scheduled_events[event.event_id]
+            self._execution_stats["total_executed"] += 1
 
-        logger.info(f"Executing event: {event.event_id}")
+            logger.info(f"Executing event: {event.event_id}")
 
-        # 执行回调
-        if event.callback is not None:
-            try:
-                event.callback(event, context)
-            except Exception as e:
-                logger.error(f"Error executing callback for event {event.event_id}: {e}")
+            # 执行回调（在锁外执行，避免回调持有锁过久）
+            if event.callback is not None:
+                try:
+                    event.callback(event, context)
+                except Exception as e:
+                    logger.error(f"Error executing callback for event {event.event_id}: {e}")
 
-        return event
+            return event
 
     def get_pending_count(self) -> int:
         """获取待处理事件数量"""
@@ -630,7 +639,7 @@ class EnvironmentEngine:
                     "id": e.event_id,
                     "type": e.event_type,
                     "name": e.name,
-                    "description": e.description.description if hasattr(e.description, 'description') else e.description,
+                    "description": e.description if not hasattr(e.description, 'description') else e.description.description,
                     "participants": e.participants,
                     "impact_level": e.impact_level,
                     "priority": e.priority.name

@@ -272,7 +272,7 @@ class GlobalLeadershipStrategy:
             agent.get("power", 0) for agent in agents
         )
 
-        if total_power == 0:
+        if total_power <= 0:  # 添加负值检查
             return {}
 
         power_balance = {

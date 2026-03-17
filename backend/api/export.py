@@ -13,6 +13,7 @@ from enum import Enum
 import io
 import json
 import csv
+import re
 
 router = APIRouter()
 
@@ -325,6 +326,36 @@ class ExportService:
 _export_service = ExportService()
 
 
+def validate_filename(filename: str) -> bool:
+    """
+    验证文件名安全性，防止路径遍历攻击
+
+    Args:
+        filename: 文件名
+
+    Returns:
+        是否安全
+    """
+    # 检查文件名是否为空
+    if not filename:
+        return False
+
+    # 检查文件名长度
+    if len(filename) > 255:
+        return False
+
+    # 检查是否包含路径遍历字符
+    if ".." in filename or "/" in filename or "\\" in filename:
+        return False
+
+    # 检查文件名格式（只允许字母、数字、下划线、连字符和点）
+    pattern = r'^[a-zA-Z0-9_\-\.]+$'
+    if not re.match(pattern, filename):
+        return False
+
+    return True
+
+
 @router.post("/simulation/{simulation_id}", response_model=ExportResult)
 async def export_simulation(
     simulation_id: str,
@@ -378,37 +409,46 @@ async def download_export(filename: str):
     Returns:
         FileResponse: 文件响应
     """
-    export_key = f"_export_{filename}"
+    try:
+        # 验证文件名
+        if not validate_filename(filename):
+            raise HTTPException(status_code=400, detail="Invalid filename")
 
-    if export_key not in _simulations_data:
-        raise HTTPException(status_code=404, detail=f"导出文件 {filename} 不存在")
+        export_key = f"_export_{filename}"
 
-    export_data = _simulations_data[export_key]
-    data = export_data["data"]
-    fmt = export_data["format"]
+        if export_key not in _simulations_data:
+            raise HTTPException(status_code=404, detail=f"导出文件 {filename} 不存在")
 
-    if fmt == "json":
-        media_type = "application/json"
-    elif fmt == "csv":
-        media_type = "text/csv"
-    elif fmt == "excel":
-        media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    elif fmt == "pdf":
-        media_type = "application/pdf"
-    else:
-        media_type = "application/octet-stream"
+        export_data = _simulations_data[export_key]
+        data = export_data["data"]
+        fmt = export_data["format"]
 
-    # 将字符串转换为字节流
-    if isinstance(data, str):
-        byte_data = data.encode("utf-8")
-    else:
-        byte_data = data
+        if fmt == "json":
+            media_type = "application/json"
+        elif fmt == "csv":
+            media_type = "text/csv"
+        elif fmt == "excel":
+            media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        elif fmt == "pdf":
+            media_type = "application/pdf"
+        else:
+            media_type = "application/octet-stream"
 
-    return StreamingResponse(
-        io.BytesIO(byte_data),
-        media_type=media_type,
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
-    )
+        # 将字符串转换为字节流
+        if isinstance(data, str):
+            byte_data = data.encode("utf-8")
+        else:
+            byte_data = data
+
+        return StreamingResponse(
+            io.BytesIO(byte_data),
+            media_type=media_type,
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"文件下载失败: {str(e)}")
 
 
 @router.get("/templates")

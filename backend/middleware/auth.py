@@ -7,11 +7,14 @@ Git提交邮箱: yangyuhang2667@163.com
 from fastapi import Security, HTTPException, status
 from fastapi.security import APIKeyHeader
 from typing import Optional
+import os
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
-# 配置的API密钥
-VALID_API_KEYS = ["your-api-key-here"]
+# 配置的API密钥 - 从环境变量读取
+VALID_API_KEYS = []
+if os.getenv("VALID_API_KEYS"):
+    VALID_API_KEYS = [key.strip() for key in os.getenv("VALID_API_KEYS").split(",") if key.strip()]
 
 
 async def verify_api_key(api_key: Optional[str] = Security(api_key_header)):

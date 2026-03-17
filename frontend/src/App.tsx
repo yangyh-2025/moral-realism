@@ -204,7 +204,10 @@ function AppContent() {
     const wsClient = getWebSocketClient(undefined, dispatch);
     wsClient.connect().catch(err => console.error('WebSocket connect failed:', err));
 
-    return () => {};
+    return () => {
+      // 清理WebSocket连接
+      wsClient.disconnect();
+    };
   }, []);
 
   // 应用主题

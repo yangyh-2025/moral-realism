@@ -36,6 +36,11 @@ class RateLimiter:
             if now - r < self.window_seconds
         ]
 
+        # 清理长时间未访问的客户端
+        if len(self.requests[client_id]) == 0:
+            del self.requests[client_id]
+            return True
+
         # 检查请求次数
         if len(self.requests[client_id]) >= self.max_requests:
             return False

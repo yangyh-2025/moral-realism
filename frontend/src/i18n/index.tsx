@@ -9,13 +9,20 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import zh from './zh.json';
 import en from './en.json';
 
-// 语言类型
-export type Language = 'zh' | 'en';
+// 语言类型（兼容系统设置中的格式）
+export type Language = 'zh-CN' | 'zh' | 'en' | 'en-US';
+
+// 语言映射（将完整代码转换为简短代码）
+export function getShortLanguage(lang: Language): 'zh' | 'en' {
+  return lang.startsWith('zh') ? 'zh' : 'en';
+}
 
 // 翻译资源
 const resources: Record<Language, typeof zh> = {
-  zh,
-  en,
+  zh: zh,      // 映射到简体中文
+  'zh-CN': zh,  // 映射到简体中文
+  en: en,      // 映射到英文
+  'en-US': en,  // 映射到英文
 };
 
 // 创建翻译上下文
@@ -34,7 +41,11 @@ const I18nContext = createContext<I18nContextType>({
 // 翻译函数
 function translate(language: Language, key: string, params?: Record<string, any>): string {
   const keys = key.split('.');
-  let value: any = resources[language];
+
+  // 转换为短语言代码
+  const shortLang = language.startsWith('zh') ? 'zh' : 'en';
+
+  let value: any = resources[shortLang as 'zh' | 'en'];
 
   for (const k of keys) {
     if (value && typeof value === 'object') {
@@ -81,7 +92,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   });
 
   const setLanguage = useCallback((lang: Language) => {
-    if (resources[lang]) {
+    // 转换为短语言代码
+    const shortLang = lang.startsWith('zh') ? 'zh' : 'en';
+    if (resources[shortLang as 'zh' | 'en']) {
       setLanguageState(lang);
       // 持久化语言设置
       if (typeof window !== 'undefined' && window.localStorage) {

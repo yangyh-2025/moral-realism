@@ -618,7 +618,7 @@ class PromptTemplateEngine:
                         self._template_versions[template_type] = TemplateVersion(**version_info)
                     except ValueError:
                         continue
-            except (json) as e:
+            except Exception as e:
                 pass
 
     def save_template_version(

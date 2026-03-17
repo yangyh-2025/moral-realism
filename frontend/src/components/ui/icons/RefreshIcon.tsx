@@ -2,7 +2,7 @@
  * Refresh Icon
  *
  * Git提交用户名: yangyh-2025
- * Git提交邮箱: yangyuhangari2667@163.com
+ * Git提交邮箱: yangyuhang26@163.com
  */
 import React from 'react';
 import { Icon, IconProps } from './Icon';
