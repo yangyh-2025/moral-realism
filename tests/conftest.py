@@ -17,19 +17,19 @@ except ImportError:
 
 # Core imports
 try:
-    from core.llm_engine import LLMEngine, LLMProvider, SiliconFlowProvider
-    from core.prompt_engine import PromptTemplateEngine, PromptTemplate, PromptBuilder
-    from core.environment import EnvironmentEngine, Event
+    from infrastructure.llm.llm_engine import LLMEngine, LLMProvider, SiliconFlowProvider
+    from infrastructure.prompts.prompt_engine import PromptTemplateEngine, PromptTemplate, PromptBuilder
+    from domain.environment.environment_engine import EnvironmentEngine, Event
     CORE_AVAILABLE = True
 except ImportError:
     CORE_AVAILABLE = False
 
 # Entity imports
 try:
-    from entities.base_agent import BaseAgent, DecisionCache, AgentLearning
-    from entities.state_agent import StateAgent
-    from entities.power_system import PowerMetrics, PowerTier
-    from entities.interaction_rules import InteractionRules, Interaction, InteractionType
+    from domain.agents.base_agent import BaseAgent, DecisionCache, AgentLearning
+    from domain.agents.state_agent import StateAgent
+    from domain.power.power_metrics import PowerMetrics, PowerTier
+    from domain.interactions.interaction_rules import InteractionRules, Interaction, InteractionType
     from config.leader_types import LeaderType
     ENTITIES_AVAILABLE = True
 except ImportError:

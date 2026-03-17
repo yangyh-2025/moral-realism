@@ -11,8 +11,8 @@ from datetime import datetime
 import uuid
 import json
 
-from workflows.multi_round import MultiRoundWorkflow
-from observation.experiments import ExperimentManager
+from application.workflows.multi_round import MultiRoundWorkflow
+from application.analysis.experiments import ExperimentManager
 
 
 @dataclass

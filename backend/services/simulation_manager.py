@@ -12,7 +12,7 @@ import asyncio
 import uuid
 import json
 
-from core.storage import StorageEngine
+from infrastructure.storage.storage_engine import StorageEngine
 
 
 class SimulationStatus(Enum):
