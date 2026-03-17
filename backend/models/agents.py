@@ -44,7 +44,7 @@ class Agent(BaseModel):
     comprehensive_power: float = Field(0.0, ge=0, description="综合国力")
     strategic_reputation: float = Field(100.0, ge=0, le=100, description="战略声誉")
     decision_count: int = Field(0, ge=0, description="决策次数")
-    metadata: Optional[Dict[str, Any]] = Field(None) = Field(None, description="元数据")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="元数据")
 
 
 class AgentConfig(BaseModel):

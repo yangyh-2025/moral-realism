@@ -73,6 +73,35 @@ app.add_middleware(
 # GZip响应压缩中间件
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
+# 导入并启用速率限制中间件
+from backend.middleware.ratelimit import RateLimiter
+
+# 创建速率限制中间件实例
+rate_limiter = RateLimiter(max_requests=100, window_seconds=60)
+
+
+class RateLimitMiddleware:
+    """速率限制中间件类"""
+
+    async def __call__(self, request, call_next):
+        """处理请求前检查速率限制"""
+        client_id = request.client.host if request.client else "unknown"
+
+        if not rate_limiter.is_allowed(client_id):
+            from fastapi import status
+            from fastapi.responses import JSONResponse
+            return JSONResponse(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                content={"error": {"message": "Rate limit exceeded", "code": "RATE_LIMIT_EXCEEDED", "status_code": 429}}
+            )
+
+        response = await call_next(request)
+        return response
+
+
+# 添加速率限制中间件
+app.add_middleware(RateLimitMiddleware)
+
 # 全局异常处理器
 @app.exception_handler(CustomError)
 async def custom_error_handler(request: Request, exc: CustomError):
@@ -137,6 +166,15 @@ async def startup_event():
     # 初始化性能监控
     from core.performance import performance_monitor
     logger.info("Performance monitoring initialized")
+
+    # 初始化服务（依赖注入）
+    from backend.services.export_service import ExportService
+    from backend.services.simulation_manager import SimulationLifecycle
+
+    app.state.export_service = ExportService()
+    app.state.simulation_manager = SimulationLifecycle()
+
+    logger.info("Services initialized")
 
 
 @app.on_event("shutdown")
