@@ -5,19 +5,20 @@ Git提交用户名: yangyh-2025
 Git提交邮箱: yangyuhang2667@163.com
 """
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import uuid
+from config.settings import Constants
 
 router = APIRouter()
 
 
 class AgentConfig(BaseModel):
     """智能体配置"""
-    name: str = Field(..., description="智能体名称")
-    region: str = Field(..., description="所属区域")
-    leader_type: str = Field(..., description="领导类型")
+    name: str = Field(..., description="智能体名称", min_length=1, max_length=Constants.MAX_AGENT_NAME_LENGTH)
+    region: str = Field(..., description="所属区域", min_length=1, max_length=Constants.MAX_REGION_LENGTH)
+    leader_type: str = Field(..., description="领导类型", min_length=1, max_length=Constants.MAX_LEADER_TYPE_LENGTH)
     military: float = Field(default=0.0, ge=0.0, le=100.0, description="军事实力")
     economy: float = Field(default=0.0, ge=0.0, le=100.0, description="经济实力")
     technology: float = Field(default=0.0, ge=0.0, le=100.0, description="科技实力")
@@ -25,6 +26,24 @@ class AgentConfig(BaseModel):
     support: float = Field(default=0.0, ge=0.0, le=100.0, description="支持度")
     alliances: List[str] = Field(default_factory=list, description="盟友列表")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="元数据")
+
+    @validator('name')
+    def validate_name(cls, v):
+        """验证名称不为空且只包含有效字符"""
+        if not v or v.strip() == '':
+            raise ValueError('智能体名称不能为空')
+        if len(v.strip()) == 0:
+            raise ValueError('智能体名称不能只包含空格')
+        return v.strip()
+
+    @validator('alliances')
+    def validate_alliances(cls, v):
+        """验证盟友列表"""
+        if v is None:
+            return []
+        # 去重并移除空字符串
+        unique_alliances = list(set([a.strip() for a in v if a and a.strip()]))
+        return unique_alliances
 
 
 class Agent(BaseModel):

@@ -334,11 +334,13 @@ async def simulation_websocket(websocket: WebSocket, simulation_id: str):
                 # 处理客户端消息
                 await _handle_client_message(client_id, simulation_id, message)
 
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e:
+                logger.warning(f"无效的JSON消息: {e}")
                 await _manager.send_personal_message(client_id, {
                     "type": "error",
                     "message": "无效的JSON消息"
                 })
+                continue  # 跳过后续处理
 
     except WebSocketDisconnect:
         logger.info(f"WebSocket连接断开: {client_id}")

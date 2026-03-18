@@ -9,6 +9,10 @@ from typing import Dict, List, Optional, Any, Union
 import asyncio
 import httpx
 import json
+import logging
+from config.settings import Constants
+
+logger = logging.getLogger(__name__)
 
 class LLMProvider(ABC):
     """LLM提供者抽象基类"""
@@ -45,11 +49,24 @@ class SiliconFlowProvider(LLMProvider):
         self.api_keys = [api_key] if isinstance(api_key, str) else api_key
         self.base_url = base_url
         self.model = model
-        self.client = httpx.AsyncClient(timeout=60.0)
+        self.client = httpx.AsyncClient(timeout=Constants.HTTP_TIMEOUT)
         # 轮替调用索引
         self._current_key_index = 0
         # 轮替调用锁
         self._key_lock = asyncio.Lock()
+
+    async def close(self) -> None:
+        """正确关闭HTTP客户端"""
+        if self.client is not None:
+            await self.client.aclose()
+
+    async def __aenter__(self):
+        """异步上下文管理器入口"""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """异步上下文管理器出口"""
+        await self.close()
 
     def _get_next_api_key(self) -> str:
         """轮替获取下一个API-key"""
@@ -104,13 +121,22 @@ class SiliconFlowProvider(LLMProvider):
             "max_tokens": max_tokens
         }
 
-        response = await self.client.post(
-            f"{self.base_url}/chat/completions",
-            headers=headers,
-            json=payload
-        )
-        response.raise_for_status()
-        return response.json()
+        try:
+            response = await self.client.post(
+                f"{self.base_url}/chat/completions",
+                headers=headers,
+                json=payload
+            )
+            response.raise_for_status()
+            result = response.json()
+            logger.info(f"LLM API调用成功: model={self.model}")
+            return result
+        except httpx.HTTPStatusError as e:
+            logger.error(f"LLM API调用失败: {e.response.status_code} - {e.response.text}")
+            raise
+        except Exception as e:
+            logger.error(f"LLM API调用异常: {type(e).__name__} - {str(e)}")
+            raise
 
 class LLMEngine:
     """
@@ -148,10 +174,10 @@ class LLMEngine:
         Returns:
             包含函数调用和参数的决策结果
         """
-        # 过滤掉禁止使用的函数
+        # 过滤掉禁止使用的函数（添加类型检查防止KeyError）
         filtered_functions = [
             f for f in available_functions
-            if f['name'] not in prohibited_functions
+            if isinstance(f, dict) and 'name' in f and f['name'] not in prohibited_functions
         ]
 
         # 生成决策（传递use_rotation参数）

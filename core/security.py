@@ -49,18 +49,44 @@ def validate_sql(query: str) -> bool:
     """
     验证SQL查询（防止SQL注入）
 
+    注意：此函数仅提供基础保护，强烈建议使用参数化查询来防止SQL注入。
+    对于关键操作，应使用ORM或参数化查询而非字符串拼接。
+
     Args:
         query: SQL查询
 
     Returns:
         是否安全
     """
-    dangerous_keywords = ['DROP', 'DELETE', 'TRUNCATE', 'ALTER', 'EXEC']
+    if not query or not isinstance(query, str):
+        return False
+
     query_upper = query.upper()
 
-    for keyword in dangerous_keywords:
-        if keyword in query_upper:
+    # 检测注释绕过的注入
+    if '--' in query or '/*' in query or '*/' in query:
+        return False
+
+    # 检测危险操作（使用正则确保匹配完整单词，避免误报）
+    import re
+    dangerous_keywords = [
+        r'\bDROP\b',
+        r'\bDELETE\b(?!.*\bFROM\b.*\bWHERE\b)',  # 允许有WHERE的DELETE
+        r'\bTRUNCATE\b',
+        r'\bALTER\b',
+        r'\bEXEC\b',
+        r'\bEXECUTE\b',
+        r'\bINSERT\s+INTO\b',
+        r'\bUPDATE\b(?!.*\bSET\b.*\bWHERE\b)'  # 允许有WHERE的UPDATE
+    ]
+
+    for pattern in dangerous_keywords:
+        if re.search(pattern, query_upper):
             return False
+
+    # 检测UNION注入
+    if re.search(r'\bUNION\b.*\bSELECT\b', query_upper):
+        return False
 
     return True
 

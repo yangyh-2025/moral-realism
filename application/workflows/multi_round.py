@@ -13,6 +13,8 @@ import os
 import pickle
 import json
 import uuid
+import time
+from config.settings import Constants
 
 
 class WorkflowState(str, Enum):
@@ -602,9 +604,13 @@ class MultiRoundWorkflow:
                 if self.state_machine.get_current_state() == WorkflowState.CANCELLED:
                     break
 
-                # 检查是否已暂停
+                # 检查是否已暂停（添加超时机制防止无限，5分钟超时）
+                timeout = Constants.WORKFLOW_PAUSE_TIMEOUT
+                start_time = time.time()
                 while self.state_machine.get_current_state() == WorkflowState.PAUSED:
-                    await asyncio.sleep(0.1)
+                    if time.time() - start_time > timeout:
+                        raise TimeoutError("工作流暂停超时")
+                    await asyncio.sleep(Constants.WORKFLOW_POLL_INTERVAL)
 
                 # 更新进度
                 self.executor.update_progress(

@@ -8,6 +8,39 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 
 
+# 系统常量
+class Constants:
+    """系统常量配置"""
+    # HTTP客户端相关
+    HTTP_TIMEOUT = 60.0  # HTTP请求超时时间（秒）
+    HTTP_CLIENT_POOL_SIZE = 100  # 连接池大小
+
+    # 缓存相关
+    DECISION_CACHE_MAX_SIZE = 100  # 决策缓存最大条目数
+    DECISION_CACHE_TTL = 3600  # 缓存生存时间（秒）
+    LEARNING_MAX_OUTCOMES = 1000  # 学习机制最大结果记录数
+
+    # 速率限制相关
+    RATE_LIMIT_MAX_REQUESTS = 100  # 每分钟最大请求数
+    RATE_LIMIT_WINDOW = 60  # 速率限制窗口（秒）
+    RATE_LIMIT_CLEANUP_INTERVAL = 3600  # 清理间隔（秒）
+
+    # 工作流相关
+    WORKFLOW_PAUSE_TIMEOUT = 300  # 工作流暂停超时（秒，5分钟）
+    WORKFLOW_POLL_INTERVAL = 0.1  # 状态轮询间隔（秒）
+
+    # 验证相关
+    MAX_ALLOWED_POWER_CHANGE = 5.0  # 5年累计最大实力变动（%）
+    MIN_STRATEGIC_MATCH_SCORE = 0.3  # 最小战略匹配度
+
+    # 数据验证相关
+    MAX_AGENT_NAME_LENGTH = 100  # 智能体名称最大长度
+    MAX_REGION_LENGTH = 50  # 区域名称最大长度
+    MAX_LEADER_TYPE_LENGTH = 20  # 领导类型最大长度
+    MIN_LEADER_TERM_ROUNDS = 1  # 最小领导人任期轮次
+    MAX_LEADER_TERM_ROUNDS = 20  # 最大领导人任期轮次
+
+
 class SimulationConfig(BaseModel):
     """
     仿真配置类 - 对应技术方案4.1.1节 SimulationConfig

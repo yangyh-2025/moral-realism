@@ -48,8 +48,21 @@ class SiliconFlowProvider(LLMProvider):
         self.client = httpx.AsyncClient(timeout=60.0)
         # 轮替调用索引
         self._current_key_index = 0
-        # 轮替调用锁
+        # 轮替调用
         self._key_lock = asyncio.Lock()
+
+    async def close(self) -> None:
+        """正确关闭HTTP客户端"""
+        if self.client is not None:
+            await self.client.aclose()
+
+    async def __aenter__(self):
+        """异步上下文管理器入口"""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """异步上下文管理器出口"""
+        await self.close()
 
     def _get_next_api_key(self) -> str:
         """轮替获取下一个API-key"""
@@ -148,10 +161,10 @@ class LLMEngine:
         Returns:
             包含函数调用和参数的决策结果
         """
-        # 过滤掉禁止使用的函数
+        # 过滤掉禁止使用的函数（添加类型检查防止KeyError）
         filtered_functions = [
             f for f in available_functions
-            if f['name'] not in prohibited_functions
+            if isinstance(f, dict) and 'name' in f and f['name'] not in prohibited_functions
         ]
 
         # 生成决策（传递use_rotation参数）

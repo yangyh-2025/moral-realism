@@ -7,6 +7,7 @@ Git提交邮箱: yangyuhang2667@163.com
 from typing import Dict, Tuple, Optional
 from dataclasses import dataclass
 from config.leader_types import LeaderType
+from config.settings import Constants
 
 @dataclass
 class ValidationResult:
@@ -85,9 +86,16 @@ class RuleValidator:
 
         # 2. 校验实力变动约束
         if 'power_change' in function_args:
+            power_change = function_args['power_change']
+            # 添加类型检查
+            if not isinstance(power_change, (int, float)):
+                return ValidationResult(
+                    False,
+                    f"power_change必须是数字类型，当前类型: {type(power_change).__name__}"
+                )
             power_change_validation = RuleValidator._validate_power_change(
                 current_power,
-                function_args['power_change']
+                power_change
             )
             if not power_change_validation.is_valid:
                 return power_change_validation
@@ -137,7 +145,7 @@ class RuleValidator:
         power_change: float
     ) -> ValidationResult:
         """校验实力变动约束（5年不超过5%）"""
-        max_allowed_change = 5.0  # 5年累计不超过5%
+        max_allowed_change = Constants.MAX_ALLOWED_POWER_CHANGE
 
         if abs(power_change) > max_allowed_change:
             return ValidationResult(
@@ -160,7 +168,7 @@ class RuleValidator:
             function_name, objective_interest
         )
 
-        if match_score < 0.3:  # 匹配度低于30%
+        if match_score < Constants.MIN_STRATEGIC_MATCH_SCORE:
             return ValidationResult(
                 False,
                 f"决策与客观利益匹配度过低: {match_score:.2f}"
