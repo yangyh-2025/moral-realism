@@ -15,10 +15,10 @@ import traceback
 import os
 
 # 导入自定义错误类
-from core.errors import CustomError
+from interfaces.errors.errors import CustomError
 
 # 导入日志配置
-from core.logging_config import configure_logging, get_logger
+from infrastructure.logging.logging_config import configure_logging, get_logger
 
 # 配置日志
 configure_logging(

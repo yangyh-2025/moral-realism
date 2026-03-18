@@ -14,6 +14,7 @@ import time
 
 from config.leader_types import LeaderType
 from entities.power_system import PowerMetrics, PowerTier
+from config.settings import Constants
 
 from enum import Enum
 
@@ -133,7 +134,7 @@ class DecisionCache:
         if agent_id not in self._agent_mapping:
             self._agent_mapping[agent_id] = []
         if context_hash not in self._agent_mapping[agent_id]:
-            self._agent_mapping[agent_id].append(context(context_hash))
+            self._agent_mapping[agent_id].append(context_hash)
 
     def get_cached_decision(self, context: Dict) -> Optional[Dict]:
         """
@@ -508,8 +509,8 @@ class BaseAgent(ABC):
         agent_id = init_data["agent_id"]
 
         # 创建决策缓存和学习机制
-        decision_cache = DecisionCache(max_size=100, ttl=3600)
-        learning = AgentLearning(agent_id=agent_id, max_outcomes=1000)
+        decision_cache = DecisionCache(max_size=Constants.DECISION_CACHE_MAX_SIZE, ttl=Constants.DECISION_CACHE_TTL)
+        learning = AgentLearning(agent_id=agent_id, max_outcomes=Constants.LEARNING_MAX_OUTCOMES)
 
         # 创建正式状态
         self.state = AgentState(
