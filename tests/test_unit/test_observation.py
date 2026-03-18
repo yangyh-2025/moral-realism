@@ -8,11 +8,11 @@ import pytest
 from typing import Dict, List
 
 try:
-    from observation.metrics import SimulationMetrics, AgentMetrics, RoundMetrics
-    from observation.analytics import SimulationAnalytics
-    from observation.decision_engine import DecisionEngine
-    from observation.experiments import ExperimentFramework, Experiment
-    from observation.workflow import ObservationWorkflow
+    from application.analysis.metrics import SimulationMetrics, AgentMetrics, RoundMetrics
+    from application.analysis.analytics import SimulationAnalytics
+    from application.decision.decision_engine import DecisionEngine
+    from application.analysis.experiments import ExperimentFramework, Experiment
+    from application.workflows.workflow import ObservationWorkflow
     OBSERVATION_AVAILABLE = True
 except ImportError:
     OBSERVATION_AVAILABLE = False

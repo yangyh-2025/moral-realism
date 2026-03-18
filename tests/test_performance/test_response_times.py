@@ -12,9 +12,9 @@ from typing import List, Dict
 from unittest.mock import Mock, AsyncMock
 
 try:
-    from core.llm_engine import LLMEngine, LLMProvider
-    from core.prompt_engine import PromptTemplateEngine, PromptTemplate
-    from entities.base_agent import DecisionCache
+    from infrastructure.llm.llm_engine import LLMEngine, LLMProvider
+    from infrastructure.prompts.prompt_engine import PromptTemplateEngine, PromptTemplate
+    from domain.agents.base_agent import DecisionCache
     ENTITIES_AVAILABLE = True
 except ImportError:
     ENTITIES_AVAILABLE = False

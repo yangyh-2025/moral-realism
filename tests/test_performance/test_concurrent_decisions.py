@@ -13,9 +13,9 @@ import psutil
 import gc
 
 try:
-    from core.llm_engine import LLMEngine, LLMProvider
-    from entities.base_agent import BaseAgent, DecisionCache
-    from entities.power_system import PowerMetrics
+    from infrastructure.llm.llm_engine import LLMEngine, LLMProvider
+    from domain.agents.base_agent import BaseAgent, DecisionCache
+    from domain.power.power_metrics import PowerMetrics
     ENTITIES_AVAILABLE = True
 except ImportError:
     ENTITIES_AVAILABLE = False

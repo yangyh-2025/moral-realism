@@ -8,7 +8,7 @@ import pytest
 from typing import Dict, List
 
 try:
-    from workflows.multi_round import (
+    from application.workflows.multi_round import (
         MultiRoundWorkflow,
         WorkflowState,
         RoundResult,

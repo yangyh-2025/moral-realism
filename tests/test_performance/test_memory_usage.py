@@ -11,9 +11,9 @@ import time
 from unittest.mock import Mock, AsyncMock
 
 try:
-    from core.llm_engine import LLMEngine
-    from entities.base_agent import DecisionCache, AgentLearning
-    from core.prompt_engine import PromptTemplateEngine, PromptTemplate
+    from infrastructure.llm.llm_engine import LLMEngine
+    from domain.agents.base_agent import DecisionCache, AgentLearning
+    from infrastructure.prompts.prompt_engine import PromptTemplateEngine, PromptTemplate
     ENTITIES_AVAILABLE = True
 except ImportError:
     ENTITIES_AVAILABLE = False

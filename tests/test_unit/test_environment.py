@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, List
 
 try:
-    from core.environment import (
+    from domain.environment.environment_engine import (
         EnvironmentEngine,
         Event,
         EventPriority,

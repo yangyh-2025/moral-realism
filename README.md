@@ -1774,16 +1774,15 @@ ABM-v0.4.0/
 ├── frontend/            # 前端应用
 │   └── src/            # React源码
 │
-├── workflows/           # 工作流（旧版代码）
-├── entities/            # 实体定义（旧版代码）
-├── observation/         # 观察模块（旧版代码）
 ├── monitoring/          # 监控模块
+├── deploy/              # 部署配置
+│   ├── k8s/            # Kubernetes资源配置
+│   └── terraform/       # Terraform基础设施配置
 ├── scripts/             # 工具脚本
 ├── tests/               # 测试代码
 ├── data/                # 数据存储
 ├── logs/                # 日志文件
 ├── config/              # 配置文件
-├── core/                # 核心模块（旧版代码）
 ├── run.py               # 开发启动脚本
 └── README.md            # 本文档
 ```
@@ -2146,7 +2145,7 @@ ABM-v0.4.0/
 
 **LLMEngine 关键特性：**
 - 支持多API-key轮替调用（规避速率限制）
-- 兼容新版tool_calls和旧版function_call
+- 支持tool_calls格式
 - 自动过滤禁止使用的函数
 
 #### logging/ 日志系统
@@ -2515,55 +2514,12 @@ frontend/
 
 ---
 
-### 旧代码模块
-
-以下目录包含旧版本的代码，保留用于参考，新功能请使用DDD架构的对应模块。
-
-| 目录 | 说明 | 对应新模块 |
-|------|------|--------------|
-| `workflows/` | 旧版工作流 | `application/workflows/` |
-| `entities/` | 旧版实体定义 | `domain/` |
-| `observation/` | 旧版观察模块 | `application/analysis/` |
-| `core/` | 旧版核心模块 | `infrastructure/` |
-
-**workflows/ 目录：**
-- `single_round.py`：单轮仿真（新版在application/workflows/single_round.py）
-- `multi_round.py`：多轮仿真（新版在application/workflows/multi_round.py）
-- `parallel_simulation.py`：并行仿真
-
-**entities/ 目录：**
-- `base_agent.py`：智能体基类（新版在domain/agents/base_agent.py）
-- `great_power.py`：大国智能体（新版在domain/agents/great_power.py）
-- `small_power.py`：小国智能体（新版在domain/agents/small_power.py）
-- `small_state_agent.py`：小国代理智能体（新版在domain/agents/small_state_agent.py）
-- `state`_agent.py`：国家智能体（新版在domain/agents/state_agent.py）
-- `interaction_rules.py`：互动规则（新版在domain/interactions/interaction_rules.py）
-- `power_system.py`：实力系统（新版在domain/power/power_metrics.py）
-
-**observation/ 目录：**
-- `analytics.py`：分析引擎（新版在application/analysis/analytics.py）
-- `decision_engine.py`：决策引擎（新版在application/decision/decision_engine.py）
-- `experiments.py`：实验管理（新版在application/analysis/experiments.py）
-- `metrics.py`：指标计算（新版在application/analysis/metrics.py）
-- `workflow.py`：工作流编排（新版在application/workflows/）
-
-**core/ 目录：**
-- `logger.py`：日志（新版在infrastructure/logging/logger.py）
-- `validator.py`：验证器（新版在infrastructure/validation/validator.py）
-- `performance.py`：性能监控（新版在infrastructure/performance/performance.py）
-- `storage.py`：存储（新版在infrastructure/storage/storage_engine.py）
-- `event_generator.py`：事件生成（新版在domain/events/event_generator.py）
-- `event_impact.py`：事件影响（新版在domain/events/event_impact.py）
-- `errors.py`：错误（新版在interfaces/errors/errors.py）
-- `logging_config.py`：日志配置（新版在infrastructure/logging/logging_config.py）
-
----
-
 ### 其他目录
 
 | 目录 | 说明 |
 |------|------|
 | `monitoring/` | 监控模块（告警系统、监控指标）|
+| `deploy/` | 部署配置（Kubernetes、Terraform）|
 | `scripts/` | 工具脚本（部署、备份、迁移等）|
 | `tests/` | 测试代码（单元测试、集成测试、性能测试、安全测试）|
 | `data/` | 数据存储目录（数据库文件、检查点等）|
@@ -2572,6 +2528,21 @@ frontend/
 **monitoring/ 目录：**
 - `alerts.py`：告警系统
 - `metrics.py`：监控指标
+
+**deploy/ 目录：**
+- `k8s/`：Kubernetes 资源配置
+  - `deployment.yaml`：部署配置
+  - `service.yaml`：服务配置
+  - `ingress.yaml`：Ingress 配置
+  - `secrets.yaml`：密钥配置
+- `terraform/`：Terraform 基础设施配置
+  - `main.tf`：主配置文件
+  - `variables.tf`：变量定义
+  - `outputs.tf`：输出定义
+  - `terraform.tfvars.example`：变量示例
+- `README.md`：部署文档
+
+详细部署说明请参见 `deploy/README.md`。
 
 **tests/ 目录结构：**
 - `test_unit/`：单元测试

@@ -10,14 +10,14 @@ import time
 from unittest.mock import Mock
 
 try:
-    from entities.base_agent import (
+    from domain.agents.base_agent import (
         DecisionCache,
         AgentLearning,
         ConsistencyReport,
         DecisionPriority,
         AccessLevel
     )
-    from entities.power_system import PowerMetrics, PowerTier
+    from domain.power.power_metrics import PowerMetrics, PowerTier
     ENTITIES_AVAILABLE = True
 except ImportError:
     ENTITIES_AVAILABLE = False
@@ -32,7 +32,7 @@ pytestmark = pytest.mark.skipif(
 def test_access_level_values():
     """Test access level values"""
     assert AccessLevel.PUBLIC.value == "public"
-    assert AccessLevel.RESTATER.value == "restricted"
+    assert AccessLevel.RESTRICTED.value == "restricted"
     assert AccessLevel.PRIVATE.value == "private"
     assert AccessLevel.CLASSIFIED.value == "classified"
 

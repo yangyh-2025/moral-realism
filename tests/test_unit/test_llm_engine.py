@@ -9,7 +9,7 @@ from unittest.mock import Mock, AsyncMock, patch
 from typing import Dict, Any, List
 
 try:
-    from core.llm_engine import LLMEngine, LLMProvider, SiliconFlowProvider
+    from infrastructure.llm.llm_engine import LLMEngine, LLMProvider, SiliconFlowProvider
     CORE_AVAILABLE = True
 except ImportError:
     CORE_AVAILABLE = False

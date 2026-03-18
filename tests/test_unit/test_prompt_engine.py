@@ -12,7 +12,7 @@ import tempfile
 import os
 
 try:
-    from core.prompt_engine import (
+    from infrastructure.prompts.prompt_engine import (
         PromptTemplateEngine,
         PromptBuilder,
         PromptTemplate,

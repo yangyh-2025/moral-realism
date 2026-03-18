@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, List
 
 try:
-    from entities.interaction_rules import (
+    from domain.interactions.interaction_rules import (
         InteractionRules,
         InteractionImpactCalculator,
         InteractionTracker,

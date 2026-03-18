@@ -164,7 +164,7 @@ async def startup_event():
     logger.info("ABM Simulation API starting up", version="1.7.0")
 
     # 初始化性能监控
-    from core.performance import performance_monitor
+    from infrastructure.performance import performance_monitor
     logger.info("Performance monitoring initialized")
 
     # 初始化服务（依赖注入）
@@ -183,7 +183,7 @@ async def shutdown_event():
     logger.info("ABM Simulation API shutting down")
 
     # 输出性能指标
-    from core.performance import performance_monitor
+    from infrastructure.performance import performance_monitor
     metrics = performance_monitor.get_metrics()
     logger.info("Performance metrics summary", metrics=metrics)
 

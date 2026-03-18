@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 # 导入日志配置
-from core.logging_config import get_logger
+from infrastructure.logging.logging_config import get_logger
 
 logger = get_logger(__name__)
 
