@@ -564,7 +564,7 @@ class BaseAgent(ABC):
 
     def get_prohibited_functions(self) -> Set[str]:
         """获取禁止使用的函数"""
-        from core.validator import RuleValidator
+        from infrastructure.validation.validator import RuleValidator
 
         if not self.state or not self.state.leader_type:
             return set()

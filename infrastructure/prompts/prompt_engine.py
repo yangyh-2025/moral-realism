@@ -261,7 +261,7 @@ class PromptBuilder:
 
         # 变量名中文映射
         var_labels = {
-            'agent_name': '智能体名称',
+            "agent_name": "智能体名称",
             'agent_type': '智能体类型',
             'leader_type': '领导类型',
             'power_tier': '实力层级',
