@@ -482,7 +482,7 @@ class BaseAgent(ABC):
             if leader_type is not None:
                 raise ValueError(
                     f"{self._init_config['name']}({self.power_tier.value})是中等强国或小国，"
-                    "不需要配置了导类型"
+                    "不需要配置领导人类型"
                 )
             self._init_config["leader_type"] = None
 

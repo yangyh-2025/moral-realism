@@ -5,6 +5,7 @@ Git提交用户名: yangyh-2025
 Git提交邮箱: yangyuhang2667@163.com
 """
 import logging
+from logging import FileHandler
 import json
 from typing import Dict, List, Optional, Any
 from datetime import datetime
@@ -22,6 +23,31 @@ class LogType(str, Enum):
     EVENT = "event"                 # 事件触发日志
     ERROR = "error"                 # 错误日志
     DEBUG = "debug"                 # 调试日志
+
+@dataclass
+class DecisionReasoning:
+    """决策理由 - 详细记录智能体决策的完整推理过程"""
+    decision_id: str
+    agent_id: str
+    round: int
+    situation_analysis: str           # 局势分析
+    strategic_consideration: str      # 战略考量
+    expected_outcome: str            # 预期结果
+    alternatives: List[str]            # 替代方案
+    full_reasoning: str               # 完整决策理由
+
+    def to_dict(self) -> Dict:
+        """转换为字典"""
+        return {
+            "decision_id": self.decision_id,
+            "agent_id": self.agent_id,
+            "round": self.round,
+            "situation_analysis": self.situation_analysis,
+            "strategic_consideration": self.strategic_consideration,
+            "expected_outcome": self.expected_outcome,
+            "alternatives": self.alternatives,
+            "full_reasoning": self.full_reasoning
+        }
 
 @dataclass
 class LogEntry:
@@ -83,7 +109,7 @@ class EnhancedLogger:
         )
 
         # 文件处理器
-        file_handler = logging.FileHandler(log_file, encoding='utf-8')
+        file_handler = FileHandler(log_file, encoding='utf-8')
         file_handler.setFormatter(formatter)
 
         # 配置根日志器
@@ -149,3 +175,294 @@ class EnhancedLogger:
         )
 
         return log_id
+
+    def log_action(
+        self,
+        simulation_id: str,
+        round: int,
+        agent_id: str,
+        action_type: str,
+        action_content: str,
+        outcome: str,
+        reasoning: Optional[str] = None,
+        metadata: Optional[Dict] = None
+    ) -> str:
+        """
+        记录行动日志
+
+        Args:
+            simulation_id: 仿真ID
+            round: 轮次
+            agent_id: 智能体ID
+            action_type: 行动类型
+            action_content: 行动内容
+            outcome: 行动结果
+            reasoning: 行动理由
+            metadata: 附加元数据
+
+        Returns:
+            日志ID
+        """
+        log_id = f"log_action_{datetime.now().timestamp()}"
+        log_entry = LogEntry(
+            log_id=log_id,
+            log_type=LogType.ACTION,
+            simulation_id=simulation_id,
+            round=round,
+            agent_id=agent_id,
+            timestamp=datetime.now(),
+            content=f"[行动] {agent_id}执行了{action_type}: {action_content}, 结果: {outcome}",
+            details={
+                "action_type": action_type,
+                "action_content": action_content,
+                "outcome": outcome,
+                "metadata": metadata or {}
+            },
+            reasoning=reasoning
+        )
+        self._log_entries.append(log_entry)
+        self.logger.info(
+            f"行动记录: {action_type}",
+            extra={
+                "simulation_id": simulation_id,
+                "round": round,
+                "agent_id": agent_id,
+                "outcome": outcome
+            }
+        )
+        return log_id
+
+    def log_speech(
+        self,
+        simulation_id: str,
+        round: int,
+        agent_id: str,
+        speech_type: str,
+        content: str,
+        target_id: Optional[str] = None,
+        audience: Optional[str] = None,
+        reception: Optional[str] = None,
+        reasoning: Optional[str] = None
+    ) -> str:
+        """
+        记录发言日志
+
+        Args:
+            simulation_id: 仿真ID
+            round: 轮次
+            agent_id: 智能体ID
+            speech_type: 发言类型
+            content: 发言内容
+            target_id: 目标ID
+            audience: 听众
+            reception: 接受度
+            reasoning: 发言理由
+
+        Returns:
+            日志ID
+        """
+        log_id = f"log_speech_{datetime.now().timestamp()}"
+        log_entry = LogEntry(
+            log_id=log_id,
+            log_type=LogType.SPEECH,
+            simulation_id=simulation_id,
+            round=round,
+            agent_id=agent_id,
+            timestamp=datetime.now(),
+            content=f"[发言] {agent_id}发表{speech_type}: {content[:100]}...",
+            details={
+                "speech_type": speech_type,
+                "content": content,
+                "target_id": target_id,
+                "audience": audience,
+                "reception": reception
+            },
+            reasoning=reasoning
+        )
+        self._log_entries.append(log_entry)
+        self.logger.info(
+            f"发言记录: {speech_type}",
+            extra={
+                "simulation_id": simulation_id,
+                "round": round,
+                "agent_id": agent_id
+            }
+        )
+        return log_id
+
+    def log_event(
+        self,
+        simulation_id: str,
+        round: int,
+        event_type: str,
+        description: str,
+        event_data: Optional[Dict] = None
+    ) -> str:
+        """
+        记录事件日志
+
+        Args:
+            simulation_id: 仿真ID
+            round: 轮次
+            event_type: 事件类型
+            description: 事件描述
+            event_data: 事件数据
+
+        Returns:
+            日志ID
+        """
+        log_id = f"log_event_{datetime.now().timestamp()}"
+        log_entry = LogEntry(
+            log_id=log_id,
+            log_type=LogType.EVENT,
+            simulation_id=simulation_id,
+            round=round,
+            agent_id=None,
+            timestamp=datetime.now(),
+            content=f"[事件] {description}",
+            details={
+                "event_type": event_type,
+                "event_data": event_data or {}
+            }
+        )
+        self._log_entries.append(log_entry)
+        self.logger.info(
+            f"事件记录: {event_type}",
+            extra={
+                "simulation_id": simulation_id,
+                "round": round
+            }
+        )
+        return log_id
+
+    def log_error(
+        self,
+        simulation_id: str,
+        error_type: str,
+        error_message: str,
+        context: Optional[Dict] = None
+    ) -> None:
+        """
+        记录错误日志
+
+        Args:
+            simulation_id: 仿真ID
+            error_type: 错误类型
+            error_message: 错误消息
+            context: 错误上下文
+        """
+        log_entry = LogEntry(
+            log_id=f"log_error_{datetime.now().timestamp()}",
+            log_type=LogType.ERROR,
+            simulation_id=simulation_id,
+            round=0,
+            agent_id=None,
+            timestamp=datetime.now(),
+            content=f"[错误] {error_type}: {error_message}",
+            details={
+                "error_type": error_type,
+                "error_message": error_message,
+                "context": context or {}
+            }
+        )
+        self._log_entries.append(log_entry)
+        self.logger.error(
+            error_message,
+            extra={
+                "simulation_id": simulation_id,
+                "error_type": error_type
+            }
+        )
+
+    def log_info(
+        self,
+        simulation_id: str,
+        message: str,
+        round: Optional[int] = None,
+        agent_id: Optional[str] = None
+    ) -> None:
+        """
+        记录信息日志
+
+        Args:
+            simulation_id: 仿真ID
+            message: 消息
+            round: 轮次
+            agent_id: 智能体ID
+        """
+        log_entry = LogEntry(
+            log_id=f"log_info_{datetime.now().timestamp()}",
+            log_type=LogType.DEBUG,
+            simulation_id=simulation_id,
+            round=round or 0,
+            agent_id=agent_id,
+            timestamp=datetime.now(),
+            content=message,
+            details={}
+        )
+        self._log_entries.append(log_entry)
+        self.logger.info(
+            message,
+            extra={
+                "simulation_id": simulation_id,
+                "round": round,
+                "agent_id": agent_id
+            }
+        )
+
+    def get_logs(
+        self,
+        simulation_id: Optional[str] = None,
+        log_type: Optional[LogType] = None,
+        agent_id: Optional[str] = None,
+        round: Optional[int] = None,
+        include_reasoning: bool = False,
+        limit: int = 100
+    ) -> List[Dict]:
+        """
+        获取日志
+
+        Args:
+            simulation_id: 按仿真ID筛选
+            log_type: 按日志类型筛选
+            agent_id: 按智能体ID筛选
+            round: 按轮次筛选
+            include_reasoning: 是否包含理由
+            limit: 返回数量限制
+
+        Returns:
+            日志列表
+        """
+        filtered_logs = self._log_entries
+
+        if simulation_id:
+            filtered_logs = [log for log in filtered_logs if log.simulation_id == simulation_id]
+
+        if log_type:
+            filtered_logs = [log for log in filtered_logs if log.log_type == log_type]
+
+        if agent_id:
+            filtered_logs = [log for log in filtered_logs if log.agent_id == agent_id]
+
+        if round is not None:
+            filtered_logs = [log for log in filtered_logs if log.round == round]
+
+        # 按时间倒序排序
+        filtered_logs.sort(key=lambda x: x.timestamp, reverse=True)
+
+        # 转换为字典
+        result = [log.to_dict(include_reasoning=include_reasoning) for log in filtered_logs[:limit]]
+
+        return result
+
+    def clear_logs(self, simulation_id: Optional[str] = None) -> None:
+        """
+        清空日志
+
+        Args:
+            simulation_id: 指定仿真ID的日志，None则清空全部
+        """
+        if simulation_id:
+            self._log_entries = [log for log in self._log_entries if log.simulation_id != simulation_id]
+        else:
+            self._log_entries.clear()

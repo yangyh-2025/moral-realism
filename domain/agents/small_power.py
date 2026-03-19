@@ -1,5 +1,15 @@
 """
-小国智能体 - 对应技术方案3.3.3节
+小国智能体
+
+对应 PowerTier.SMALL_POWER (z ≤ 0.5, 约69.15%)
+不需要配置 leader_type
+
+特点：
+- 生存安全与渐进发展
+- 维护国家主权和安全
+- 确保经济生存与发展
+- 在大国间保持平衡
+- 寻求盟友或保护伞
 
 Git提交用户名: yangyh-2025
 Git提交邮箱: yangyuhang2667@163.com
@@ -9,7 +19,48 @@ from datetime import datetime
 import random
 
 from domain.agents.base_agent import BaseAgent
-from domain.power.power_metrics import PowerMetrics, PowerTier
+
+
+class LeaderCandidate:
+    """
+    领导人候选
+
+    Git提交用户名: yangyh-2025
+    Git提交邮箱: yangyuhang2667@163.com
+    """
+
+    def __init__(
+        self,
+        agent_id: str,
+        name: str,
+        power_score: float,
+        reliability_score: float,
+        benefit_assessment: Dict
+    ):
+        self.agent_id = agent_id
+        self.name = name
+        self.power_score = power_score
+        self.reliability_score = reliability_score
+        self.benefit_assessment = benefit_assessment
+
+    def total_score(self) -> float:
+        """计算综合得分"""
+        return (
+            self.power_score * 0.4 +
+            self.reliability_score * 0.4 +
+            self.benefit_assessment.get("total_benefit", 0) * 0.2
+        )
+
+    def to_dict(self) -> Dict:
+        """转换为字典"""
+        return {
+            "agent_id": self.agent_id,
+            "name": self.name,
+            "power_score": self.power_score,
+            "reliability_score": self.reliability_score,
+            "benefit_assessment": self.benefit_assessment,
+            "total_score": self.total_score()
+        }
 
 
 class BenefitAssessment:
@@ -45,9 +96,137 @@ class BenefitAssessment:
         }
 
 
+class SurvivalThreat:
+    """
+    生存威胁
+
+    Git提交用户名: yangyh-2025
+    Git提交邮箱: yangyuhang2667@163.com
+    """
+
+    def __init__(
+        self,
+        threat_type: str,
+        source: str,
+        severity: float,
+        urgency: float,
+        description: str
+    ):
+        self.threat_type = threat_type  # military, economic, political, environmental
+        self.source = source
+        self.severity = severity  # 0-1
+        self.urgency = urgency  # 0-1
+        self.description = description
+
+    def overall_threat_level(self) -> float:
+        """计算总体威胁水平"""
+        return (self.severity + self.urgency) / 2
+
+    def to_dict(self) -> Dict:
+        """转换为字典"""
+        return {
+            "threat_type": self.threat_type,
+            "source": self.source,
+            "severity": self.severity,
+            "urgency": self.urgency,
+            "overall_level": self.overall_threat_level(),
+            "description": self.description
+        }
+
+
+class SurvivalAction:
+    """
+    生存行动
+
+    Git提交用户名: yangyh-2025
+    Git提交邮箱: yangyuhang2667@163.com
+    """
+
+    def __init__(
+        self,
+        action_type: str,
+        target: Optional[str],
+        parameters: Dict,
+        reasoning: str
+    ):
+        self.action_type = action_type
+        self.target = target
+        self.parameters = parameters
+        self.reasoning = reasoning
+
+    def to_dict(self) -> Dict:
+        """转换为字典"""
+        return {
+            "action_type": self.action_type,
+            "target": self.target,
+            "parameters": self.parameters,
+            "reasoning": self.reasoning
+        }
+
+
+class ProtectionRequest:
+    """
+    保护请求
+
+    Git提交用户名: yangyh-2025
+    Git提交邮箱: yangyuhang2667@163.com
+    """
+
+    def __init__(
+        self,
+        target_protector: str,
+        request_type: str,
+        terms: Dict,
+        reasoning: str
+    ):
+        self.target_protector = target_protector
+        self.request_type = request_type
+        self.terms = terms
+        self.reasoning = reasoning
+
+    def to_dict(self) -> Dict:
+        """转换为字典"""
+        return {
+            "target_protector": self.target_protector,
+            "request_type": self.request_type,
+            "terms": self.terms,
+            "reasoning": self.reasoning
+        }
+
+
+class RelationAdjustment:
+    """
+    关系调整
+
+    Git提交用户名: yangyh-2025
+    Git提交邮箱: yangyuhang2667@163.com
+    """
+
+    def __init__(
+        self,
+        target_agent: str,
+        adjustment_type: str,
+        new_relation_level: float,
+        reasoning: str
+    ):
+        self.target_agent = target_agent
+        self.adjustment_type = adjustment_type  # improve, maintain, deteriorate
+        self.new_relation_level = new_relation_level
+        self.reasoning = reasoning
+
+    def to_dict(self) -> Dict:
+        """转换为字典"""
+        return {
+            "target_agent": self.target_agent,
+            "adjustment_type": self.adjustment_type,
+            "new_relation_level": self.new_relation_level,
+            "reasoning": self.reasoning
+        }
+
+
 class FollowerStrategy:
     """
-    追随选择策略 - 对应技术方案3.3.3.1节
+    追随选择策略
 
     Git提交用户名: yangyh-2025
     Git提交邮箱: yangyuhang2667@163.com
@@ -64,7 +243,7 @@ class FollowerStrategy:
         self._current_leader = None
         self._leader_history = []
 
-    def identify_potential_leaders(self, global_data: Dict) -> List[Dict]:
+    def identify_potential_leaders(self, global_data: Dict) -> List[LeaderCandidate]:
         """
         识别潜在领导者
 
@@ -87,7 +266,7 @@ class FollowerStrategy:
             leader_name = leader_info["name"]
 
             # 计算实力得分（归一化）
-            power_score = min(1.0, leader_info.get("comprehensive_power", 0) / 500.0)
+            power_score = min(1.0, leader_info.get("power", 0) / 500.0)
 
             # 计算可靠性得分
             reliability_score = self._calculate_reliability_score(leader_info)
@@ -95,18 +274,18 @@ class FollowerStrategy:
             # 评估收益
             benefit_assessment = self.evaluate_leader_benefits(leader_id, global_data)
 
-            candidate = {
-                "agent_id": leader_id,
-                "name": leader_name,
-                "power_score": power_score,
-                "reliability_score": reliability_score,
-                "benefit_assessment": benefit_assessment.to_dict()
-            }
+            candidate = LeaderCandidate(
+                agent_id=leader_id,
+                name=leader_name,
+                power_score=power_score,
+                reliability_score=reliability_score,
+                benefit_assessment=benefit_assessment.to_dict()
+            )
 
             candidates.append(candidate)
 
         # 按综合得分排序
-        candidates.sort(key=lambda c: c["power_score"] * 0.4 + c["reliability_score"] * 0.4 + c["benefit_assessment"]["total_benefit"] * 0.2, reverse=True)
+        candidates.sort(key=lambda c: c.total_score(), reverse=True)
 
         return candidates
 
@@ -115,7 +294,7 @@ class FollowerStrategy:
         计算领导者可靠性得分
 
         Args:
-            leader_info: 颢导者信息
+            leader_info: 领导者信息
 
         Returns:
             可靠性得分 (0-1)
@@ -123,6 +302,7 @@ class FollowerStrategy:
         # 根据领导类型评估可靠性
         leader_type = leader_info.get("leader_type")
 
+        # 王道型最可靠，霸权型次之，昏庸型最不可靠
         if leader_type == "wangdao":
             return 0.9
         elif leader_type == "baquan":
@@ -134,7 +314,7 @@ class FollowerStrategy:
         else:
             return 0.6
 
-    def evaluate_leader_benefits(self, leader_id: str, global_data: Dict):
+    def evaluate_leader_benefits(self, leader_id: str, global_data: Dict) -> BenefitAssessment:
         """
         评估领导者收益
 
@@ -240,7 +420,10 @@ class FollowerStrategy:
         return 0.3
 
     def _assess_political_benefit(
-        self, leader_id: str, global_data: Dict, current_relation: float
+        self,
+        leader_id: str,
+        global_data: Dict,
+        current_relation: float
     ) -> float:
         """评估政治收益"""
         # 根据领导类型和关系水平评估
@@ -269,32 +452,28 @@ class FollowerStrategy:
 
         # 检查是否有冲突关系
         conflicts = global_data.get("conflicts", [])
-        my_conflicts = [
+        leader_conflicts = [
             c for c in conflicts
             if leader_id in [c.get("agent1"), c.get("agent2")]
         ]
 
-        if my_conflicts:
-            risks.append("领导者存在国际冲突")
+        if leader_conflicts:
+            risks.append("领导者存在国际冲突，可能被卷入")
 
         # 检查领导者的敌人
         leader_enemies = global_data.get("hostile_relations", {}).get(leader_id, [])
         if leader_enemies:
             risks.append(f"领导者与{len(leader_enemies)}个国家存在敌对关系")
 
-        # 检查领导类型风险
-        leader_info = None
+        # 检查领导者类型
         for agent in global_data.get("agents", []):
             if agent.get("agent_id") == leader_id:
-                leader_info = agent
+                leader_type = agent.get("leader_type")
+                if leader_type == "qiangquan":
+                    risks.append("强权型领导者可能采取激进政策")
+                elif leader_type == "hunyong":
+                    risks.append("昏庸型领导者决策不可预测")
                 break
-
-        if leader_info:
-            leader_type = leader_info.get("leader_type")
-            if leader_type == "qiangquan":
-                risks.append("强权型领导者可能采取激进政策")
-            elif leader_type == "hunyong":
-                risks.append("昏庸型领导者决策不可预测")
 
         return risks
 
@@ -317,20 +496,19 @@ class FollowerStrategy:
         best_candidate = candidates[0]
 
         # 检查收益是否超过阈值
-        if best_candidate["benefit_assessment"]["total_benefit"] < 0.5:
+        if best_candidate.total_score() < 0.5:
             return None
 
         # 检查是否有严重风险
-        risks = best_candidate["benefit_assessment"]["risks"]
-        if len(risks) > 2:
+        if len(best_candidate.benefit_assessment.get("risks", [])) > 2:
             # 如果有严重风险，选择次优候选人
             if len(candidates) > 1:
-                return candidates[1]["agent_id"]
+                return candidates[1].agent_id
             return None
 
-        return best_candidate["agent_id"]
+        return best_candidate.agent_id
 
-    def adjust_follower_relationship(self, global_data: Dict) -> Dict:
+    def adjust_follower_relationship(self, global_data: Dict) -> RelationAdjustment:
         """
         调整追随者关系
 
@@ -340,21 +518,21 @@ class FollowerStrategy:
         Returns:
             关系调整
         """
-        if not self._current_leader:
-            return {
-                "action": "maintain",
-                "target_agent": "",
-                "new_relation_level": 0.0,
-                "reasoning": "当前没有追随的领导者"
-            }
-
         # 评估当前领导者的收益
+        if not self._current_leader:
+            return RelationAdjustment(
+                target_agent="",
+                adjustment_type="maintain",
+                new_relation_level=0.0,
+                reasoning="当前没有追随的领导者"
+            )
+
         benefit_assessment = self.evaluate_leader_benefits(
             self._current_leader, global_data
         )
 
         # 如果收益不足，考虑更换领导者
-        if benefit_assessment["total_benefit"] < 0.4:
+        if benefit_assessment.total_benefit < 0.4:
             new_leader = self.choose_leader(global_data)
             if new_leader and new_leader != self._current_leader:
                 # 记录历史
@@ -367,25 +545,25 @@ class FollowerStrategy:
 
                 self._current_leader = new_leader
 
-                return {
-                    "action": "improve",
-                    "target_agent": new_leader,
-                    "new_relation_level": 0.8,
-                    "reasoning": f"当前领导者收益不足，转向{new_leader}"
-                }
+                return RelationAdjustment(
+                    target_agent=new_leader,
+                    adjustment_type="improve",
+                    new_relation_level=0.8,
+                    reasoning=f"当前领导者收益不足，转向{new_leader}"
+                )
 
         # 维持当前关系
-        return {
-            "action": "maintain",
-            "target_agent": self._current_leader,
-            "new_relation_level": 0.7,
-            "reasoning": "当前领导者关系稳定，维持现状"
-        }
+        return RelationAdjustment(
+            target_agent=self._current_leader,
+            adjustment_type="maintain",
+            new_relation_level=0.7,
+            reasoning="当前领导者关系稳定，维持现状"
+        )
 
 
 class SurvivalStrategy:
     """
-    生存策略 - 对应技术方案3.3.3.2节
+    生存策略
 
     Git提交用户名: yangyh-2025
     Git提交邮箱: yangyuhang2667@163.com
@@ -401,7 +579,7 @@ class SurvivalStrategy:
         self.agent = agent
         self._threat_history = []
 
-    def assess_survival_threats(self, global_data: Dict) -> List[Dict]:
+    def assess_survival_threats(self, global_data: Dict) -> List[SurvivalThreat]:
         """
         评估生存威胁
 
@@ -427,13 +605,11 @@ class SurvivalStrategy:
         threats.extend(political_threats)
 
         # 按严重程度排序
-        threats.sort(key=lambda t: t["severity"] + t["urgency"], reverse=True)
+        threats.sort(key=lambda t: t.overall_threat_level(), reverse=True)
 
         return threats
 
-    def _assess_military_threats(
-        self, my_id: str, global_data: Dict
-    ) -> List[Dict]:
+    def _assess_military_threats(self, my_id: str, global_data: Dict) -> List[SurvivalThreat]:
         """评估军事威胁"""
         threats = []
 
@@ -447,22 +623,21 @@ class SurvivalStrategy:
 
         for conflict in my_conflicts:
             source = conflict.get("agent2") if conflict.get("agent1") == my_id else conflict.get("agent1")
-
-            severity = conflict.get("severity", 0.5)
+            severity = conflict.get("intensity", 0.5)
             urgency = conflict.get("urgency", 0.5)
 
-            threat = {
-                "threat_type": "military",
-                "source": source,
-                "severity": severity,
-                "urgency": urgency,
-                "description": f"与{source}存在军事冲突，强度{severity:.2f}"
-            }
+            threat = SurvivalThreat(
+                threat_type="military",
+                source=source,
+                severity=severity,
+                urgency=urgency,
+                description=f"与{source}存在军事冲突，强度{severity:.2f}"
+            )
             threats.append(threat)
 
         return threats
 
-    def _assess_economic_threats(self, my_id: str, global_data: Dict) -> List[Dict]:
+    def _assess_economic_threats(self, my_id: str, global_data: Dict) -> List[SurvivalThreat]:
         """评估经济威胁"""
         threats = []
 
@@ -478,44 +653,43 @@ class SurvivalStrategy:
             severity = sanction.get("severity", 0.5)
             urgency = sanction.get("urgency", 0.3)
 
-            threat = {
-                "threat_type": "economic",
-                "source": source,
-                "severity": severity,
-                "urgency": urgency,
-                "description": f"受到{source}的经济制裁，强度{severity:.2f}"
-            }
+            threat = SurvivalThreat(
+                threat_type="economic",
+                source=source,
+                severity=severity,
+                urgency=urgency,
+                description=f"受到{source}的经济制裁"
+            )
             threats.append(threat)
 
         return threats
 
-    def _assess_political_threats(self, my_id: str, global_data: Dict) -> List[Dict]:
+    def _assess_political_threats(self, my_id: str, global_data: Dict) -> List[SurvivalThreat]:
         """评估政治威胁"""
         threats = []
 
         # 检查敌对关系
         relations = global_data.get("relations", {})
         hostile_agents = []
-
         for key, value in relations.items():
             if my_id in key and value < -0.7:
                 parts = key.split("_")
-                other_agent = parts[1] if parts[0] == my_id else parts[1]
-                hostile_agents.append(other_agent)
+                source = parts[1] if parts[0] == my_id else parts[0]
+                hostile_agents.append(source)
 
-        for other_agent in hostile_agents:
-            threat = {
-                "threat_type": "political",
-                "source": other_agent,
-                "severity": 0.6,
-                "urgency": 0.4,
-                "description": f"与{other_agent}存在敌对政治关系"
-            }
+        for source in hostile_agents:
+            threat = SurvivalThreat(
+                threat_type="political",
+                source=source,
+                severity=0.6,
+                urgency=0.4,
+                description=f"与{source}存在敌对政治关系"
+            )
             threats.append(threat)
 
         return threats
 
-    def formulate_survival_response(self, threat: Dict) -> Dict:
+    def formulate_survival_response(self, threat: SurvivalThreat) -> SurvivalAction:
         """
         制定生存响应
 
@@ -525,79 +699,80 @@ class SurvivalStrategy:
         Returns:
             生存行动
         """
-        if threat["threat_type"] == "military":
+        # 根据威胁类型制定响应策略
+        if threat.threat_type == "military":
             return self._formulate_military_response(threat)
-        elif threat["threat_type"] == "economic":
+        elif threat.threat_type == "economic":
             return self._formulate_economic_response(threat)
-        elif threat["threat_type"] == "political":
+        elif threat.threat_type == "political":
             return self._formulate_political_response(threat)
         else:
-            return {
-                "action_type": "observe",
-                "target": None,
-                "parameters": {},
-                "reasoning": "观察威胁发展"
-            }
+            return SurvivalAction(
+                action_type="observe",
+                target=None,
+                parameters={},
+                reasoning="观察威胁发展"
+            )
 
-    def _formulate_military_response(self, threat: Dict) -> Dict:
+    def _formulate_military_response(self, threat: SurvivalThreat) -> SurvivalAction:
         """制定军事威胁响应"""
-        if threat["urgency"] > 0.7:
-            return {
-                "action_type": "seek_protection",
-                "target": threat["source"],
-                "parameters": {"urgency": "high"},
-                "reasoning": f"面临来自{threat['source']}的紧迫军事威胁，寻求保护"
-            }
-        elif threat["urgency"] > 0.5:
-            return {
-                "action_type": "diplomatic_appeal",
-                "target": threat["source"],
-                "parameters": {"message": "停止敌对行动"},
-                "reasoning": f"面临{threat['source']}的军事威胁，通过外交途径解决"
-            }
+        if threat.urgency > 0.7:
+            return SurvivalAction(
+                action_type="seek_protection",
+                target=threat.source,
+                parameters={"urgency": "high"},
+                reasoning=f"面临来自{threat.source}的紧迫军事威胁，寻求保护"
+            )
+        elif threat.urgency > 0.5:
+            return SurvivalAction(
+                action_type="diplomatic_appeal",
+                target=threat.source,
+                parameters={"message": "停止敌对行动"},
+                reasoning=f"面临{threat.source}的军事威胁，通过外交途径解决"
+            )
         else:
-            return {
-                "action_type": "military_deterrence",
-                "target": None,
-                "parameters": {"defensive_measures": True},
-                "reasoning": "加强防御措施，威慑潜在军事威胁"
-            }
+            return SurvivalAction(
+                action_type="military_deterrence",
+                target=None,
+                parameters={"defensive_measures": True},
+                reasoning="加强防御措施，威慑潜在军事威胁"
+            )
 
-    def _formulate_economic_response(self, threat: Dict) -> Dict:
+    def _formulate_economic_response(self, threat: SurvivalThreat) -> SurvivalAction:
         """制定经济威胁响应"""
-        if threat["urgency"] > 0.6:
-            return {
-                "action_type": "seek_aid",
-                "target": threat["source"],
-                "parameters": {"alternative_partners": True},
-                "reasoning": f"寻求经济援助或寻找替代合作伙伴"
-            }
+        if threat.urgency > 0.6:
+            return SurvivalAction(
+                action_type="seek_aid",
+                target=threat.source,
+                parameters={"alternative_partners": True},
+                reasoning=f"寻求经济援助或寻找替代合作伙伴"
+            )
         else:
-            return {
-                "action_type": "economic_adjustment",
-                "target": None,
-                "parameters": {"diversification": True},
-                "reasoning": "调整经济结构，降低对单一来源的依赖"
-            }
+            return SurvivalAction(
+                action_type="economic_adjustment",
+                target=None,
+                parameters={"diversification": True},
+                reasoning="调整经济结构，降低对单一来源的依赖"
+            )
 
-    def _formulate_political_response(self, threat: Dict) -> Dict:
+    def _formulate_political_response(self, threat: SurvivalThreat) -> SurvivalAction:
         """制定政治威胁响应"""
-        if threat["urgency"] > 0.6:
-            return {
-                "action_type": "seek_mediation",
-                "target": threat["source"],
-                "parameters": {"third_party": True},
-                "reasoning": f"寻求第三方调解与{threat['source']}的政治冲突"
-            }
+        if threat.urgency > 0.6:
+            return SurvivalAction(
+                action_type="seek_mediation",
+                target=threat.source,
+                parameters={"third_party": True},
+                reasoning=f"寻求第三方调解与{threat.source}的政治冲突"
+            )
         else:
-            return {
-                "action_type": "public_appeal",
-                "target": None,
-                "parameters": {"international_community": True},
-                "reasoning": "向国际社区发出呼吁，寻求支持"
-            }
+            return SurvivalAction(
+                action_type="public_appeal",
+                target=None,
+                parameters={"international_community": True},
+                reasoning="向国际社区发出呼吁，寻求支持"
+            )
 
-    def seek_protection(self, global_data: Dict) -> Dict:
+    def seek_protection(self, global_data: Dict) -> ProtectionRequest:
         """
         寻求保护
 
@@ -607,29 +782,30 @@ class SurvivalStrategy:
         Returns:
             保护请求
         """
+        # 评估威胁
         threats = self.assess_survival_threats(global_data)
 
         if not threats:
-            return {
-                "target_protector": "",
-                "request_type": "none",
-                "terms": {},
-                "reasoning": "当前没有明显威胁，无需寻求保护"
-            }
+            return ProtectionRequest(
+                target_protector="",
+                request_type="none",
+                terms={},
+                reasoning="当前没有明显威胁，无需寻求保护"
+            )
 
         # 选择最紧迫的威胁
-        urgent_threat = max(threats, key=lambda t: t["urgency"])
+        urgent_threat = max(threats, key=lambda t: t.urgency)
 
         # 选择合适的保护者（优先选择王道型大国）
-        protector = self._select_protector(urgent_threat["source"], global_data)
+        protector = self._select_protector(urgent_threat.source, global_data)
 
         if not protector:
-            return {
-                "target_protector": "",
-                "request_type": "none",
-                "terms": {},
-                "reasoning": "没有找到合适的保护者"
-            }
+            return ProtectionRequest(
+                target_protector="",
+                request_type="none",
+                terms={},
+                reasoning="没有找到合适的保护者"
+            )
 
         # 制定保护请求条款
         terms = {
@@ -638,15 +814,24 @@ class SurvivalStrategy:
             "compensation": "political_support"
         }
 
-        return {
-            "target_protector": protector,
-            "request_type": "security_guarantee",
-            "terms": terms,
-            "reasoning": f"面临来自{urgent_threat['source']}的{urgent_threat['threat_type']}威胁，请求{protector}提供保护"
-        }
+        return ProtectionRequest(
+            target_protector=protector,
+            request_type="security_guarantee",
+            terms=terms,
+            reasoning=f"面临来自{urgent_threat.source}的{urgent_threat.threat_type}威胁，请求{protector}提供保护"
+        )
 
     def _select_protector(self, threat_source: str, global_data: Dict) -> Optional[str]:
-        """选择保护者"""
+        """
+        选择保护者
+
+        Args:
+            threat_source: 威胁来源
+            global_data: 全球数据
+
+        Returns:
+            保护者ID
+        """
         # 获取所有大国和超级大国
         all_agents = global_data.get("agents", [])
         potential_protectors = [
@@ -679,10 +864,17 @@ class SurvivalStrategy:
 
 class SmallPowerAgent(BaseAgent):
     """
-    小国智能体 - 对应技术方案3.3.3节
+    小国智能体
 
-    适用范围：小国
-    特点：不需要配置leader_type，决策逻辑由战略立场和核心生存利益驱动
+    适用范围：小国 (PowerTier.SMALL_POWER, z ≤ 0.5, 约69.15%)
+    不需要配置 leader_type
+
+    特点：
+    - 生存安全与渐进发展
+    - 维护国家主权和安全
+    - 确保经济生存，渐进发展
+    - 在大国间保持平衡
+    - 寻求盟友或保护伞
 
     Git提交用户名: yangyh-2025
     Git提交邮箱: yangyuhang2667@163.com

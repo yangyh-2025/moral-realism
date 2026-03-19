@@ -157,7 +157,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
             <nav className="flex-1 py-4">
               <ul className="space-y-1 px-2">
                 {menuItems.map((item) => {
- {
                   const IconComponent = item.icon;
                   return (
                     <li key={item.id}>

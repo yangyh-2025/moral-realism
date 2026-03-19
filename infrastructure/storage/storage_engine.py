@@ -451,3 +451,186 @@ class StorageEngine:
                     "has_prev": page > 1
                 }
             }
+
+    def save_interaction(
+        self,
+        simulation_id: str,
+        round: int,
+        initiator_id: str,
+        target_id: Optional[str],
+        interaction_type: str,
+        interaction_data: Dict,
+        outcome: Dict,
+        reasoning: Optional[str] = None
+    ) -> None:
+        """
+        保存互动记录
+
+        Args:
+            simulation_id: 仿真ID
+            round: 轮次
+            initiator_id: 发起者ID
+            target_id: 目标ID
+            interaction_type: 互动类型
+            interaction_data: 互动数据
+            outcome: 执行结果
+            reasoning: 互动理由
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO interactions
+                (simulation_id, round, initiator_id, target_id,
+                 interaction_type, interaction_data, outcome, reasoning, timestamp)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                simulation_id,
+                round,
+                initiator_id,
+                target_id,
+                interaction_type,
+                json.dumps(interaction_data),
+                json.dumps(outcome),
+                reasoning,
+                datetime.now().isoformat()
+            ))
+            conn.commit()
+
+    def save_metric(
+        self,
+        simulation_id: str,
+        round: int,
+        metric_type: str,
+        metric_name: str,
+        metric_value: float,
+        metadata: Optional[Dict] = None
+    ) -> None:
+        """
+        保存指标数据
+
+        Args:
+            simulation_id: 仿真ID
+            round: 轮次
+            metric_type: 指标类型
+            metric_name: 指标名称
+            metric_value: 指标值
+            metadata: 元数据
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO metrics
+                (simulation_id, round, metric_type, metric_name,
+                 metric_value, metadata, timestamp)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                simulation_id,
+                round,
+                metric_type,
+                metric_name,
+                metric_value,
+                json.dumps(metadata) if metadata else None,
+                datetime.now().isoformat()
+            ))
+            conn.commit()
+
+    def save_round_result(
+        self,
+        simulation_id: str,
+        round: int,
+        result: Dict
+    ) -> None:
+        """
+        保存轮次结果
+
+        Args:
+            simulation_id: 仿真ID
+            round: 轮次
+            result: 轮次结果
+        """
+        # 保存轮次决策
+        if 'decisions' in result:
+            for decision in result['decisions']:
+                self.save_decision(
+                    simulation_id=simulation_id,
+                    round=round,
+                    agent_id=decision.get('agent_id'),
+                    function_name=decision.get('function'),
+                    function_args=decision.get('arguments', {}),
+                    validation_result=decision.get('validation', {}),
+                    reasoning=decision.get('reasoning')
+                )
+
+        # 保存轮次互动
+        if 'interactions' in result:
+            for interaction in result['interactions']:
+                self.save_interaction(
+                    simulation_id=simulation_id,
+                    round=round,
+                    initiator_id=interaction.get('initiator_id'),
+                    target_id=interaction.get('target_id'),
+                    interaction_type=interaction.get('interaction_type'),
+                    interaction_data=interaction.get('interaction_data', {}),
+                    outcome=interaction.get('outcome', {}),
+                    reasoning=interaction.get('reasoning')
+                )
+
+        # 保存轮次指标
+        if 'metrics' in result:
+            metrics = result['metrics']
+            if isinstance(metrics, dict):
+                for metric_name, metric_value in metrics.items():
+                    metric_type = 'dependent'  # 默认类型
+                    self.save_metric(
+                        simulation_id=simulation_id,
+                        round=round,
+                        metric_type=metric_type,
+                        metric_name=metric_name,
+                        metric_value=float(metric_value) if isinstance(metric_value, (int, float)) else 0.0
+                    )
+
+    def save_simulation_result(self, simulation_id: str, result: Dict) -> None:
+        """
+        保存仿真结果
+
+        Args:
+            simulation_id: 仿真ID
+            result: 仿真结果
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+
+            # 更新仿真记录
+            cursor.execute("""
+                UPDATE simulations
+                SET end_time = ?,
+                    total_rounds = ?,
+                    status = ?
+                WHERE simulation_id = ?
+            """, (
+                result.get('end_time'),
+                result.get('total_rounds'),
+                'completed',
+                simulation_id
+            ))
+
+            # 保存最终状态
+            if 'final_state' in result:
+                final_state = result['final_state']
+                if 'agents' in final_state:
+                    for agent_state in final_state['agents']:
+                        cursor.execute("""
+                            INSERT INTO agent_states
+                            (simulation_id, round, agent_id, agent_type,
+                             state_data, timestamp)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        """, (
+                            simulation_id,
+                            result.get('total_rounds', 0),
+                            agent_state.get('agent_id'),
+                            agent_state.get('agent_id'),  # 使用agent_id作为类型
+                            json.dumps(agent_state),
+                            datetime.now().isoformat()
+                        ))
+
+            conn.commit()

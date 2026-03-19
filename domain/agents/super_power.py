@@ -1,5 +1,14 @@
 """
-大国智能体 - 对应技术方案3.3.2节
+超级大国智能体
+
+对应 PowerTier.SUPERPOWER (z > 2.0, 约2.28%)
+必须配置：leader_type（王道型/霸权型/强权型/昏庸型）
+
+特点：
+- 全球战略布局和秩序维护
+- 维护全球领导地位，防范新兴对手崛起
+- 提供国际公共产品
+- 塑造符合自身利益的国际秩序
 
 Git提交用户名: yangyh-2025
 Git提交邮箱: yangyuhang2667@163.com
@@ -50,7 +59,7 @@ class LeadershipDecision:
     领导决策
 
     Git提交用户名: yangyh-2025
-    Git Git提交邮箱: yangyuhang2667@163.com
+    Git提交邮箱: yangyuhang2667@163.com
     """
 
     def __init__(
@@ -83,7 +92,7 @@ class RegionalAssessment:
     区域局势评估
 
     Git提交用户名: yangyhgh-2025
-    Git提交邮箱: yangyuhang2667@163.com
+    Git提交邮箱与其他文档一致: yangyuhang2667@163.com
     """
 
     def __init__(
@@ -206,7 +215,7 @@ class AllianceResponse:
 
 class GlobalLeadershipStrategy:
     """
-    全球领导决策模块
+    全球领导决策模块 - 超级大国专用
 
     Git提交用户名: yangyh-2025
     Git提交邮箱: yangyariang2667@163.com
@@ -217,7 +226,7 @@ class GlobalLeadershipStrategy:
         初始化全球领导策略
 
         Args:
-            agent: 大国智能体实例
+            agent: 超级大国智能体实例
         """
         self.agent = agent
         self._decisions = []
@@ -236,7 +245,7 @@ class GlobalLeadershipStrategy:
         power_balance = self._calculate_power_balance(global_data)
 
         # 评估联盟局势
-        alliance_situation = self._assess_alliance_situation(global_data)
+        alliance_situation = self._assessess_alliance_situation(global_data)
 
         # 评估威胁水平
         threat_level = self._assess_threat_level(global_data, power_balance)
@@ -272,7 +281,7 @@ class GlobalLeadershipStrategy:
             agent.get("power", 0) for agent in agents
         )
 
-        if total_power <= 0:  # 添加负值检查
+        if total_power <= 0:
             return {}
 
         power_balance = {
@@ -313,7 +322,6 @@ class GlobalLeadershipStrategy:
         from collections import Counter
         alliance_groups = {}
         for alliance in alliances:
-            # 简化的联盟分组逻辑
             leader = alliance.get("leader")
             if leader:
                 if leader not in alliance_groups:
@@ -337,7 +345,6 @@ class GlobalLeadershipStrategy:
         elif len(my_alliances) == 1:
             return "minor_player"
         else:
-            # 检查是否是联盟领导者
             leader_count = sum(
                 1 for a in my_alliances
                 if a.get("leader") == self.agent.state.agent_id
@@ -367,10 +374,8 @@ class GlobalLeadershipStrategy:
         if not my_threats:
             return 0.0
 
-        # 计算威胁严重程度
         max_severity = max(t.get("severity", 0) for t in my_threats)
 
-        # 考虑敌对关系的智能体数量
         hostile_agents = [
             a for a in global_data.get("agents", [])
             if a.get("agent_id") != self.agent.state.agent_id and
@@ -547,14 +552,12 @@ class GlobalLeadershipStrategy:
         Args:
             outcome: 执行结果
         """
-        # 记录到学习机制
         if self.agent.state.learning:
             self.agent.state.learning.record_outcome(
                 decision={"type": "leadership_action"},
                 outcome=outcome
             )
 
-        # 更新战略信誉度
         if outcome.get("success", False):
             self.agent.state.strategic_reputation = min(
                 100.0,
@@ -569,7 +572,7 @@ class GlobalLeadershipStrategy:
 
 class RegionalManagementStrategy:
     """
-    区域管理决策模块
+    区域管理决策模块 - 超级大国专用
 
     Git提交用户名: yangyh-2025
     Git提交邮箱: yangyuhang2667@163.com
@@ -595,13 +598,8 @@ class RegionalManagementStrategy:
             if a.get("region") == region
         ]
 
-        # 计算区域权力结构
         power_structure = self._calculate_regional_power_structure(region_agents)
-
-        # 评估区域稳定性
         stability_level = self._assess_regional_stability(region_agents, regional_data)
-
-        # 识别区域利益
         local_interests = self._identify_regional_interests(region, regional_data)
 
         return RegionalAssessment(
@@ -630,7 +628,6 @@ class RegionalManagementStrategy:
         if not region_agents:
             return 1.0
 
-        # 计算关系冲突程度
         conflicts = regional_data.get("conflicts", [])
         regional_conflicts = [
             c for c in conflicts
@@ -638,8 +635,6 @@ class RegionalManagementStrategy:
         ]
 
         conflict_severity = sum(c.get("severity", 0) for c in regional_conflicts)
-
-        # 稳定性越高，冲突越低
         stability = max(0.0, 1.0 - conflict_severity / 10.0)
 
         return stability
@@ -688,27 +683,10 @@ class RegionalManagementStrategy:
             expected_outcome=expected_outcome
         )
 
-    def manage_regional_relations(self, region: str) -> List[Dict]:
-        """
-        管理区域关系
-
-        Args:
-            region: 区域名称
-
-        Returns:
-            关系行动列表
-        """
-        # 获取最近的区域政策
-        policy = self._regional_policies.get(region)
-        if not policy:
-            return []
-
-        return policy.actions
-
 
 class AllianceManager:
     """
-    联盟管理模块
+    联盟管理模块 - 超级大国专用
 
     Git提交用户名: yangyh-2025
     Git提交邮箱: yangyuhang2667@163.com
@@ -733,7 +711,6 @@ class AllianceManager:
         self._proposals_counter += 1
         proposal_id = f"alliance_{self.agent.state.agent_id}_{self._proposals_counter}"
 
-        # 根据领导类型制定条款
         terms = self._formulate_alliance_terms(target_id, alliance_type)
 
         proposal = AllianceProposal(
@@ -746,6 +723,7 @@ class AllianceManager:
         )
 
         self._proposals[proposal_id] = proposal
+        return proposal
 
     def _formulate_alliance_terms(self, target_id: str, alliance_type: str) -> Dict:
         """
@@ -773,7 +751,7 @@ class AllianceManager:
                 return {
                     "mutual_defense": True,
                     "economic_cooperation": True,
-                    "decision_making": "leader_led",  # 霸权主导
+                    "decision_making": "leader_led",
                     "duration": "indefinite",
                     "terms": "以我方为主导，共同对抗威胁"
                 }
@@ -781,7 +759,7 @@ class AllianceManager:
                 return {
                     "mutual_defense": True,
                     "economic_cooperation": False,
-                    "decision_making": "coercive",  # 强制执行
+                    "decision_making": "coercive",
                     "duration": "contingent",
                     "terms": "服从我方领导，共同实现目标"
                 }
@@ -827,7 +805,6 @@ class AllianceManager:
         Returns:
             联盟响应
         """
-        # 检查是否是对我的提议
         if proposal.target != self.agent.state.agent_id:
             return AllianceResponse(
                 proposal_id=proposal.proposal_id,
@@ -835,7 +812,6 @@ class AllianceManager:
                 reasoning="此提议不是针对我的"
             )
 
-        # 评估联盟的收益
         benefit = self._evaluate_alliance_benefit(proposal)
 
         if benefit >= 0.7:
@@ -845,7 +821,6 @@ class AllianceManager:
                 reasoning=f"联盟收益({benefit:.2f})符合预期，接受提议"
             )
         elif benefit >= 0.4:
-            # 可能提出反提案
             counter_terms = self._formulate_counter_terms(proposal)
             return AllianceResponse(
                 proposal_id=proposal.proposal_id,
@@ -870,7 +845,6 @@ class AllianceManager:
         Returns:
             收益评分 (0-1)
         """
-        # 简化实现：根据条款评估收益
         terms = proposal.terms
         benefit = 0.0
 
@@ -897,76 +871,25 @@ class AllianceManager:
         """
         terms = proposal.terms.copy()
 
-        # 尝试改善条款
         if terms.get("decision_making") == "leader_led":
             terms["decision_making"] = "consultative"
             terms["notes"] = "建议采用协商决策机制"
 
         return terms
 
-    def maintain_alliance(self, alliance_id: str) -> Dict:
-        """
-        维护联盟
 
-        Args:
-            alliance_id: 联盟ID
-
-        Returns:
-            维护行动
-        """
-        # 根据领导类型决定维护方式
-        leader_type = self.agent.state.leader_type
-
-        if leader_type == LeaderType.WANGDAO:
-            return {
-                "action": "regular_consultation",
-                "method": "multilateral_dialogue",
-                "reasoning": "通过定期协商维护联盟关系"
-            }
-        elif leader_type == LeaderType.BAQUAN:
-            return {
-                "action": "reinforce_leadership",
-                "method": "resource_allocation",
-                "reasoning": "通过资源分配强化领导地位"
-            }
-        elif leader_type == LeaderType.QIANGQUAN:
-            return {
-                "action": "demand_compliance",
-                "method": "pressure",
-                "reasoning": "通过压力要求盟友服从"
-            }
-        else:  # HUNYONG
-            return {
-                "action": "variable_engagement",
-                "method": "situational",
-                "reasoning": "根据具体情况调整参与程度"
-            }
-
-    def dissolve_alliance(self, alliance_id: str, reason: str) -> Dict:
-        """
-        解散联盟
-
-        Args:
-            alliance_id: 联盟ID
-            reason: 解散原因
-
-        Returns:
-            解散结果
-        """
-        return {
-            "alliance_id": alliance_id,
-            "action": "dissolve",
-            "reason": reason,
-            "timestamp": datetime.now().isoformat()
-        }
-
-
-class StateAgent(BaseAgent):
+class SuperPowerAgent(BaseAgent):
     """
-    大国智能体 - 对应技术方案3.3.2节
+    超级ari国智能体
 
-    适用范围：超级大国、大国
+    适用范围：超级大国 (PowerTier.SUPERPOWER, z > 2.0, 约2.28%)
     必须配置：leader_type（王道型/霸权型/强权型/昏庸型）
+
+    特点：
+    - 全球战略布局和秩序维护
+    - 维护全球领导地位，防范新兴对手崛起
+    - 提供国际公共产品
+    - 塑造符合自身利益的国际秩序
 
     Git提交用户名: yangyh-2025
     Git提交邮箱: yangyuhang2667@163.com
@@ -980,7 +903,7 @@ class StateAgent(BaseAgent):
         power_metrics: Any
     ):
         """
-        初始化大国智能体
+        初始化超级大国智能体
 
         Args:
             agent_id: 智能体唯一ID
@@ -1005,22 +928,30 @@ class StateAgent(BaseAgent):
         self.alliance_manager = AllianceManager(self)
 
     def _get_core_preferences(self, leader_type: Optional[LeaderType] = None) -> Dict[str, float]:
-        """获取核心偏好 - 对应技术方案领导类型偏好表"""
+        """获取超级大国核心偏好"""
         preferences = {
             LeaderType.WANGDAO: {
-                "system_stability": 1.0,
-                "national_long_term_interest": 0.9,
-                "national_short_term_interest": 0.7,
+                "global_system_stability": 1.0,
+                "global_leadership": 0.9,
+                "national_long_term_interest": 0.85,
+                "international_public_goods": 0.8,
+                "emerging_rival_containment": 0.7,
+                "national_short_term_interest": 0.6,
                 "personal_interest": 0.1
             },
             LeaderType.BAQUAN: {
-                "national_core_interest": 1.0,
-                "alliance_system_interest": 0.9,
-                "system_stability": 0.7,
+                "global_leadership": 1.0,
+                "emerging_rival_containment": 0.95,
+                "national_core_interest": 0.9,
+                "alliance_system_interest": 0.85,
+                "international_system_control": 0.8,
+                "system_stability": 0.6,
                 "personal_interest": 0.2
             },
             LeaderType.QIANGQUAN: {
-                "national_short_term_core_interest": 1.0,
+                "national_short_term_core_interest":1.0,
+                "power_projection": 0.9,
+                "military_dominance": 0.85,
                 "national_long_term_interest": 0.6,
                 "others_interest": 0.1
             },
@@ -1033,31 +964,35 @@ class StateAgent(BaseAgent):
         return preferences.get(leader_type, {})
 
     def _get_behavior_boundaries(self, leader_type: Optional[LeaderType] = None) -> List[str]:
-        """获取行为边界"""
+        """获取超级大国行为边界"""
         boundaries = {
             LeaderType.WANGDAO: [
-                "非暴力手段优先",
-                "平等协商对话",
+                "维护全球秩序稳定是首要任务",
+                "通过多边协商解决问题",
                 "提供国际公共产品",
-                "塑造公平国际规范"
+                "塑造公平公正的国际规范",
+                "对新兴大国采取建设性态度"
             ],
             LeaderType.BAQUAN: [
-                "选择性使用暴力/强制手段",
+                "维护全球领导地位是核心目标",
+                "选择性使用武力/强制手段",
                 "对盟友与对手执行双重标准",
-                "主导国际制度",
-                "有条件履行国际承诺"
+                "主导国际组织和制度",
+                "遏制新兴挑战者崛起"
             ],
             LeaderType.QIANGQUAN: [
-                "暴力/强制手段优先",
+                "武力/强制手段优先",
                 "无视国际承诺与规则",
-                "通过实力压制实现目标",
-                "拒绝多边协商与调停"
+                "通过军事压制实现目标",
+                "拒绝多边协商与调停",
+                "对挑战者采取激进回应"
             ],
             LeaderType.HUNYONG: [
-                "决策高度个人化",
+                "决策高度个人化和不可预测",
                 "言行严重不一致",
                 "频繁毁约与外交转向",
-                "可采取自我伤害行为"
+                "可能采取自我伤害行为",
+                "全球政策缺乏连贯性"
             ]
         }
         return boundaries.get(leader_type, [])

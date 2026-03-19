@@ -75,15 +75,16 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # 导入并启用速率限制中间件
 from backend.middleware.ratelimit import RateLimiter
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # 创建速率限制中间件实例
 rate_limiter = RateLimiter(max_requests=100, window_seconds=60)
 
 
-class RateLimitMiddleware:
+class RateLimitMiddleware(BaseHTTPMiddleware):
     """速率限制中间件类"""
 
-    async def __call__(self, request, call_next):
+    async def dispatch(self, request, call_next):
         """处理请求前检查速率限制"""
         client_id = request.client.host if request.client else "unknown"
 
@@ -170,9 +171,13 @@ async def startup_event():
     # 初始化服务（依赖注入）
     from backend.services.export_service import ExportService
     from backend.services.simulation_manager import SimulationLifecycle
+    from infrastructure.storage.storage_engine import StorageEngine
+
+    # 创建存储引擎实例
+    storage = StorageEngine(DATABASE_FILE)
 
     app.state.export_service = ExportService()
-    app.state.simulation_manager = SimulationLifecycle()
+    app.state.simulation_manager = SimulationLifecycle(storage)
 
     logger.info("Services initialized")
 

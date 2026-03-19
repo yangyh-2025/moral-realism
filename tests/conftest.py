@@ -27,7 +27,10 @@ except ImportError:
 # Entity imports
 try:
     from domain.agents.base_agent import BaseAgent, DecisionCache, AgentLearning
-    from domain.agents.state_agent import StateAgent
+    from domain.agents.super_power import SuperPowerAgent
+    from domain.agents.great_power import GreatPowerAgent
+    from domain.agents.middle_power import MiddlePowerAgent
+    from domain.agents.small_power import SmallPowerAgent
     from domain.power.power_metrics import PowerMetrics, PowerTier
     from domain.interactions.interaction_rules import InteractionRules, Interaction, InteractionType
     from config.leader_types import LeaderType
