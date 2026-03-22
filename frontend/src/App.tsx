@@ -31,7 +31,11 @@ function AppContent() {
   // 初始化WebSocket连接
   useEffect(() => {
     const wsClient = getWebSocketClient(undefined, dispatch);
-    wsClient.connect().catch(err => console.error('WebSocket connect failed:', err));
+
+    // 防止重复连接
+    if (!wsClient.isReady()) {
+      wsClient.connect().catch(err => console.error('WebSocket connect failed:', err));
+    }
 
     return () => {
       wsClient.disconnect();

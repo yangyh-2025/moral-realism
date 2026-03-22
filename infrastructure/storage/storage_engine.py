@@ -206,7 +206,7 @@ class StorageEngine:
                  function_args, validation_result, reasoning,
                  situation_analysis, strategic_consideration,
                  expected_outcome, alternatives, full_reasoning, timestamp)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 simulation_id,
                 round,
@@ -266,7 +266,7 @@ class StorageEngine:
                      function_args, validation_result, reasoning,
                      situation_analysis, strategic_consideration,
                      expected_outcome, alternatives, full_reasoning, timestamp)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     decision['simulation_id'],
                     decision['round'],

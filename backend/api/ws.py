@@ -119,6 +119,22 @@ class ConnectionManager:
         for client_id in self._simulation_clients[simulation_id]:
             await self.send_personal_message(client_id, message)
 
+    async def push_order_update(self, simulation_id: str, order_info: dict):
+        """
+        推送秩序类型更新
+
+        Args:
+            simulation_id: 仿真ID
+            order_info: 秩序评估信息
+        """
+        message = {
+            "type": "order_update",
+            "simulation_id": simulation_id,
+            "data": order_info,
+            "timestamp": datetime.now().isoformat()
+        }
+        await self.broadcast_to_simulation(simulation_id, message)
+
     def register_simulation_client(self, client_id: str, simulation_id: str):
         """
         注册客户端到仿真

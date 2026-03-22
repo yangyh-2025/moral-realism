@@ -8,7 +8,7 @@ import api from './api';
 
 export interface SimulationConfig {
   total_rounds: number;
-  round_duration: number;
+  round_duration_months: number;
   random_event_prob: number;
 }
 
@@ -25,20 +25,24 @@ export const simulationAPI = {
   start: async (config: SimulationConfig) => {
     return await api.post('/simulation/start', config);
   },
-  pause: async () => {
-    return await api.post('/simulation/pause');
+  pause: async (simulationId: string) => {
+    return await api.post(`/simulation/pause/${simulationId}`);
   },
-  resume: async () => {
-    return await api.post('/simulation/resume');
+  resume: async (simulationId: string) => {
+    return await api.post(`/simulation/resume/${simulationId}`);
   },
-  stop: async () => {
-    return await api.post('/simulation/stop');
+  stop: async (simulationId: string) => {
+    return await api.post(`/simulation/stop/${simulationId}`);
   },
-  reset: async () => {
-    return await api.post('/simulation/reset');
-  },
-  getState: async () => {
-    const response = await api.get('/simulation/state/state');
+  getState: async (simulationId: string) => {
+    const response = await api.get(`/simulation/state/${simulationId}`);
     return response.data;
+  },
+  // 使用 create 和 delete 替代 reset
+  create: async (config: SimulationConfig) => {
+    return await api.post('/simulation/create', config);
+  },
+  delete: async (simulationId: string) => {
+    return await api.delete(`/simulation/${simulationId}`);
   },
 };

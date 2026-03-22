@@ -11,8 +11,19 @@ from enum import Enum
 import asyncio
 import uuid
 import json
+import logging
+import os
 
 from infrastructure.storage.storage_engine import StorageEngine
+from domain.environment.environment_engine import EnvironmentEngine
+from infrastructure.llm.llm_engine import LLMEngine, SiliconFlowProvider
+from application.decision.decision_engine import DecisionEngine
+from infrastructure.validation.validator import RuleValidator
+from application.analysis.metrics import MetricsPipeline, CalculationContext
+from application.workflows.single_round import SingleRoundWorkflow
+from application.workflows.multi_round import MultiRoundWorkflow
+
+logger = logging.getLogger(__name__)
 
 
 class SimulationStatus(Enum):
@@ -95,6 +106,102 @@ class SimulationLifecycle:
         self.storage = storage
         self._active_simulations: Dict[str, Simulation] = {}
         self._simulation_tasks: Dict[str, asyncio.Task] = {}
+        self._agents: Dict[str, List[Any]] = {}  # simulation_id -> agents list
+
+    def _create_agents_from_api_data(self, agent_data_list: List[Dict]) -> List[Any]:
+        """
+        从 API 的 Agent 数据创建智能体对象
+
+        Args:
+            agent_data_list: API Agent 数据列表
+
+        Returns:
+            智能体对象列表
+        """
+        agents = []
+        from domain.agents.base_agent import BaseAgent
+        from domain.power.power_metrics import PowerMetrics, PowerTier
+        from config.leader_types import LeaderType
+
+        for agent_data in agent_data_list:
+            # 轎取 power_metrics 字典
+            pm_dict = agent_data.get('power_metrics', {})
+            if isinstance(pm_dict, dict):
+                # API 层使用 C,E,M,S,W，domain 层使用不同的字段名
+                power_metrics = PowerMetrics(
+                    critical_mass=pm_dict.get('C', pm_dict.get('critical_mass', 50.0)),
+                    economic_capability=pm_dict.get('E', pm_dict.get('economic_capability', 100.0)),
+                    military_capability=pm_dict.get('M', pm_dict.get('military_capability', 100.0)),
+                    strategic_purpose=pm_dict.get('S', pm_dict.get('strategic_purpose', 0.75)),
+                    national_will=pm_dict.get('W', pm_dict.get('national_will', 0.75))
+                )
+            else:
+                power_metrics = PowerMetrics()
+
+            # 创建智能体（根据 power_tier 选择类型）
+            power_tier_str = agent_data.get('power_tier', 'middle_power')
+            try:
+                power_tier = PowerTier(power_tier_str)
+            except ValueError:
+                power_tier = PowerTier.MIDDLE_POWER
+
+            # 获取 leader_type（支持中英文）
+            from backend.helpers.leader_type_mapper import parse_leader_type
+            leader_type_str = agent_data.get('leader_type')
+            leader_type = parse_leader_type(leader_type_str)
+
+            # 根据 power_tier 设置 leader_type
+            if power_tier in [PowerTier.SUPERPOWER, PowerTier.GREAT_POWER]:
+                # 超级大国和大国必须配置领导类型，未配置则使用默认值
+                if leader_type is None:
+                    leader_type = LeaderType.WANGDAO  # 默认使用王道型
+            elif power_tier in [PowerTier.MIDDLE_POWER, PowerTier.SMALL_POWER]:
+                # 中等强国和小国不应配置领导类型，强制设为 None
+                leader_type = None
+
+            # 使用工厂统一创建智能体，确保初始化流程正确
+            from domain.agents.agent_factory import AgentFactory
+            agent = AgentFactory.create_agent(
+                agent_id=agent_data.get('id'),
+                name=agent_data.get('name'),
+                region=agent_data.get('region'),
+                power_metrics=power_metrics,
+                power_tier=power_tier,
+                leader_type=leader_type
+            )
+
+            agents.append(agent)
+
+        return agents
+
+    def _get_agents_for_simulation(self, simulation_id: str) -> List[Any]:
+        """
+        获取仿真的智能体列表
+
+        Args:
+            simulation_id: 仿真ID
+
+        Returns:
+            智能体列表
+        """
+        if simulation_id in self._agents:
+            return self._agents[simulation_id]
+
+        # 从 API 的 agents_store 获取智能体数据
+        import backend.api.agents as agents_module
+
+        # 获取所有智能体（包括未关联到特定仿真的智能体）
+        # 这样支持前端先创建智能体，再启动仿真的工作流程
+        agent_data_list = [agent.model_dump() for agent in agents_module._agents_store.values()]
+
+        if agent_data_list:
+            logger.info(f"为仿真 {simulation_id} 获取到 {len(agent_data_list)} 个智能体")
+            agents = self._create_agents_from_api_data(agent_data_list)
+            self._agents[simulation_id] = agents
+            return agents
+
+        logger.warning(f"仿真 {simulation_id} 没有可用的智能体")
+        return []
 
     async def create_simulation(self, config: SimulationConfig) -> Simulation:
         """
@@ -148,7 +255,7 @@ class SimulationLifecycle:
         simulation.start_time = datetime.now() if not simulation.start_time else simulation.start_time
 
         # 启动仿真运行任务
-        await self._run_simulation(simulation)
+        asyncio.create_task(self._run_simulation(simulation))
 
         return SimulationResult(
             simulation_id=simulation.simulation_id,
@@ -157,6 +264,134 @@ class SimulationLifecycle:
             status=simulation.status,
             summary={"message": "仿真已启动"}
         )
+
+    async def _run_simulation(self, simulation: Simulation) -> None:
+        """
+        运行仿真任务（后台任务）
+
+        Args:
+            simulation: 仿真实例
+        """
+        try:
+            logger.info(f"开始仿真: {simulation.simulation_id}, 总轮次: {simulation.config.total_rounds}")
+
+            # 获取或初始化智能体
+            agents = self._get_agents_for_simulation(simulation.simulation_id)
+            if not agents:
+                logger.warning(f"仿真 {simulation.simulation_id} 没有智能体，直接完成")
+                simulation.status = SimulationStatus.COMPLETED
+                simulation.end_time = datetime.now()
+                return
+
+            # 导入配置中的 LLM API keys
+            from config.settings import SimulationConfig as AppSettings
+            import os
+
+            # 初始化组件
+            try:
+                env_config = AppSettings()
+            except:
+                env_config = AppSettings()
+
+            api_keys = env_config.llm_api_keys or [
+                os.getenv("LLM_API_KEY", "")
+            ]
+            api_keys = [k for k in api_keys if k]  # 过滤空 key
+
+            if not api_keys:
+                logger.error("未配置 LLM API key，无法使用 LLM 决策")
+                # 使用空 key 继续运行，但会报错
+                api_keys = [""]
+
+            # 创建 LLM 引擎
+            provider = SiliconFlowProvider(
+                api_key=api_keys,
+                base_url=env_config.llm_base_url,
+                model=env_config.llm_model
+            )
+            llm_engine = LLMEngine(provider)
+
+            # 创建其他组件
+            validator = RuleValidator()
+
+            from infrastructure.logging.logger import EnhancedLogger
+            enhanced_logger = EnhancedLogger(log_dir=f"logs/{simulation.simulation_id}")
+
+            # 创建决策引擎
+            decision_engine = DecisionEngine(
+                llm_engine=llm_engine,
+                validator=validator,
+                storage=self.storage,
+                logger=enhanced_logger
+            )
+
+            # 创建环境引擎
+            environment = EnvironmentEngine()
+
+            # 创建指标计算器
+            metrics_pipeline = MetricsPipeline()
+
+            # 创建单轮工作流
+            single_round_workflow = SingleRoundWorkflow(
+                environment=environment,
+                decision_engine=decision_engine,
+                metrics_calculator=metrics_pipeline,
+                storage=self.storage,
+                logger=enhanced_logger
+            )
+
+            # 创建多轮工作流
+            multi_round_workflow = MultiRoundWorkflow()
+
+            # 设置回调函数
+            async def on_round_start(sim_id: str, rnd: int):
+                logger.info(f"仿真 {sim_id}: 开始第 {rnd + 1} 轮")
+
+            async def on_round_complete(sim_id: str, rnd: int, result: Dict):
+                logger.info(f"仿真 {sim_id}: 完成第 {rnd + 1} 轮")
+                # 更新进度
+                simulation.current_round = rnd + 1
+                simulation.progress = ((rnd + 1) / simulation.config.total_rounds) * 100.0
+
+            multi_round_workflow.callbacks.on_round_start(on_round_start)
+            multi_round_workflow.callbacks.on_round_complete(on_round_complete)
+
+            # 执行多轮仿真
+            logger.info(f"开始执行多轮仿真: {simulation.simulation_id}, 智能体数: {len(agents)}")
+
+            try:
+                results = await multi_round_workflow.execute(
+                    agents=agents,
+                    simulation_id=simulation.simulation_id,
+                    total_rounds=simulation.config.total_rounds,
+                    round_func=lambda a, sid, rnd: single_round_workflow.execute(a, sid, rnd),
+                    checkpoint_interval=10
+                )
+
+                logger.info(f"仿真完成: {simulation.simulation_id}, 完成 {len(results)} 轮")
+                simulation.status = SimulationStatus.COMPLETED
+                simulation.end_time = datetime.now()
+                simulation.current_round = simulation.config.total_rounds
+                simulation.progress = 100.0
+
+            except Exception as e:
+                logger.error(f"仿真执行失败: {e}", exc_info=True)
+                simulation.status = SimulationStatus.ERROR
+                simulation.error_message = str(e)
+                simulation.end_time = datetime.now()
+
+            # 保存仿真结束记录
+            self.storage.save_simulation_end(
+                simulation_id=simulation.simulation_id,
+                total_rounds=simulation.current_round,
+                status=simulation.status.value
+            )
+
+        except Exception as e:
+            logger.error(f"仿真任务失败: {e}", exc_info=True)
+            simulation.status = SimulationStatus.ERROR
+            simulation.error_message = str(e)
+            simulation.end_time = datetime.now()
 
     async def pause_simulation(self, simulation_id: str) -> None:
         """
@@ -385,30 +620,3 @@ class SimulationQuery:
                 return "后期阶段"
             else:
                 return "收尾阶段"
-
-    async def _run_simulation(self, simulation: Simulation) -> None:
-        """
-        运行仿真任务（后台任务）
-
-        Args:
-            simulation: 仿真实例
-        """
-        try:
-            # 在实际实现中，这里会调用workflow执行仿真
-            # 简化实现：直接更新状态为完成
-            simulation.status = SimulationStatus.COMPLETED
-            simulation.end_time = datetime.now()
-            simulation.current_round = simulation.config.total_rounds
-            simulation.progress = 100.0
-
-            # 保存仿真结束记录
-            self.storage.save_simulation_end(
-                simulation_id=simulation.simulation_id,
-                total_rounds=simulation.config.total_rounds,
-                status="completed"
-            )
-
-        except Exception as e:
-            simulation.status = SimulationStatus.ERROR
-            simulation.error_message = str(e)
-            simulation.end_time = datetime.now()

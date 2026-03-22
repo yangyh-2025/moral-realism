@@ -13,6 +13,10 @@ from typing import List
 import uvicorn
 import traceback
 import os
+from dotenv import load_dotenv
+
+# 加载 .env 文件
+load_dotenv()
 
 # 导入自定义错误类
 from interfaces.errors.errors import CustomError

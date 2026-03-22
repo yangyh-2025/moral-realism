@@ -45,12 +45,33 @@ def _configure_structlog(level: int, log_file: Optional[str], json_logs: bool, s
     """配置structlog"""
     import structlog
 
-    # 配置标准日志
-    logging.basicConfig(
-        format="%(message)s",
-        stream=sys.stdout,
-        level=level
-    )
+    # 配置标准日志 - 修复 Windows 控制台编码问题
+    import io
+    if sys.platform == "win32":
+        # Windows: 使用 GBK 编码的控制台
+        class WindowsConsoleHandler(logging.StreamHandler):
+            def __init__(self):
+                super().__init__(stream=sys.stdout)
+                self.setFormatter(logging.Formatter('%(message)s'))
+
+            def emit(self, record):
+                try:
+                    msg = self.format(record)
+                    self.stream.write(msg + '\n')
+                    self.stream.flush()
+                except Exception:
+                    self.handleError(record)
+
+        console_handler = WindowsConsoleHandler()
+        console_handler.setLevel(level)
+        logging.root.addHandler(console_handler)
+        logging.root.setLevel(level)
+    else:
+        logging.basicConfig(
+            format="%(message)s",
+            stream=sys.stdout,
+            level=level
+        )
 
     # 配置输出处理器
     if json_logs:

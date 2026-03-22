@@ -12,9 +12,9 @@
  * Git提交邮箱: yangyuhang2667@163.com
  */
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../store';
-import { eventsAPI } from '../services/events';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../store';
+import { eventsAPI, Event as APIEvent } from '../services/events';
 import { addNotification } from '../store/slices/uiSlice';
 import { Button } from '../components/ui/buttons/Button';
 import { Card } from '../components/ui/cards/Card';
@@ -26,24 +26,36 @@ import { Alert } from '../components/ui/feedback/Alert';
 import { Badge } from '../components/ui/data/Badge';
 import { Spinner } from '../components/ui/feedback/Spinner';
 import { EmptyState } from '../components/ui/data/EmptyState';
-import { PlusIcon, TrashIcon, EditIcon, PlayIcon, PauseIcon } from '../components/ui/icons';
+import { PlusIcon, TrashIcon, EditIcon, PlayIcon } from '../components/ui/icons';
+
+// UI 状态管理用的简化 Event 接口
+interface UIEvent {
+  id: string;
+  name: string;
+  description: string;
+  event_type: 'periodic' | 'random' | 'user_defined';
+  impact_level: number;
+  trigger_round?: number;
+  affected_agents: string[];
+  probability?: number;
+  created_at: string;
+  simulation_id?: string;
+}
 
 export const EventManager: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { events, loading } = useSelector((state: RootState) => state.events);
-
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [eventsList, setEventsList] = useState<any[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<UIEvent | null>(null);
+  const [eventsList, setEventsList] = useState<UIEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const [newEvent, setNewEvent] = useState({
     name: '',
     description: '',
-    event_type: 'random',
+    event_type: 'random' as 'random' | 'periodic',
     impact_level: 0.5,
     trigger_round: 0,
-    participants: [] as string[],
+    affected_agents: [] as string[],
     probability: 0.1
   });
 
@@ -55,8 +67,21 @@ export const EventManager: React.FC = () => {
   const loadEvents = async () => {
     setIsLoading(true);
     try {
-      const data = await eventsAPI.getAll();
-      setEventsList(data);
+      const data: APIEvent[] = await eventsAPI.getAll();
+      // 转换为 UI 格式
+      const uiEvents: UIEvent[] = data.map(evt => ({
+        id: evt.id,
+        name: evt.name,
+        description: evt.description || '',
+        event_type: evt.event_type,
+        impact_level: evt.effects?.impact_level || 0.5,
+        trigger_round: evt.effects?.trigger_round,
+        affected_agents: evt.affected_agents || [],
+        probability: evt.probability,
+        created_at: evt.created_at,
+        simulation_id: evt.simulation_id
+      }));
+      setEventsList(uiEvents);
     } catch (error) {
       dispatch(addNotification({
         type: 'error',
@@ -79,7 +104,22 @@ export const EventManager: React.FC = () => {
     }
 
     try {
-      await eventsAPI.create(newEvent);
+      // 转换为 API 格式
+      const apiEvent: Omit<APIEvent, 'id' | 'created_at' | 'timestamp'> = {
+        simulation_id: undefined,
+        event_type: newEvent.event_type,
+        name: newEvent.name,
+        description: newEvent.description,
+        active: false,
+        affected_agents: newEvent.affected_agents,
+        effects: {
+          impact_level: newEvent.impact_level,
+          trigger_round: newEvent.trigger_round
+        },
+        probability: newEvent.probability
+      };
+
+      await eventsAPI.create(apiEvent);
       setShowCreateModal(false);
       resetEventForm();
       loadEvents();
@@ -108,7 +148,22 @@ export const EventManager: React.FC = () => {
     }
 
     try {
-      await eventsAPI.update(selectedEvent.event_id, newEvent);
+      // 转换为 API 格式
+      const apiEvent: Partial<APIEvent> = {
+        simulation_id: selectedEvent.simulation_id,
+        event_type: newEvent.event_type,
+        name: newEvent.name,
+        description: newEvent.description,
+        active: false,
+        affected_agents: newEvent.affected_agents,
+        effects: {
+          impact_level: newEvent.impact_level,
+          trigger_round: newEvent.trigger_round
+        },
+        probability: newEvent.probability
+      };
+
+      await eventsAPI.update(selectedEvent.id, apiEvent);
       setShowCreateModal(false);
       setSelectedEvent(null);
       resetEventForm();
@@ -148,23 +203,27 @@ export const EventManager: React.FC = () => {
   };
 
   const handleTriggerEvent = async (eventId: string) => {
+    // 触发事件需要仿真ID，这里使用默认仿真
     try {
-      await eventsAPI.trigger(eventId);
+      await eventsAPI.trigger({
+        event_id: eventId,
+        simulation_id: 'default'
+      });
       dispatch(addNotification({
         type: 'success',
         title: '触发成功',
         message: '事件已触发',
       }));
-    } catch (error) {
+    } catch (error: any) {
       dispatch(addNotification({
         type: 'error',
         title: '触发失败',
-        message: '无法触发事件',
+        message: error.response?.data?.detail || '无法触发事件',
       }));
     }
   };
 
-  const handleEditEvent = (event: any) => {
+  const handleEditEvent = (event: UIEvent) => {
     setSelectedEvent(event);
     setNewEvent({
       name: event.name,
@@ -172,7 +231,7 @@ export const EventManager: React.FC = () => {
       event_type: event.event_type,
       impact_level: event.impact_level,
       trigger_round: event.trigger_round || 0,
-      participants: event.participants || [],
+      affected_agents: event.affected_agents || [],
       probability: event.probability || 0.1
     });
     setShowCreateModal(true);
@@ -185,7 +244,7 @@ export const EventManager: React.FC = () => {
       event_type: 'random',
       impact_level: 0.5,
       trigger_round: 0,
-      participants: [],
+      affected_agents: [],
       probability: 0.1
     });
   };
@@ -268,7 +327,7 @@ export const EventManager: React.FC = () => {
             <div className="space-y-3">
               {eventsList.map((event) => (
                 <EventCard
-                  key={event.event_id}
+                  key={event.id}
                   event={event}
                   onEdit={handleEditEvent}
                   onDelete={handleDeleteEvent}
@@ -294,7 +353,7 @@ export const EventManager: React.FC = () => {
       {/* 使用说明 */}
       <Alert variant="info" title="事件类型说明">
         <div className="mt-2 space-y-1 text-sm">
-          <div><strong>周期性事件</strong>：在指定轮次自动触发的事件</div>
+          <div><strong>周期性事件事件</strong>：在指定轮次自动触发的事件</div>
           <div><strong>随机事件</strong>：每轮按指定概率随机触发的事件</div>
           <div><strong>影响级别</strong>：0-1之间，数值越大影响越强</div>
         </div>
@@ -305,8 +364,8 @@ export const EventManager: React.FC = () => {
 
 // 事件卡片组件
 const EventCard: React.FC<{
-  event: any;
-  onEdit: (event: any) => void;
+  event: UIEvent;
+  onEdit: (event: UIEvent) => void;
   onDelete: (eventId: string) => void;
   onTrigger: (eventId: string) => void;
 }> = ({ event, onEdit, onDelete, onTrigger }) => {
@@ -342,15 +401,15 @@ const EventCard: React.FC<{
             )}
             {event.event_type === 'random' && (
               <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded">
-                触发概率: {(event.probability * 100).toFixed(1)}%
+                触发概率: {((event.probability || 0) * 100).toFixed(1)}%
               </span>
             )}
             <span className="px-2 py-1 bg-blue-50 text-blue-800 rounded">
               影响级别: {(event.impact_level * 100).toFixed(0)}%
             </span>
-            {event.participants && event.participants.length > 0 && (
+            {event.affected_agents && event.affected_agents.length > 0 && (
               <span className="px-2 py-1 bg-green-50 text-green-800 rounded">
-                参与者: {event.participants.length}
+                影响智能体: {event.affected_agents.length}
               </span>
             )}
           </div>
@@ -360,7 +419,7 @@ const EventCard: React.FC<{
             variant="secondary"
             size="sm"
             leftIcon={<PlayIcon size={14} />}
-            onClick={() => onTrigger(event.event_id)}
+            onClick={() => onTrigger(event.id)}
           >
             触发
           </Button>
@@ -376,7 +435,7 @@ const EventCard: React.FC<{
             variant="ghost"
             size="sm"
             leftIcon={<TrashIcon size={14} />}
-            onClick={() => onDelete(event.event_id)}
+            onClick={() => onDelete(event.id)}
           >
             删除
           </Button>
@@ -388,7 +447,7 @@ const EventCard: React.FC<{
 
 // 事件模态框组件
 const EventModal: React.FC<{
-  event: any | null;
+  event: UIEvent | null;
   formData: any;
   onChange: (data: any) => void;
   onSubmit: () => void;
@@ -426,7 +485,7 @@ const EventModal: React.FC<{
             </label>
             <select
               value={formData.event_type}
-              onChange={(e) => onChange({ ...formData, event_type: e.target.value })}
+              onChange={(e) => onChange({ ...formData, event_type: e.target.value as 'random' | 'periodic' })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <option value="random">随机事件</option>

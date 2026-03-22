@@ -33,7 +33,7 @@ import { Alert } from '../components/ui/feedback/Alert';
 
 export const Dashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { simulation, status, isLoading } = useSelector((state: RootState) => state.simulation);
+  const { currentSimulationId, currentSimulation, status, isLoading } = useSelector((state: RootState) => state.simulation);
   const { agents } = useSelector((state: RootState) => state.agents);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -42,19 +42,20 @@ export const Dashboard: React.FC = () => {
   // 刷新数据
   useEffect(() => {
     const interval = setInterval(() => {
-      if (status.is_running && !status.is_paused) {
-        dispatch(fetchSimulationState());
+      if (status.is_running && !status.is_paused && currentSimulationId) {
+        dispatch(fetchSimulationState(currentSimulationId));
         setLastUpdate(new Date());
       }
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [dispatch, status.is_running, status.is_paused]);
+  }, [dispatch, status.is_running, status.is_paused, currentSimulationId]);
 
   const handleManualRefresh = async () => {
+    if (!currentSimulationId) return;
     setRefreshing(true);
     try {
-      await dispatch(fetchSimulationState());
+      await dispatch(fetchSimulationState(currentSimulationId));
       setLastUpdate(new Date());
     } finally {
       setRefreshing(false);
@@ -62,8 +63,8 @@ export const Dashboard: React.FC = () => {
   };
 
   const getProgressPercentage = () => {
-    if (status.total_rounds === 0) return 0;
-    return Math.round((status.current_round / status.total_rounds) * 100);
+    if (status.current_round === 0) return 0;
+    return Math.round((status.current_round / currentSimulation?.total_rounds) * 100);
   };
 
   const getOrderTypeBadgeVariant = () => {
@@ -103,7 +104,7 @@ export const Dashboard: React.FC = () => {
         <StatCard
           title="当前轮次"
           value={status.current_round}
-          total={status.total_rounds}
+          total={currentSimulation?.total_rounds || 0}
           icon="round"
           variant="primary"
         />
@@ -165,7 +166,7 @@ export const Dashboard: React.FC = () => {
           <div className="relative">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-700">
-                轮次 {status.current_round} / {status.total_rounds}
+                轮次 {status.current_round} / {currentSimulation?.total_rounds || 0}
               </span>
               <span className="text-sm font-medium text-accent">
                 {getProgressPercentage()}%

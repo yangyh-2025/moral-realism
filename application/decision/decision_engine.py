@@ -10,7 +10,7 @@ from datetime import datetime
 
 from domain.agents.base_agent import BaseAgent
 from infrastructure.validation.validator import RuleValidator, ValidationResult
-from infrastructure.logging.enhanced_logger import DecisionReasoning, EnhancedLogger
+from infrastructure.logging.logger import DecisionReasoning, EnhancedLogger
 
 
 class DecisionEngine:
@@ -399,8 +399,8 @@ class DecisionEngine:
         self,
         agent_state: Dict,
         environment_state: Dict,
-        available_functions: List[str],
-        prohibited_functions: List[str]
+        available_functions: List[Dict],
+        prohibited_functions: Set[str]
     ) -> str:
         """
         构建决策提示词
@@ -408,8 +408,8 @@ class DecisionEngine:
         Args:
             agent_state: 智能体状态
             environment_state: 环境状态
-            available_functions: 可用函数列表
-            prohibited_functions: 禁止函数列表
+            available_functions: 可用函数列表 (List[Dict], 每个字典包含 name 和 description)
+            prohibited_functions: 禁止函数列表 (Set[str])
 
         Returns:
             提示词
@@ -424,10 +424,10 @@ class DecisionEngine:
 - 所属区域: {agent_state['region']}
 
 ## 可用行动
-{', '.join(available_functions)}
+{', '.join([f.get('name', '') for f in available_functions])}
 
 ## 禁止行动
-{', '.join(prohibited_functions) if prohibited_functions else '无'}
+{', '.join(list(prohibited_functions)) if prohibited_functions else '无'}
 
 ## 环境状态
 {self._format_environment_state(environment_state)}

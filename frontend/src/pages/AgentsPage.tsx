@@ -137,7 +137,7 @@ const AgentList: React.FC = () => {
       {/* 智能体列表 */}
       <div className="bg-white rounded-lg shadow">
         <table className="w-full">
-          <thead className="bg-gray-arez-50">
+          <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 名称
@@ -269,9 +269,38 @@ const AgentEditor: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 验证必填字段
+    if (!formData.name || !formData.region) {
+      dispatch(addNotification({
+        type: 'error',
+        title: '验证失败',
+        message: '请填写智能体名称和区域',
+      }));
+      return;
+    }
+
+    // 确保 power_metrics 有值
+    const powerMetrics = formData.power_metrics || {
+      C: 50,
+      E: 100,
+      M: 100,
+      S: 0.75,
+      W: 0.75,
+      comprehensive_power: calculateComprehensivePower({C: 50, E: 100, M: 100, S: 0.75, W: 0.75, comprehensive_power: 0}),
+    };
+
     try {
+      const payload = {
+        name: formData.name,
+        region: formData.region,
+        leader_type: formData.leader_type || '王道型',
+        power_metrics: powerMetrics,
+        strategic_interests: formData.strategic_interests || [],
+        alliances: formData.alliances || [],
+      };
+
       if (selectedAgent) {
-        const response = await api.put(`/agents/${selectedAgent.id}`, formData);
+        const response = await api.put(`/agents/${selectedAgent.id}`, payload);
         dispatch(updateAgent(response.data));
         dispatch(addNotification({
           type: 'success',
@@ -279,10 +308,7 @@ const AgentEditor: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           message: '智能体已更新',
         }));
       } else {
-        const response = await api.post('/agents', {
-          ...formData,
-          id: `agent-${Date.now()}`,
-        });
+        const response = await api.post('/agents', payload);
         dispatch(addAgent(response.data));
         dispatch(addNotification({
           type: 'success',
@@ -522,6 +548,20 @@ const PowerTierVisualization: React.FC = () => {
   const variance = powers.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / powers.length;
   const stdDev = Math.sqrt(variance);
 
+  // 如果所有综合国力都是0，不显示可视化
+  if (mean === 0 && stdDev === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-xl font-bold mb-4">实力层级分布</h3>
+        <p className="text-gray-500">暂无数据或综合国力为0</p>
+      </div>
+    );
+  }
+
+  // 计算最大值用于缩放
+  const maxPower = mean + 3 * stdDev;
+  const scale = maxPower > 0 ? 800 / maxPower : 0;
+
   // 分类统计
   const tierCounts = {
     superpower: agents.filter(a => a.power_tier === 'superpower').length,
@@ -558,34 +598,40 @@ const PowerTierVisualization: React.FC = () => {
       <div className="h-64 bg-gray-50 rounded-lg relative">
         <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none">
           {/* 绘制正态分布曲线 */}
-          <path
-            d={`M 0 200 ${generateNormalCurve(800, 200, mean, stdDev * 3)}`}
-            fill="rgba(59, 130, 246, 0.2)"
-            stroke="rgba(59, 130, 246, 1)"
-            strokeWidth={2}
-          />
+          {maxPower > 0 && (
+            <path
+              d={`M 0 200 ${generateNormalCurve(800, 200, mean, stdDev * 3, scale)}`}
+              fill="rgba(59, 130, 246, 0.2)"
+              stroke="rgba(59, 130, 246, 1)"
+              strokeWidth={2}
+            />
+          )}
 
           {/* 层级边界 */}
-          <line
-            x1={(mean + 2 * stdDev) * 800 / (mean + 3 * stdDev)}
-            y1="0"
-            x2={(mean + 2 * stdDev) * 800 / (mean + 3 * stdDev)}
-            y2="200"
-            stroke="#9333ea"
-            strokeDasharray="5,5"
-          />
-          <text
-            x={(mean + 2 * stdDev) * 800 / (mean + 3 * stdDev) + 5}
-            y="15"
-            className="text-xs"
-            fill="#9333ea"
-          >
-            z=2.0 (超级大国)
-          </text>
+          {maxPower > 0 && (
+            <>
+              <line
+                x1={(mean + 2 * stdDev) * scale}
+                y1="0"
+                x2={(mean + 2 * stdDev) * scale}
+                y2="200"
+                stroke="#9333ea"
+                strokeDasharray="5,5"
+              />
+              <text
+                x={(mean + 2 * stdDev) * scale + 5}
+                y="15"
+                className="text-xs"
+                fill="#9333ea"
+              >
+                z=2.0 (超级大国)
+              </text>
+            </>
+          )}
 
           {/* 智能体位置标注 */}
           {agents.map((agent, index) => {
-            const x = agent.power_metrics.comprehensive_power * 800 / (mean + 3 * stdDev);
+            const x = agent.power_metrics.comprehensive_power * scale;
             const tierColors = {
               superpower: '#9333ea',
               great_power: '#3b82f6',
@@ -595,7 +641,7 @@ const PowerTierVisualization: React.FC = () => {
             return (
               <circle
                 key={agent.id}
-                cx={x}
+                cx={x || 0}
                 cy={150 - index * 5}
                 r="6"
                 fill={tierColors[agent.power_tier]}
@@ -620,13 +666,19 @@ const PowerTierVisualization: React.FC = () => {
 };
 
 // 辅助函数：生成正态分布曲线
-const generateNormalCurve = (width: number, height: number, mean: number, stdDev: number): string => {
+const generateNormalCurve = (width: number, height: number, mean: number, stdDev: number, scale: number = 1): string => {
   const points = [];
+  // maxPower 是 mean + 3 * stdDev，所以范围是 [0, mean + 3*stdDev]
+  const maxPower = mean + 3 * stdDev;
+  const peakY = 1 / (stdDev * Math.sqrt(2 * Math.PI));
+
   for (let x = 0; x <= width; x += 5) {
-    const power = (x / width) * stdDev;
-    const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) *
-                Math.exp(-Math.pow(power - mean, 2) / (2 * Math.pow(stdDev, 2)));
-    const normalizedY = (1 - y / (1 / (stdDev * Math.sqrt(2 * Math.PI)))) * height;
+    // 将 x 坐标映射到实际的综合国力值
+    const power = (x / width) * maxPower;
+    // 计算正态分布密度
+    const y = peakY * Math.exp(-Math.pow(power - mean, 2) / (2 * Math.pow(stdDev, 2)));
+    // 归一化 y 值到画布高度 (预留20px底部间距)
+    const normalizedY = height - 20 - (y / peakY) * (height - 30);
     points.push(`${x} ${normalizedY}`);
   }
   return `L ${points.join(' L ')}`;

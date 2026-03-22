@@ -996,3 +996,88 @@ class SuperPowerAgent(BaseAgent):
             ]
         }
         return boundaries.get(leader_type, [])
+
+    async def execute_action(self, function: str, **arguments) -> Dict:
+        """
+        执行行动
+
+        Args:
+            function: 函数名称
+            **arguments: 函数参数
+
+        Returns:
+            执行结果 {"success": bool, "details": {...}}
+        """
+        try:
+            target = arguments.get('target')
+            outcome = {
+                "success": True,
+                "details": {
+                    "function": function,
+                    "arguments": arguments,
+                    "agent": self.state.agent_id,
+                    "leader_type": self.get_leader_type_value()
+                }
+            }
+
+            # 根据领导类型和行动类型执行特定逻辑
+            if function == "military_alliance":
+                alliance = self.alliance_manager.propose_alliance(
+                    target_id=target,
+                    alliance_type=arguments.get("alliance_type", "strategic")
+                )
+                outcome["details"]["alliance"] = alliance.to_dict()
+
+            elif function == "provide_public_goods":
+                public_goods = {
+                    "type": arguments.get("goods_type", "economic_stability"),
+                    "investment": arguments.get("investment", 0.4)
+                }
+                outcome["details"]["public_goods"] = public_goods
+
+            elif function == "contain_rivals":
+                outcome["details"]["containment"] = {
+                    "method": arguments.get("method", "alliance_encirclement"),
+                    "target": target
+                }
+
+            return outcome
+
+        except Exception as e:
+            return {
+                "success": False,
+                "details": {
+                    "error": str(e),
+                    "function": function
+                }
+            }
+
+    def update_after_interaction(self, interaction_type: str, outcome: Dict, is_target: bool = False) -> None:
+        """
+        更新互动后状态
+
+        Args:
+            interaction_type: 互动类型
+            outcome: 执行结果
+            is_target: 是否是目标方
+        """
+        super().update_after_interaction(interaction_type, outcome, is_target)
+
+        # 超级大国特定的状态更新逻辑
+        if outcome.get("success"):
+            # 根据互动类型更新战略声誉
+            if interaction_type in ["provide_public_goods", "constructive_global_participation"]:
+                self.state.strategic_reputation = min(100.0, self.state.strategic_reputation + 3.0)
+            elif interaction_type in ["contain_rivals", "assertive_global_position"]:
+                self.state.strategic_reputation = max(0.0, self.state.strategic_reputation - 1.0)
+
+    def get_leader_type_value(self) -> str:
+        """
+        获取领导类型的字符串表示
+
+        Returns:
+            领导类型字符串
+        """
+        if self.state.leader_type:
+            return self.state.leader_type.value
+        return "unknown"

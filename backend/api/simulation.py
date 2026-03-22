@@ -12,6 +12,7 @@ from datetime import datetime
 from infrastructure.storage.storage_engine import StorageEngine
 from backend.services.simulation_manager import (
     SimulationLifecycle,
+    SimulationQuery,
     SimulationConfig,
     Simulation,
     QueryFilters,
@@ -23,6 +24,7 @@ router = APIRouter()
 # 全局存储引擎实例（实际应用中应该从依赖注入获取）
 _storage_engine = StorageEngine()
 _simulation_lifecycle = SimulationLifecycle(_storage_engine)
+_simulation_query = SimulationQuery(_simulation_lifecycle)
 
 
 # API数据模型
@@ -193,9 +195,9 @@ async def get_simulation_state(simulation_id: str):
         仿真状态
     """
     try:
-        status = _simulation_lifecycle.get_simulation_status(simulation_id)
-        config = _simulation_lifecycle.get_simulation_config(simulation_id)
-        progress_info = _simulation_lifecycle.get_simulation_progress(simulation_id)
+        status = _simulation_query.get_simulation_status(simulation_id)
+        config = _simulation_query.get_simulation_config(simulation_id)
+        progress_info = _simulation_query.get_simulation_progress(simulation_id)
 
         return SimulationStateResponse(
             simulation_id=simulation_id,
@@ -237,7 +239,7 @@ async def list_simulations(
             # 无效的状态值
             pass
 
-    simulations = _simulation_lifecycle.list_simulations(filters)
+    simulations = _simulation_query.list_simulations(filters)
 
     # 转换为响应格式
     simulation_list = []
@@ -285,7 +287,7 @@ async def get_simulation_progress(simulation_id: str):
         进度信息
     """
     try:
-        progress_info = _simulation_lifecycle.get_simulation_progress(simulation_id)
+        progress_info = _simulation_query.get_simulation_progress(simulation_id)
 
         return {
             "simulation_id": simulation_id,

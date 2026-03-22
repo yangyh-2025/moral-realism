@@ -926,3 +926,77 @@ class SmallPowerAgent(BaseAgent):
             "优先选择能保障自身核心利益的策略",
             "通过选边、结盟、投票影响大国软实力"
         ]
+
+    async def execute_action(self, function: str, **arguments) -> Dict:
+        """
+        执行行动
+
+        Args:
+            function: 函数名称
+            **arguments: 函数参数
+
+        Returns:
+            执行结果 {"success": bool, "details": {...}}
+        """
+        try:
+            target = arguments.get('target')
+            outcome = {
+                "success": True,
+                "details": {
+                    "function": function,
+                    "arguments": arguments,
+                    "agent": self.state.agent_id,
+                    "power_tier": "small_power"
+                }
+            }
+
+            # 根据行动类型执行特定逻辑
+            if function == "seek_protection":
+                protector = self.survival_strategy._select_protector(target, {})
+                if protector:
+                    outcome["details"]["protection"] = {
+                        "protector": protector,
+                        "status": "requested"
+                    }
+
+            elif function == "economic_adjustment":
+                outcome["details"]["adjustment"] = {
+                    "type": "diversification",
+                    "target": target
+                }
+
+            elif function == "seek_aid":
+                outcome["details"]["aid"] = {
+                    "source": target,
+                    "alternative_partners": arguments.get("alternative_partners", False)
+                }
+
+            return outcome
+
+        except Exception as e:
+            return {
+                "success": False,
+                "details": {
+                    "error": str(e),
+                    "function": function
+                }
+            }
+
+    def update_after_interaction(self, interaction_type: str, outcome: Dict, is_target: bool = False) -> None:
+        """
+        更新互动后状态
+
+        Args:
+            interaction_type: 互动类型
+            outcome: 执行结果
+            is_target: 是否是目标方
+        """
+        super().update_after_interaction(interaction_type, outcome, is_target)
+
+        # 小国特定的状态更新逻辑
+        if outcome.get("success"):
+            # 根据互动类型更新战略声誉
+            if interaction_type in ["seek_protection", "seek_aid"]:
+                self.state.strategic_reputation = min(100.0, self.state.strategic_reputation + 1.0)
+            elif interaction_type == "economic_adjustment":
+                self.state.strategic_reputation = min(100.0, self.state.strategic_reputation + 0.5)

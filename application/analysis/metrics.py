@@ -17,6 +17,16 @@ import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 
+# 导入扩展指标计算器
+try:
+    from application.analysis.order_metrics_calculator import (
+        ExtendedEnvironmentMetricsCalculator,
+        OrderTypeMetricsCalculator
+    )
+    _EXTENDED_CALCULATORS_AVAILABLE = True
+except ImportError:
+    _EXTENDED_CALCULATORS_AVAILABLE = False
+
 
 class MetricCategory(str, Enum):
     """指标类别"""
@@ -315,12 +325,22 @@ class MetricsPipeline:
             calculators: 指标计算器列表
             max_workers: 最大工作线程数
         """
-        self.calculators = calculators or [
-            IndependentMetricsCalculator(),
-            IntermediaryMetricsCalculator(),
-            EnvironmentMetricsCalculator(),
-            DependentMetricsCalculator()
-        ]
+        # 如果没有提供计算器列表，使用默认计算器
+        if calculators is None:
+            default_calculators = [
+                IndependentMetricsCalculator(),
+                IntermediaryMetricsCalculator(),
+                EnvironmentMetricsCalculator(),
+                DependentMetricsCalculator()
+            ]
+            # 添加扩展计算器（如果可用）
+            if _EXTENDED_CALCULATORS_AVAILABLE:
+                default_calculators.append(ExtendedEnvironmentMetricsCalculator())
+                default_calculators.append(OrderTypeMetricsCalculator())
+            self.calculators = default_calculators
+        else:
+            self.calculators = calculators
+
         self._cache = {}
         self._executor = ThreadPoolExecutor(max_workers=max_workers)
 
@@ -396,6 +416,63 @@ class MetricsPipeline:
     def clear_cache(self):
         """清空缓存"""
         self._cache.clear()
+
+    async def calculate_round_metrics(
+        self,
+        agents: List[Any],
+        simulation_id: str,
+        round: int,
+        interactions: Optional[List[Dict]] = None,
+        events: Optional[List[Dict]] = None,
+        previous_state: Optional[Dict] = None
+    ) -> Dict:
+        """
+        计算单轮指标（异步方法，用于单轮工作流）
+
+        Args:
+            agents: 智能体列表
+            simulation_id: 仿真ID
+            round: 当前轮次
+            interactions: 互动记录（可选）
+            events: 事件列表（可选）
+            previous_state: 上一轮状态（可选）
+
+        Returns:
+            指标字典
+        """
+        # 提取智能体状态
+        agent_states = []
+        for agent in agents:
+            if hasattr(agent, 'state'):
+                # 对于 BaseAgent 实例
+                state_dict = {
+                    'agent_id': agent.state.agent_id,
+                    'name': agent.state.name,
+                    'comprehensive_power': agent.state.power_metrics.calculate_comprehensive_power() if agent.state.power_metrics else 0,
+                    'power_metrics': agent.state.power_metrics.__dict__ if agent.state.power_metrics else {},
+                    'region': agent.state.region
+                }
+            agent_states.append(state_dict)
+
+        # 构建计算上下文
+        context = CalculationContext(
+            simulation_id=simulation_id,
+            round=round,
+            agents=agent_states,
+            interactions=interactions or [],
+            events=events or [],
+            previous_state=previous_state or {}
+        )
+
+        # 计算所有指标
+        result = self.calculate_all(context, use_cache=False)
+
+        # 将结果转换为字典格式
+        metrics_dict = {}
+        for category, metrics in result.metrics.items():
+            metrics_dict[category] = [m.dict() if hasattr(m, 'dict') else m for m in metrics]
+
+        return metrics_dict
 
 
 class MetricsCache:

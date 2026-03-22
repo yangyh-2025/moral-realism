@@ -475,7 +475,7 @@ class BaseAgent(ABC):
             if leader_type is None:
                 raise ValueError(
                     f"{self._init_config['name']}({self.power_tier.value})是超级大国或大国，"
-                    "必须配置了导类型"
+                    "必须配置领导类型"
                 )
             self._init_config["leader_type"] = leader_type
         elif self.power_tier in [PowerTier.MIDDLE_POWER, PowerTier.SMALL_POWER]:
@@ -538,6 +538,61 @@ class BaseAgent(ABC):
     def _get_behavior_boundaries(self, leader_type: Optional[LeaderType] = None) -> List[str]:
         """获取行为边界"""
         pass
+
+    def execute_action(self, function: str, **arguments) -> Dict:
+        """
+        执行行动
+
+        Args:
+            function: 函数名称
+            **arguments: 函数参数
+
+        Returns:
+            执行结果 {"success": bool, "details": {...}}
+        """
+        # 默认实现，子类可以重写
+        return {
+            "success": True,
+            "details": {
+                "function": function,
+                "arguments": arguments,
+                "message": "行动已执行"
+            }
+        }
+
+    def update_after_interaction(self, interaction_type: str, outcome: Dict, is_target: bool = False) -> None:
+        """
+        更新互动后状态
+
+        Args:
+            interaction_type: 互动类型
+            outcome: 执行结果
+            is_target: 是否是目标方
+        """
+        # 默认实现，子类可以重写
+        if not self.state:
+            return
+
+        # 更新决策计数
+        self.state.decision_count += 1
+
+        # 记录函数调用历史
+        if interaction_type not in self.state.function_call_history:
+            self.state.function_call_history[interaction_type] = 0
+        self.state.function_call_history[interaction_type] += 1
+
+        # 根据结果更新战略信誉
+        if outcome.get("success", False):
+            self.state.strategic_reputation = min(100.0, self.state.strategic_reputation + 1.0)
+        else:
+            self.state.strategic_reputation = max(0.0, self.state.strategic_reputation - 2.0)
+
+        # 记录学习结果
+        if self.state.learning:
+            self.state.learning.record_outcome(
+                decision={"type": interaction_type, "arguments": arguments if 'arguments' in locals() else {}},
+                outcome=outcome
+            )
 
     def get_available_functions(self) -> List[Dict]:
         """获取可用函数列表"""

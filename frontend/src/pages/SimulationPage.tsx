@@ -175,17 +175,17 @@ const SimulationCard: React.FC<{ simulation: any }> = ({ simulation }) => {
 // 仿真详情组件
 const SimulationDetail: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { currentSimulation, status, isLoading } = useSelector((state: RootState) => state.simulation);
+  const { currentSimulationId, currentSimulation, status, isLoading } = useSelector((state: RootState) => state.simulation);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (status.is_running && !status.is_paused) {
-        dispatch(fetchSimulationState());
+      if (status.is_running && !status.is_paused && currentSimulationId) {
+        dispatch(fetchSimulationState(currentSimulationId));
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [dispatch, status.is_running, status.is_paused]);
+  }, [dispatch, status.is_running, status.is_paused, currentSimulationId]);
 
   const handleStart = async (config: any) => {
     try {
@@ -205,8 +205,9 @@ const SimulationDetail: React.FC = () => {
   };
 
   const handlePause = async () => {
+    if (!currentSimulationId) return;
     try {
-      await dispatch(pauseSimulation()).unwrap();
+      await dispatch(pauseSimulation(currentSimulationId)).unwrap();
       dispatch(addNotification({
         type: 'success',
         title: '暂停成功',
@@ -222,8 +223,9 @@ const SimulationDetail: React.FC = () => {
   };
 
   const handleResume = async () => {
+    if (!currentSimulationId) return;
     try {
-      await dispatch(resumeSimulation()).unwrap();
+      await dispatch(resumeSimulation(currentSimulationId)).unwrap();
       dispatch(addNotification({
         type: 'success',
         title: '继续成功',
@@ -239,10 +241,11 @@ const SimulationDetail: React.FC = () => {
   };
 
   const handleStop = async () => {
+    if (!currentSimulationId) return;
     if (!confirm('确定要停止仿真吗？')) return;
 
     try {
-      await dispatch(stopSimulation()).unwrap();
+      await dispatch(stopSimulation(currentSimulationId)).unwrap();
       dispatch(addNotification({
         type: 'success',
         title: '停止成功',
@@ -258,9 +261,11 @@ const SimulationDetail: React.FC = () => {
   };
 
   const handleReset = async () => {
+    if (!currentSimulationId) return;
     if (!confirm('确定要重置仿真吗？所有进度将丢失。')) return;
     try {
-      await dispatch(resetSimulation()).unwrap();
+      // 删除当前仿真并创建新的
+      await dispatch(deleteSimulation(currentSimulationId)).unwrap();
       dispatch(addNotification({
         type: 'success',
         title: '重置成功',
@@ -296,9 +301,10 @@ const SimulationDetail: React.FC = () => {
                 onClick={() => {
                   const config = {
                     total_rounds: currentSimulation.total_rounds,
-                    round_duration: 6,
+                    round_duration_months: 6,
                     random_event_prob: 0.1,
                   };
+
                   handleStart(config);
                 }}
               >
@@ -479,8 +485,8 @@ const NewSimulationForm: React.FC = () => {
               <Input
                 type="number"
                 label="轮次时长（月）"
-                value={formData.round_duration}
-                onChange={(e) => setFormData({ ...formData, round_duration: parseInt(e.target.value) })}
+                value={formData.round_duration_months}
+                onChange={(e) => setFormData({ ...formData, round_duration_months: parseInt(e.target.value) })}
                 min={1}
                 required
                 fullWidth

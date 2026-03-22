@@ -527,3 +527,75 @@ class MiddlePowerAgent(BaseAgent):
             "在区域事务中发挥建设性作用",
             "灵活调整立场以适应国际形势变化"
         ]
+
+    async def execute_action(self, function: str, **arguments) -> Dict:
+        """
+        执行行动
+
+        Args:
+            function: 函数名称
+            **arguments: 函数参数
+
+        Returns:
+            执行结果 {"success": bool, "details": {...}}
+        """
+        try:
+            target = arguments.get('target')
+            outcome = {
+                "success": True,
+                "details": {
+                    "function": function,
+                    "arguments": arguments,
+                    "agent": self.state.agent_id,
+                    "power_tier": "middle_power"
+                }
+            }
+
+            # 根据行动类型执行特定逻辑
+            if function == "join_international_organization":
+                outcome["details"]["organization"] = {
+                'org_id': arguments.get('org_id'),
+                    'participation_level': arguments.get('participation_level', 'observer')
+                }
+
+            elif function == "propose_agenda_item":
+                outcome["details"]["agenda"] = {
+                    "issue": arguments.get('issue'),
+                    "description": arguments.get('description'),
+                    "forum": arguments.get('forum', 'relevant_international_forums')
+                }
+
+            elif function == "maintain_balanced_relations":
+                outcome["details"]["balance"] = {
+                    "strategy": arguments.get('strategy', 'equidistance')
+                }
+
+            return outcome
+
+        except Exception as e:
+            return {
+                "success": False,
+                "details": {
+                    "error": str(e),
+                    "function": function
+                }
+            }
+
+    def update_after_interaction(self, interaction_type: str, outcome: Dict, is_target: bool = False) -> None:
+        """
+        更新互动后状态
+
+        Args:
+            interaction_type: 互动类型
+            outcome: 执行结果
+            is_target: 是否是目标方
+        """
+        super().update_after_interaction(interaction_type, outcome, is_target)
+
+        # 中等强国特定的状态更新逻辑
+        if outcome.get("success"):
+            # 根据互动类型更新战略声誉
+            if interaction_type in ["join_international_organization", "propose_agenda_item", "multilateral_cooperation"]:
+                self.state.strategic_reputation = min(100.0, self.state.strategic_reputation + 1.5)
+            elif interaction_type in ["diplomatic_initiative", "agenda_setting"]:
+                self.state.strategic_reputation = min(100.0, self.state.strategic_reputation + 1.0)

@@ -35,11 +35,12 @@ export interface ProgressInfo {
 
 export interface SimulationConfig {
   total_rounds: number;
-  round_duration: number;
+  round_duration_months: number;
   random_event_prob: number;
 }
 
 interface SimulationState {
+  currentSimulationId: string | null;
   currentSimulation: Simulation | null;
   simulations: Simulation[];
   status: SimulationStatus;
@@ -49,6 +50,7 @@ interface SimulationState {
 }
 
 const initialState: SimulationState = {
+  currentSimulationId: null,
   currentSimulation: null,
   simulations: [],
   status: {
@@ -80,40 +82,40 @@ export const startSimulation = createAsyncThunk(
 
 export const pauseSimulation = createAsyncThunk(
   'simulation/pause',
-  async () => {
-    const response = await simulationAPI.pause();
+  async (simulationId: string) => {
+    const response = await simulationAPI.pause(simulationId);
     return response.data;
   }
 );
 
 export const resumeSimulation = createAsyncThunk(
   'simulation/resume',
-  async () => {
-    const response = await simulationAPI.resume();
+  async (simulationId: string) => {
+    const response = await simulationAPI.resume(simulationId);
     return response.data;
   }
 );
 
 export const stopSimulation = createAsyncThunk(
   'simulation/stop',
-  async () => {
-    const response = await simulationAPI.stop();
+  async (simulationId: string) => {
+    const response = await simulationAPI.stop(simulationId);
     return response.data;
   }
 );
 
-export const resetSimulation = createAsyncThunk(
-  'simulation/reset',
-  async () => {
-    const response = await simulationAPI.reset();
+export const deleteSimulation = createAsyncThunk(
+  'simulation/delete',
+  async (simulationId: string) => {
+    const response = await simulationAPI.delete(simulationId);
     return response.data;
   }
 );
 
 export const fetchSimulationState = createAsyncThunk(
   'simulation/fetchState',
-  async () => {
-    const response = await simulationAPI.getState();
+  async (simulationId: string) => {
+    const response = await simulationAPI.getState(simulationId);
     return response.data;
   }
 );
@@ -124,6 +126,7 @@ const simulationSlice = createSlice({
   reducers: {
     setCurrentSimulation: (state, action: PayloadAction<Simulation | null>) => {
       state.currentSimulation = action.payload;
+      state.currentSimulationId = action.payload?.id || null;
     },
     updateSimulation: (state, action: PayloadAction<Partial<Simulation>>) => {
       if (state.currentSimulation) {
@@ -188,15 +191,17 @@ const simulationSlice = createSlice({
         state.error = action.error.message || '停止仿真失败';
       });
 
-    // Reset simulation
+    // Delete simulation
     builder
-      .addCase(resetSimulation.fulfilled, (state) => {
-        state.status.current_round = 0;
+      .addCase(deleteSimulation.fulfilled, (state) => {
+        state.currentSimulationId = null;
+        state.currentSimulation = null;
         state.status.is_running = false;
         state.status.is_paused = false;
+        state.status.current_round = 0;
       })
-      .addCase(resetSimulation.rejected, (state, action) => {
-        state.error = action.error.message || '重置仿真失败';
+      .addCase(deleteSimulation.rejected, (state, action) => {
+        state.error = action.error.message || '删除仿真失败';
       });
 
     // Fetch state

@@ -4,9 +4,12 @@
 Git提交用户名: yangyh-2025
 Git提交邮箱: yangyuhang2667@163.com
 """
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 import asyncio
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SingleRoundWorkflow:
@@ -108,6 +111,16 @@ class SingleRoundWorkflow:
             round=round
         )
         result['metrics'] = metrics
+
+        # 步骤7: 秩序判定与推送
+        order_result = await self._evaluate_and_push_order(
+            agents=agents,
+            interactions=interactions,
+            metrics=metrics,
+            simulation_id=simulation_id,
+            round=round
+        )
+        result['order_type'] = order_result
 
         # 保存轮次结果
         self.storage.save_round_result(
@@ -230,3 +243,212 @@ class SingleRoundWorkflow:
                     outcome=outcome,
                     is_target=True
                 )
+
+    async def _evaluate_and_push_order(
+        self,
+        agents: List[Any],
+        interactions: List[Dict],
+        metrics: Dict,
+        simulation_id: str,
+        round: int
+    ) -> Optional[Dict[str, Any]]:
+        """
+        评估秩序类型并推送
+
+        Args:
+            agents: 智能体列表
+            interactions: 互动记录
+            metrics: 指标数据
+            simulation_id:: 仿真ID
+            round: 当前轮次
+
+        Returns:
+            秩序评估结果，失败返回None
+        """
+        try:
+            # 提取秩序判定所需指标
+            indicators = self._extract_order_indicators(agents, interactions, metrics)
+
+            # 评估秩序类型
+            order_info = await self._evaluate_order_type(indicators)
+
+            # 推送秩序更新
+            await self._push_order_update(simulation_id, round, order_info)
+
+            logger.debug(
+                f"秩序类型评估完成: 仿真={simulation_id}, 轮次={round}, "
+                f"类型={order_info.get('order_type', '未判定')}"
+            )
+
+            return order_info
+
+        except Exception as e:
+            logger.error(f"秩序评估与推送失败: {e}", exc_info=True)
+            return {
+                "order_type": "未判定",
+                "confidence": 0.0,
+                "error": str(e)
+            }
+
+    def _extract_order_indicators(
+        self,
+        agents: List[Any],
+        interactions: List[Dict],
+        metrics: Dict
+    ) -> Dict[str, float]:
+        """
+        提取秩序判定所需指标
+
+        Args:
+            agents: 智能体列表
+            interactions: 互动记录
+            metrics: 指标数据
+
+        Returns:
+            指标字典
+        """
+        indicators = {}
+
+        try:
+            # 从指标数据中提取已计算的指标
+            if isinstance(metrics, dict):
+                # 实力集中度
+                power_conc = self._find_metric_value(metrics, "power_concentration_index")
+                indicators["power_concentration_index"] = power_conc if power_conc is not None else 0.0
+
+                # 规范有效性
+                norm_eff = self._find_metric_value(metrics, "international_norm_effectiveness")
+                indicators["international_norm_effectiveness"] = norm_eff if norm_eff is not None else 0.0
+
+                # 冲突水平
+                conflict = self._find_metric_value(metrics, "conflict_level")
+                indicators["conflict_level"] = conflict if conflict is not None else 0.0
+
+                # 制度化程度
+                inst = self._find_metric_value(metrics, "institutionalization_index")
+                indicators["institutionalization_index"] = inst if inst is not None else 0.0
+
+                # 联盟数量
+                alliances = self._find_metric_value(metrics, "alliance_count")
+                indicators["alliance_count"] = int(alliances) if alliances is not None else 0
+
+            logger.debug(f"提取的秩序指标: {indicators}")
+
+        except Exception as e:
+            logger.warning(f"提取秩序指标失败: {e}")
+            # 返回默认值
+            indicators = {
+                "power_concentration_index": 0.0,
+                "international_norm_effectiveness": 0.0,
+                "conflict_level": 0.0,
+                "institutionalization_index": 0.0,
+                "alliance_count": 0
+            }
+
+        return indicators
+
+    def _find_metric_value(self, metrics: Dict, metric_name: str) -> Optional[float]:
+        """
+        在指标字典中查找指定指标的值
+
+        Args:
+            metrics: 指标字典
+            metric_name: 指标名称
+
+        Returns:
+            指标值，如果未找到返回None
+        """
+        for category, metric_list in metrics.items():
+            if isinstance(metric_list, list):
+                for metric in metric_list:
+                    if isinstance(metric, dict):
+                        if metric.get("name") == metric_name:
+                            return metric.get("value")
+                    elif hasattr(metric, "name") and metric.name == metric_name:
+                        return metric.value
+        return None
+
+    async def _evaluate_order_type(self, indicators: Dict[str, float]) -> Dict[str, Any]:
+        """
+        评估秩序类型
+
+        Args:
+            indicators: 指标字典
+
+        Returns:
+            秩序评估结果
+        """
+        try:
+            # 导入OrderEvaluator
+            from domain.analysis.order_evaluation import OrderEvaluator, OrderEvaluationContext
+
+            # 构建评估上下文
+            context = OrderEvaluationContext(
+                power_concentration_index=indicators.get("power_concentration_index", 0.0),
+                international_norm_effectiveness=indicators.get("international_norm_effectiveness", 0.0),
+                conflict_level=indicators.get("conflict_level", 0.0),
+                alliance_count=int(indicators.get("alliance_count", 0)),
+                institutionalization_index=indicators.get("institutionalization_index", 0.0)
+            )
+
+            # 执行评估
+            evaluator = OrderEvaluator()
+            result = evaluator.evaluate(context)
+
+            return {
+                "order_type": result.order_type,
+                "confidence": result.confidence,
+                "indicators": indicators,
+                "reasoning": result.reasoning,
+                "timestamp": result.timestamp
+            }
+
+        except Exception as e:
+            logger.error(f"秩序类型评估失败: {e}", exc_info=True)
+            return {
+                "order_type": "未判定",
+                "confidence": 0.0,
+                "indicators": indicators,
+                "reasoning": f"评估失败: {str(e)}",
+                "timestamp": datetime.now().isoformat()
+            }
+
+    async def _push_order_update(
+        self,
+        simulation_id: str,
+        round: int,
+        order_info: Dict[str, Any]
+    ) -> None:
+        """
+        推送秩序更新到前端
+
+        Args:
+            simulation_id: 仿真ID
+            round: 当前轮次
+            order_info: 秩序评估结果
+        """
+        try:
+            # 导入WebSocket推送器
+            from backend.api.ws import get_event_pusher
+
+            event_pusher = get_event_pusher()
+
+            # 构建消息
+            message = {
+                "type": "order_update",
+                "simulation_id": simulation_id,
+                "data": {
+                    "round": round,
+                    **order_info
+                },
+                "timestamp": datetime.now().isoformat()
+            }
+
+            # 推送消息
+            await event_pusher.manager.broadcast_to_simulation(simulation_id, message)
+
+            logger.debug(f"秩序更新已推送: 仿真={simulation_id}, 轮次={round}")
+
+        except Exception as e:
+            logger.error(f"秩序更新推送失败: {e}", exc_info=True)
+            # 不抛出异常，不影响主流程

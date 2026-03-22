@@ -7,16 +7,23 @@
 import api from './api';
 
 export interface Event {
-  event_id: string;
+  id: string;
+  simulation_id?: string;
   name: string;
-  description: string;
-  event_type: 'periodic' | 'random';
-  impact_level: number;
-  trigger_round?: number;
-  participants: string[];
+  description?: string;
+  event_type: 'periodic' | 'random' | 'user_defined';
+  active?: boolean;
+  affected_agents: string[];
+  effects: Record<string, any>;
   probability?: number;
-  created_at?: string;
-  updated_at?: string;
+  timestamp?: string;
+  created_at: string;
+}
+
+interface EventTriggerRequest {
+  event_id: string;
+  simulation_id: string;
+  parameters?: Record<string, any>;
 }
 
 class EventsAPI {
@@ -30,22 +37,22 @@ class EventsAPI {
     return response.data;
   }
 
-  async create(eventData: Omit<Event, 'event_id' | 'created_at' | 'updated_at'>): Promise<Event> {
+  async create(eventData: Omit<Event, 'id' | 'created_at' | 'timestamp'>): Promise<Event> {
     const response = await api.post('/events', eventData);
     return response.data;
   }
 
   async update(eventId: string, eventData: Partial<Event>): Promise<Event> {
-    const response = await api.put(`/event/${eventId}`, eventData);
+    const response = await api.put(`/events/${eventId}`, eventData);
     return response.data;
   }
 
   async delete(eventId: string): Promise<void> {
-    await api.delete(`/event/${eventId}`);
+    await api.delete(`/events/${eventId}`);
   }
 
-  async trigger(eventId: string): Promise<void> {
-    await api.post(`/event/${eventId}/trigger`);
+  async trigger(request: EventTriggerRequest): Promise<void> {
+    await api.post('/events/trigger', request);
   }
 }
 

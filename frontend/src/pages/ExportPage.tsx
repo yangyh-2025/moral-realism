@@ -400,18 +400,24 @@ const ExportPage: React.FC = () => {
     setCurrentConfig(config);
 
     try {
-      // 请求预览数据
-      const response = await api.post('/export/preview', {
+      // 构建导出请求体（匹配后端 ExportRequest 格式）
+      const exportRequest = {
         simulation_id: currentSimulation.id,
-        ...config,
-      });
-      setPreviewData(response.data);
+        format: config.format,
+        filters: {
+          include_agents: config.includeAgents,
+          include_events: config.includeEvents,
+          include_decisions: config.includeInteractions,
+          include_metrics: config.includeMetrics,
+          start_round: config.roundRange.start,
+          end_round: config.roundRange.end,
+          start_time: config.dateRange.start,
+          end_time: config.dateRange.end,
+        },
+      };
 
       // 执行实际导出
-      const exportResponse = await api.post('/export', {
-        simulation_id: currentSimulation.id,
-        ...config,
-      }, {
+      const exportResponse = await api.post('/export/', exportRequest, {
         responseType: 'blob',
       });
 
@@ -422,6 +428,13 @@ const ExportPage: React.FC = () => {
       link.download = `simulation_${currentSimulation.id}.${config.format}`;
       link.click();
       window.URL.revokeObjectURL(url);
+
+      // 设置预览数据（从导出结果中获取，实际应用中可能需要单独的预览 API）
+      setPreviewData({
+        message: '导出成功',
+        simulation_id: currentSimulation.id,
+        format: config.format,
+      });
 
       dispatch(addNotification({
         type: 'success',

@@ -17,7 +17,7 @@ import { addEvent } from '../store/slices/eventsSlice';
 import { addNotification } from '../store/slices/uiSlice';
 
 // WebSocket 事件类型
-export type WSMessageType = 'decision' | 'action' | 'metric_update' | 'round_complete' | 'simulation_complete' | 'error';
+export type WSMessageType = 'decision' | 'action' | 'metrics' | 'round_complete' | 'simulation_complete' | 'error' | 'order_update' | 'agent_state_update';
 
 export interface WSMessage {
   type: WSMessageType;
@@ -78,13 +78,15 @@ class WebSocketClient {
   private ws: WebSocket | null = null;
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
-  private reconnectDelay: number = 3000;
+  private reconnectDelay: number = 5000;
   private isConnected: boolean = false;
   private eventHandlers: Map<WSMessageType, Set<EventHandler<any>>> = new Map();
   private dispatch: AppDispatch | null = null;
   private heartbeatInterval: NodeJS.Timeout | null = null;
   private lastMessageTime: number = Date.now();
-  private heartbeatTimeout: number = 30000; // 30秒
+  private heartbeatTimeout: number = 60000; // 60秒
+  private connectionStable: boolean = false;
+  private stabilizeTimeout: NodeJS.Timeout | null = null;
 
   constructor(private url: string, dispatch?: AppDispatch) {
     this.dispatch = dispatch || null;
@@ -100,8 +102,16 @@ class WebSocketClient {
 
         this.ws.onopen = () => {
           this.isConnected = true;
+          this.connectionStable = false;
           this.reconnectAttempts = 0;
-          this.startHeartbeat();
+          this.lastMessageTime = Date.now();
+
+          // 延迟启动心跳检测，等待连接稳定
+          this.stopHeartbeat();
+          this.stabilizeTimeout = setTimeout(() => {
+            this.connectionStable = true;
+            this.startHeartbeat();
+          }, 3000); // 3秒后认为连接稳定
 
           if (this.dispatch) {
             this.dispatch(addNotification({
@@ -135,7 +145,12 @@ class WebSocketClient {
 
         this.ws.onclose = () => {
           this.isConnected = false;
+          this.connectionStable = false;
           this.stopHeartbeat();
+          if (this.stabilizeTimeout) {
+            clearTimeout(this.stabilizeTimeout);
+            this.stabilizeTimeout = null;
+          }
 
           // 尝试重连
           if (this.reconnectAttempts < this.maxReconnectAttempts) {
@@ -177,6 +192,10 @@ class WebSocketClient {
    */
   disconnect(): void {
     this.stopHeartbeat();
+    if (this.stabilizeTimeout) {
+      clearTimeout(this.stabilizeTimeout);
+      this.stabilizeTimeout = null;
+    }
 
     if (this.ws) {
       this.ws.close();
@@ -184,6 +203,7 @@ class WebSocketClient {
     }
 
     this.isConnected = false;
+    this.connectionStable = false;
     this.eventHandlers.clear();
   }
 
@@ -256,8 +276,14 @@ class WebSocketClient {
       case 'action':
         this.handleAction(message.data as ActionEvent);
         break;
-      case 'metric_update':
+      case 'metrics':
         this.handleMetricUpdate(message.data as MetricUpdate);
+        break;
+      case 'order_update':
+        // 处理秩序类型更新
+        break;
+      case 'agent_state_update':
+        // 处理智能体状态更新
         break;
       case 'round_complete':
         this.handleRoundComplete(message.data as RoundComplete);
@@ -354,17 +380,20 @@ class WebSocketClient {
    * 启动心跳检测
    */
   private startHeartbeat(): void {
+    // 每30秒发送一次ping
     this.heartbeatInterval = setInterval(() => {
       const now = Date.now();
-      if (now - this.lastMessageTime > this.heartbeatTimeout) {
+
+      // 只有在连接稳定后才检测超时
+      if (this.connectionStable && now - this.lastMessageTime > this.heartbeatTimeout) {
         console.warn('No heartbeat received, reconnecting...');
         this.disconnect();
         this.connect().catch(err => console.error('Reconnect failed:', err));
-      } else {
+      } else if (this.isConnected && this.isReady()) {
         // 发送ping
         this.send({ type: 'ping', timestamp: now });
       }
-    }, this.heartbeatTimeout / 2);
+    }, 30000); // 30秒心跳间隔
   }
 
   /**

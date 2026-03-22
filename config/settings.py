@@ -4,8 +4,9 @@
 Git提交用户名: yangyh-2025
 Git提交邮箱: yangyuhang2667@163.com
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from typing import List, Optional
+import os
 
 
 # 系统常量
@@ -72,6 +73,23 @@ class SimulationConfig(BaseModel):
     class Config:
         env_prefix = "MORAL_REALISM_"
         case_sensitive = False
+
+    @validator('llm_api_keys', pre=True, always=True)
+    def load_api_keys(cls, v):
+        """
+        加载 API key 列表
+
+        支持从 MORAL_REALISM_LLM_API_KEY（单数）或 MORAL_REALISM_LLM_API_KEYS（复数）加载
+        """
+        if not v:
+            # 尝试从环境变量 MORAL_REALISM_LLM_API_KEY 加载
+            api_key = os.getenv("MORAL_REALISM_LLM_API_KEY")
+            if api_key:
+                return [api_key]
+        # 如果传入的是字符串，转换为列表
+        if isinstance(v, str):
+            return [v]
+        return v if v else []
 
 
 class AgentConfig(BaseModel):
