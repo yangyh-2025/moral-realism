@@ -168,6 +168,22 @@ class RealTimeEventPusher:
     def __init__(self, manager: ConnectionManager):
         self.manager = manager
 
+    async def push_order_update(self, simulation_id: str, order_info: dict):
+        """
+        推送秩序类型更新
+
+        Args:
+            simulation_id: 仿真ID
+            order_info: 秩序评估信息
+        """
+        message = {
+            "type": "order_update",
+            "simulation_id": simulation_id,
+            "data": order_info,
+            "timestamp": datetime.now().isoformat()
+        }
+        await self.manager.broadcast_to_simulation(simulation_id, message)
+
     async def push_decision_event(self, simulation_id: str, decision: dict):
         """
         推送决策事件
@@ -200,21 +216,21 @@ class RealTimeEventPusher:
         }
         await self.manager.broadcast_to_simulation(simulation_id, message)
 
-    async def push_metric_update(self, simulation: str, metrics: dict):
+    async def push_metric_update(self, simulation_id: str, metrics: dict):
         """
         推送指标更新
 
         Args:
-            simulation: 仿真ID
+            simulation_id: 仿真ID
             metrics: 指标数据
         """
         message = {
             "type": "metrics",
-            "simulation_id": simulation,
+            "simulation_id": simulation_id,
             "data": metrics,
             "timestamp": datetime.now().isoformat()
         }
-        await self.manager.broadcast_to_simulation(simulation, message)
+        await self.manager.broadcast_to_simulation(simulation_id, message)
 
     async def push_round_complete(self, simulation_id: str, round_info: dict):
         """
@@ -279,6 +295,26 @@ class RealTimeEventPusher:
             "data": {
                 "agent_id": agent_id,
                 "state": state
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+        await self.manager.broadcast_to_simulation(simulation_id, message)
+
+    async def push_interactions_update(self, simulation_id: str, interactions: list, round: int):
+        """
+        推送互动数据更新
+
+        Args:
+            simulation_id: 仿真ID
+            interactions: 互动数据列表
+            round: 当前轮次
+        """
+        message = {
+            "type": "interactions_update",
+            "simulation_id": simulation_id,
+            "data": {
+                "round": round,
+                "interactions": interactions
             },
             "timestamp": datetime.now().isoformat()
         }

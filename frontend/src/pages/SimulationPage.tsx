@@ -12,9 +12,9 @@ import {
   pauseSimulation,
   resumeSimulation,
   stopSimulation,
-  resetSimulation,
   fetchSimulationState,
   setCurrentSimulation,
+  clearLLMLogs,
 } from '../store/slices/simulationSlice';
 import { setActivePanel, addNotification } from '../store/slices/uiSlice';
 import api from '../services/api';
@@ -25,14 +25,13 @@ import { StatCard } from '../components/ui/cards/StatCard';
 import { Button } from '../components/ui/buttons/Button';
 import { Input } from '../components/ui/form/Input';
 import { Textarea } from '../components/ui/form/Textarea';
-import { Badge } from '../components/ui/data/Badge';
 import { ProgressBar } from '../components/ui/data/ProgressBar';
 import { Alert } from '../components/ui/feedback/Alert';
-import { Spinner } from '../components/ui/feedback/Spinner';
 import { EmptyState } from '../components/ui/data/EmptyState';
-import { RefreshIcon, PlayIcon, PauseIcon, StopIcon } from '../components/ui/icons';
+import { PlayIcon, PauseIcon, StopIcon } from '../components/ui/icons';
 
-// 仿真列表组件
+// 仿真列表组件（暂时未使用）
+/*
 const SimulationList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [simulations, setSimulations] = useState<any[]>([]);
@@ -122,7 +121,8 @@ const SimulationList: React.FC = () => {
   );
 };
 
-// 仿真卡片组件
+// 仿真卡片组件（暂时未使用）
+/*
 const SimulationCard: React.FC<{ simulation: any }> = ({ simulation }) => {
   const dispatch = useDispatch<AppDispatch>();
 
@@ -171,6 +171,7 @@ const SimulationCard: React.FC<{ simulation: any }> = ({ simulation }) => {
     </Card>
   );
 };
+*/
 
 // 仿真详情组件
 const SimulationDetail: React.FC = () => {
@@ -264,8 +265,8 @@ const SimulationDetail: React.FC = () => {
     if (!currentSimulationId) return;
     if (!confirm('确定要重置仿真吗？所有进度将丢失。')) return;
     try {
-      // 删除当前仿真并创建新的
-      await dispatch(deleteSimulation(currentSimulationId)).unwrap();
+      // 清除当前仿真状态
+      dispatch(setCurrentSimulation(null));
       dispatch(addNotification({
         type: 'success',
         title: '重置成功',
@@ -384,17 +385,7 @@ const SimulationDetail: React.FC = () => {
         </CardBody>
       </Card>
 
-      <Card>
-        <CardHeader title="实时指标" />
-        <CardBody>
-          <div className="text-center py-12">
-            <EmptyState
-              title="图表待实现"
-              description="实时数据可视化功能正在开发中"
-            />
-          </div>
-        </CardBody>
-      </Card>
+      <LLMMonitorPanel />
     </div>
   );
 };
@@ -407,7 +398,7 @@ const NewSimulationForm: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     total_rounds: 100,
-    round_duration: 6,
+    round_duration_months: 6,
     random_event_prob: 0.1,
     description: '',
   });
@@ -524,6 +515,124 @@ const NewSimulationForm: React.FC = () => {
             </Button>
           </div>
         </form>
+      </CardBody>
+    </Card>
+  );
+};
+
+// LLM监控面板组件
+const LLMMonitorPanel: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { llmLogs } = useSelector((state: RootState) => state.simulation);
+  const [filter, setFilter] = useState<'all' | 'request' | 'response'>('all');
+  const [agentFilter, setAgentFilter] = useState<string>('');
+
+  useEffect(() => {
+    // 自动滚动到底部
+    const container = document.getElementById('llm-logs-container');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [llmLogs]);
+
+  const filteredLogs = llmLogs.filter((log) => {
+    if (filter !== 'all' && log.request_type !== filter) return false;
+    if (agentFilter && !log.agent_name.includes(agentFilter) && !log.agent_id.includes(agentFilter)) return false;
+    return true;
+  });
+
+  const getLogTypeColor = (type: string): string => {
+    switch (type) {
+      case 'request':
+        return 'text-yellow-600';
+      case 'response':
+        return 'text-blue-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
+  const formatTime = (timestamp: string): string => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('zh-CN', { hour12: false });
+  };
+
+  return (
+    <Card>
+      <CardHeader
+        title="LLM调用监控"
+        rightContent={
+          <div className="flex gap-2">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value as 'all' | 'request' | 'response')}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option value="all">全部</option>
+              <option value="request">只看请求</option>
+              <option value="response">只看响应</option>
+            </select>
+            <Input
+              placeholder="筛选智能体..."
+              value={agentFilter}
+              onChange={(e) => setAgentFilter(e.target.value)}
+              className="w-48 px-3 py-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => dispatch(clearLLMLogs())}
+            >
+              清空
+            </Button>
+          </div>
+        }
+      />
+      <CardBody>
+        <div
+          id="llm-logs-container"
+          className="space-y-3 max-h-[600px] overflow-y-auto font-mono text-sm"
+        >
+          {filteredLogs.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">
+              暂无LLM调用日志
+            </div>
+          ) : (
+            filteredLogs.map((log, index) => (
+              <div
+                key={`${log.timestamp}-${index}`}
+                className={`p-3 rounded-lg border ${
+                  log.request_type === 'request'
+                    ? 'bg-yellow-50 border-yellow-200'
+                    : 'bg-blue-50 border-blue-200'
+                }`}
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className={`font-semibold ${getLogTypeColor(log.request_type)}`}>
+                    {log.request_type === 'request' ? '📤 请求' : '📥 响应'}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {formatTime(log.timestamp)}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-gray-700">
+                    <span className="font-medium">智能体:</span>{' '}
+                    {log.agent_name} ({log.agent_id})
+                  </div>
+                  {log.round !== null && (
+                    <div className="text-gray-700">
+                      <span className="font-medium">轮次:</span> {log.round}
+                    </div>
+                  )}
+                  <div className="mt-2 text-gray-600 whitespace-pre-wrap break-words">
+                    {log.content}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </CardBody>
     </Card>
   );

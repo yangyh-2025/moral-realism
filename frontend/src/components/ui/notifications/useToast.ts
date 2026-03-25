@@ -25,6 +25,7 @@ export const useToast = () => {
       type: options.type || 'info',
       autoClose: options.autoClose !== undefined ? options.autoClose : true,
     }));
+    return;
   };
 
   const success = (message: string, title?: string) => {

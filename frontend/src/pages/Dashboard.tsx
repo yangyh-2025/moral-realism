@@ -15,7 +15,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
-import { fetchSimulationState } from '../store/slices/simulationSlice';
+import { fetchSimulationState, clearDashboardData } from '../store/slices/simulationSlice';
 import {
   MetricsDashboard,
   PowerTrendChart,
@@ -33,7 +33,7 @@ import { Alert } from '../components/ui/feedback/Alert';
 
 export const Dashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { currentSimulationId, currentSimulation, status, isLoading } = useSelector((state: RootState) => state.simulation);
+  const { currentSimulationId, currentSimulation, status, isLoading, metricsHistory, interactionsHistory, currentMetrics } = useSelector((state: RootState) => state.simulation);
   const { agents } = useSelector((state: RootState) => state.agents);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -189,28 +189,54 @@ export const Dashboard: React.FC = () => {
         <Card>
           <CardHeader title="指标概览" />
           <CardBody>
-            <MetricsDashboard />
+            <MetricsDashboard metrics={currentMetrics} />
           </CardBody>
         </Card>
 
         <Card>
           <CardHeader title="实力趋势" />
           <CardBody>
-            <PowerTrendChart />
+            <PowerTrendChart data={metricsHistory.length > 0 ? {
+              rounds: metricsHistory.map(m => m.round),
+              agents: agents.map(agent => ({
+                id: agent.id,
+                name: agent.name,
+                power_tier: agent.power_tier || 'unknown',
+                data: metricsHistory.map(m => m.agent_powers?.[agent.id] || 0),
+              })),
+            } : undefined} />
           </CardBody>
         </Card>
 
         <Card>
           <CardHeader title="互动热力图" />
           <CardBody>
-            <InteractionHeatmap />
+            <InteractionHeatmap
+              agents={agents}
+              interactions={interactionsHistory.length > 0 ? interactionsHistory.map(i => ({
+                source_agent: i.initiator_id,
+                target_agent: i.target_id || 'unknown',
+                interaction_type: i.interaction_type,
+                action_content: i.action_content || '',
+                count: 1,
+              })) : []}
+            />
           </CardBody>
         </Card>
 
         <Card>
           <CardHeader title="决策时间线" />
           <CardBody>
-            <DecisionTimeline />
+            <DecisionTimeline decisions={interactionsHistory.map(i => ({
+              id: i.timestamp,
+              agent_id: i.initiator_id,
+              agent_name: agents.find(a => a.id === i.initiator_id)?.name || 'Unknown',
+              round: i.round,
+              action_type: i.interaction_type,
+              target_id: i.target_id || undefined,
+              reasoning: '',
+              timestamp: i.timestamp,
+            }))} />
           </CardBody>
         </Card>
       </div>

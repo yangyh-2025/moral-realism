@@ -66,6 +66,7 @@ htmlcov/
 .coverage
 .coverage.*
 *.cover
+coverage.xml
 
 # Test cache
 .pytest_cache/
@@ -74,4 +75,14 @@ htmlcov/
 agent-*-worktree/
 
 # Vite/TypeScript build configs
-*.tsconfig.node.json
+frontend/node_modules/.vite/*.tsconfig.node.json
+
+# Temporary files
+tmp/
+
+# OMC (oh-my-claudecode)
+.omc/
+frontend/.omc/
+
+# Vite auto-generated types
+frontend/src/vite-env.d.ts

@@ -183,7 +183,7 @@ async def create_simulation(config: SimulationConfigRequest):
     }
 
 
-@router.get("/state/{simulation_id}", response_model=SimulationStateResponse)
+@router.get("/state/{simulation_id}")
 async def get_simulation_state(simulation_id: str):
     """
     获取仿真状态
@@ -199,18 +199,88 @@ async def get_simulation_state(simulation_id: str):
         config = _simulation_query.get_simulation_config(simulation_id)
         progress_info = _simulation_query.get_simulation_progress(simulation_id)
 
-        return SimulationStateResponse(
-            simulation_id=simulation_id,
-            status=status.value,
-            current_round=progress_info.current_round,
-            total_rounds=progress_info.total_rounds,
-            progress=progress_info.percentage,
-            start_time=config.metadata.get("start_time"),
-            end_time=None,
-            error_message=None
-        )
+        # 获取最新的指标和秩序
+        latest_metrics = _get_latest_metrics(simulation_id, progress_info.current_round)
+
+        # 返回前端期望的格式
+        return {
+            "simulation_id": simulation_id,
+            "status": status.value,
+            "current_round": progress_info.current_round,
+            "total_rounds": progress_info.total_rounds,
+            "progress": progress_info.percentage,
+            "is_running": status.value == "running",
+            "is_paused": status.value == "paused",
+            "active_events": 0,  # TODO: 从仿真状态中获取
+            "power_pattern": latest_metrics.get("power_pattern", "未判定"),
+            "order_type": latest_metrics.get("order_type", "未判定"),
+            "start_time": config.metadata.get("start_time") if hasattr(config, 'metadata') else None,
+            "end_time": None,
+            "error_message": None
+        }
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+def _get_latest_metrics(simulation_id: str, current_round: int) -> Dict[str, Any]:
+    """
+    获取最新的指标数据
+
+    Args:
+        simulation_id: 仿真ID
+        current_round: 当前轮次
+
+    Returns:
+        指标数据字典
+    """
+    import sqlite3
+    import json
+    from pathlib import Path
+
+    db_path = Path("data/database.db")
+    if not db_path.exists():
+        return {"order_type": "未判定", "power_pattern": "未判定"}
+
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+
+            # 查询最新轮次的指标
+            cursor.execute("""
+                SELECT metric_name, metric_value, metadata
+                FROM metrics
+                WHERE simulation_id = ? AND round = ?
+            """, (simulation_id, current_round))
+
+            metrics_data = cursor.fetchall()
+
+            if not metrics_data:
+                return {"order_type": "未判定", "power_pattern": "未判定"}
+
+            result = {"order_type": "未判定", "power_pattern": "未判定"}
+            power_concentration = 0.0
+
+            for metric_name, metric_value, metadata_json in metrics_data:
+                if metric_name == "international_order_type":
+                    if metadata_json:
+                        metadata = json.loads(metadata_json)
+                        result["order_type"] = metadata.get("order_type", "未判定")
+                elif metric_name == "power_concentration_index":
+                    power_concentration = metric_value
+
+            # 根据实力集中度确定实力模式
+            if power_concentration > 60:
+                result["power_pattern"] = "单极主导"
+            elif power_concentration > 40:
+                result["power_pattern"] = "多极均衡"
+            elif power_concentration > 20:
+                result["power_pattern"] = "力量分散"
+
+            return result
+
+    except Exception as e:
+        print(f"获取指标数据失败: {e}")
+        return {"order_type": "未判定", "power_pattern": "未判定"}
 
 
 @router.get("/list")

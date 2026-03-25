@@ -15,6 +15,7 @@ export interface Simulation {
   status: 'idle' | 'running' | 'paused' | 'completed' | 'error';
   created_at: string;
   updated_at: string;
+  description?: string;
 }
 
 export interface SimulationStatus {
@@ -39,12 +40,55 @@ export interface SimulationConfig {
   random_event_prob: number;
 }
 
+export interface LLMLogEntry {
+  agent_id: string;
+  agent_name: string;
+  request_type: 'request' | 'response';
+  content: string;
+  round: number | null;
+  timestamp: string;
+}
+
+export interface PowerDistribution {
+  superpower: number;
+  great_power: number;
+  middle_power: number;
+  small_power: number;
+}
+
+export interface RoundMetrics {
+  round: number;
+  power_concentration: number;
+  power_concentration_index: number;
+  international_norm_effectiveness: number;  // 后端返回的字段名
+  conflict_level: number;
+  institutionalization_index: number;  // 后端返回的字段名
+  order_type: string;
+  power_pattern: string;
+  agent_powers: Record<string, number>;
+  power_distribution: PowerDistribution;
+}
+
+export interface Interaction {
+  round: number;
+  initiator_id: string;
+  target_id: string | null;
+  interaction_type: string;
+  action_content: string;  // 新增：行动的具体内容
+  timestamp: string;
+}
+
 interface SimulationState {
   currentSimulationId: string | null;
   currentSimulation: Simulation | null;
   simulations: Simulation[];
   status: SimulationStatus;
   progress: ProgressInfo;
+  llmLogs: LLMLogEntry[];
+  // 仪表盘数据
+  metricsHistory: RoundMetrics[];
+  interactionsHistory: Interaction[];
+  currentMetrics: RoundMetrics | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -67,6 +111,10 @@ const initialState: SimulationState = {
     percentage: 0,
     estimated_time: null,
   },
+  llmLogs: [],
+  metricsHistory: [],
+  interactionsHistory: [],
+  currentMetrics: null,
   isLoading: false,
   error: null,
 };
@@ -145,6 +193,45 @@ const simulationSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    addLLMLog: (state, action: PayloadAction<LLMLogEntry>) => {
+      state.llmLogs.push(action.payload);
+      // 限制日志数量为100条
+      if (state.llmLogs.length > 100) {
+        state.llmLogs = state.llmLogs.slice(-100);
+      }
+    },
+    clearLLMLogs: (state) => {
+      state.llmLogs = [];
+    },
+    // 更新当前轮次的指标
+    updateMetrics: (state, action: PayloadAction<RoundMetrics>) => {
+      state.currentMetrics = action.payload;
+      // 添加到历史记录
+      const existingIndex = state.metricsHistory.findIndex(m => m.round === action.payload.round);
+      if (existingIndex >= 0) {
+        state.metricsHistory[existingIndex] = action.payload;
+      } else {
+        state.metricsHistory.push(action.payload);
+      }
+      // 限制历史记录为100轮
+      if (state.metricsHistory.length > 100) {
+        state.metricsHistory = state.metricsHistory.slice(-100);
+      }
+    },
+    // 添加互动记录
+    addInteraction: (state, action: PayloadAction<Interaction>) => {
+      state.interactionsHistory.push(action.payload);
+      // 限制记录数量为200条
+      if (state.interactionsHistory.length > 200) {
+        state.interactionsHistory = state.interactionsHistory.slice(-200);
+      }
+    },
+    // 清除仪表盘数据
+    clearDashboardData: (state) => {
+      state.metricsHistory = [];
+      state.interactionsHistory = [];
+      state.currentMetrics = null;
+    },
   },
   extraReducers: (builder) => {
     // Start simulation
@@ -155,8 +242,34 @@ const simulationSlice = createSlice({
       })
       .addCase(startSimulation.fulfilled, (state, action) => {
         state.isLoading = false;
+        const data = action.payload;
         state.status.is_running = true;
         state.status.is_paused = false;
+
+        // 清除旧的仪表盘数据
+        state.metricsHistory = [];
+        state.interactionsHistory = [];
+        state.currentMetrics = null;
+
+        // 设置当前仿真
+        if (data.simulation_id) {
+          state.currentSimulationId = data.simulation_id;
+          state.currentSimulation = {
+            id: data.simulation_id,
+            name: '仿真',
+            total_rounds: data.total_rounds || 100,
+            current_round: data.completed_rounds || 0,
+            status: data.status || 'running',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          // 更新进度
+          state.progress.total_rounds = data.total_rounds || 100;
+          state.progress.current_round = data.completed_rounds || 0;
+          state.progress.percentage = Math.round(
+            (state.progress.current_round / state.progress.total_rounds) * 100
+          );
+        }
       })
       .addCase(startSimulation.rejected, (state, action) => {
         state.isLoading = false;
@@ -211,7 +324,37 @@ const simulationSlice = createSlice({
       })
       .addCase(fetchSimulationState.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.status = action.payload;
+        // action.payload 是 axios 响应对象，需要访问 data 字段
+        const data = action.payload?.data || action.payload;
+
+        if (!data) {
+          state.error = '获取仿真状态失败：响应数据为空';
+          return;
+        }
+
+        // 保留 WebSocket 已更新的 order_type 和 power_pattern（如果后端返回未判定则不覆盖）
+        const preserveOrderType = state.status.order_type && state.status.order_type !== '未判定';
+        const preservePowerPattern = state.status.power_pattern && state.status.power_pattern !== '未判定';
+
+        // 更新状态和进度
+        state.status = {
+          current_round: data.current_round || 0,
+          active_events: data.active_events || 0,
+          power_pattern: preservePowerPattern ? state.status.power_pattern : (data.power_pattern || '未判定'),
+          order_type: preserveOrderType ? state.status.order_type : (data.order_type || '未判定'),
+          is_running: data.is_running || false,
+          is_paused: data.is_paused || false,
+        };
+        state.progress = {
+          current_round: data.current_round || 0,
+          total_rounds: data.total_rounds || 0,
+          percentage: data.progress || 0,
+          estimated_time: null,
+        };
+        // 同时更新当前仿真的进度
+        if (state.currentSimulation) {
+          state.currentSimulation.current_round = data.current_round || 0;
+        }
       })
       .addCase(fetchSimulationState.rejected, (state, action) => {
         state.isLoading = false;
@@ -226,6 +369,11 @@ export const {
   updateStatus,
   updateProgress,
   clearError,
+  addLLMLog,
+  clearLLMLogs,
+  updateMetrics,
+  addInteraction,
+  clearDashboardData,
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;

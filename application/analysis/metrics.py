@@ -424,7 +424,8 @@ class MetricsPipeline:
         round: int,
         interactions: Optional[List[Dict]] = None,
         events: Optional[List[Dict]] = None,
-        previous_state: Optional[Dict] = None
+        previous_state: Optional[Dict] = None,
+        logger: Optional[Any] = None
     ) -> Dict:
         """
         计算单轮指标（异步方法，用于单轮工作流）
@@ -436,6 +437,7 @@ class MetricsPipeline:
             interactions: 互动记录（可选）
             events: 事件列表（可选）
             previous_state: 上一轮状态（可选）
+            logger: 日志记录器（可选）
 
         Returns:
             指标字典
@@ -472,7 +474,96 @@ class MetricsPipeline:
         for category, metrics in result.metrics.items():
             metrics_dict[category] = [m.dict() if hasattr(m, 'dict') else m for m in metrics]
 
+        # 如果有logger，记录指标到JSON
+        if logger and hasattr(logger, 'log_environment_indicators'):
+            # 记录环境指标
+            env_indicators = metrics_dict.get('environment', [])
+            if env_indicators:
+                indicators_dict = {}
+                for metric in env_indicators:
+                    if isinstance(metric, dict):
+                        indicators_dict[metric.get('name', '')] = metric.get('value', 0)
+                logger.log_environment_indicators(simulation_id, round, indicators_dict)
+
+            # 记录秩序指标
+            dependent_metrics = metrics_dict.get('dependent', [])
+            if dependent_metrics:
+                for metric in dependent_metrics:
+                    if isinstance(metric, dict):
+                        name = metric.get('name', '')
+                        if name == 'international_order_type':
+                            order_type = metric.get('metadata', {}).get('order_type', 'unknown')
+                            confidence = metric.get('metadata', {}).get('confidence', 0.0)
+                            logger.log_order_metrics(simulation_id, round, order_type, confidence, metric.get('metadata', {}))
+
+            # 记录实力指标
+            independent_metrics = metrics_dict.get('independent', [])
+            if independent_metrics:
+                for metric in independent_metrics:
+                    if isinstance(metric, dict):
+                        name = metric.get('name', '')
+                        if '_comprehensive_power' in name:
+                            agent_id = metric.get('metadata', {}).get('agent_id', '')
+                            agent_name = None
+                            for agent in agents:
+                                if hasattr(agent, 'state') and agent.state.agent_id == agent_id:
+                                    agent_name = agent.state.name
+                                    break
+                            if agent_name:
+                                power_metrics = metric.get('metadata', {})
+                                logger.log_power_metrics(
+                                    simulation_id=simulation_id,
+                                    round=round,
+                                    agent_id=agent_id,
+                                    agent_name=agent_name,
+                                    power_metrics=power_metrics,
+                                    comprehensive_power=metric.get('value', 0)
+                                )
+
         return metrics_dict
+
+    def export_metrics_to_json(
+        self,
+        simulation_id: str,
+        metrics_dict: Dict,
+        log_dir: str = "logs"
+    ) -> None:
+        """
+        将指标导出到JSON文件（存储在仿真特定的文件夹中）
+
+        Args:
+            simulation_id: 仿真ID
+            metrics_dict: 指标字典
+            log_dir: 日志目录
+        """
+        try:
+            from pathlib import Path
+            import os
+
+            # 创建仿真特定的日志文件夹
+            sim_log_dir = Path(log_dir) / simulation_id
+            sim_log_dir.mkdir(parents=True, exist_ok=True)
+
+            # 导出完整的指标数据
+            metrics_file = sim_log_dir / "metrics_summary.json"
+            export_data = {
+                "simulation_id": simulation_id,
+                "timestamp": datetime.now().isoformat(),
+                "metrics": metrics_dict
+            }
+
+            with open(metrics_file, 'w', encoding='utf-8') as f:
+                json.dump(export_data, f, indent=2, ensure_ascii=False)
+
+            # 导出各分类指标
+            for category, metrics in metrics_dict.items():
+                if metrics:
+                    category_file = sim_log_dir / f"{category}_metrics.json"
+                    with open(category_file, 'w', encoding='utf-8') as f:
+                        json.dump(metrics, f, indent=2, ensure_ascii=False)
+
+        except Exception as e:
+            print(f"导出指标JSON失败: {e}")
 
 
 class MetricsCache:

@@ -86,18 +86,21 @@ class DecisionEngine:
             agent_state=agent_state,
             environment_state=environment_state,
             available_functions=available_functions,
-            prohibited_functions=prohibited_functions
+            prohibited_functions=prohibited_functions,
+            agent=agent
         )
 
         for attempt in range(self.max_retries):
             try:
-                # 调用LLM生成决策
+                # 调用LLM生成决策（传递智能体名称和轮次用于日志）
                 llm_result = await self.llm_engine.make_decision(
                     agent_id=agent.state.agent_id,
                     prompt=prompt,
                     available_functions=available_functions,
                     prohibited_functions=prohibited_functions,
-                    use_rotation=use_rotation
+                    use_rotation=use_rotation,
+                    agent_name=agent.state.name,
+                    round=round
                 )
 
                 # 验证决策
@@ -130,6 +133,7 @@ class DecisionEngine:
                         'agent_id': agent.state.agent_id,
                         'function': function_name,
                         'arguments': function_args,
+                        'action_content': llm_result.get('action_content', ''),
                         'validation': {'is_valid': True},
                         'reasoning': reasoning,
                         'attempt': attempt + 1,
@@ -400,7 +404,8 @@ class DecisionEngine:
         agent_state: Dict,
         environment_state: Dict,
         available_functions: List[Dict],
-        prohibited_functions: Set[str]
+        prohibited_functions: Set[str],
+        agent: Optional[BaseAgent] = None
     ) -> str:
         """
         构建决策提示词
@@ -410,10 +415,42 @@ class DecisionEngine:
             environment_state: 环境状态
             available_functions: 可用函数列表 (List[Dict], 每个字典包含 name 和 description)
             prohibited_functions: 禁止函数列表 (Set[str])
+            agent: 智能体实例，用于获取历史记忆
 
         Returns:
             提示词
         """
+        # 构建可用国家列表
+        available_countries = []
+        for agent_info in environment_state.get('agents', []):
+            country_name = agent_info.get('name', agent_info.get('agent_id', '未知'))
+            country_region = agent_info.get('region', '未知区域')
+            available_countries.append(f"- {country_name} (区域: {country_region})")
+
+        countries_list_str = '\n'.join(available_countries) if available_countries else '暂无其他国家'
+
+        # 构建记忆部分
+        memory_section = ""
+        if agent and hasattr(agent, 'get_memory_for_llm'):
+            memory_data = agent.get_memory_for_llm()
+            if memory_data:
+                memory_lines = []
+                memory_lines.append("## 历史记忆")
+
+                # 公开记忆
+                if 'public' in memory_data and memory_data['public']:
+                    memory_lines.append("\n### 公开记忆（其他国家的行动）")
+                    for idx, mem in enumerate(memory_data['public'][-10:], 1):  # 只显示最近10条
+                        memory_lines.append(f"{idx}. [轮次{mem.get('round', '?')}] {mem.get('content', '')}")
+
+                # 私有记忆
+                if 'private' in memory_data and memory_data['private']:
+                    memory_lines.append("\n### 私有记忆（自己的决策）")
+                    for idx, mem in enumerate(memory_data['private'][-10:], 1):  # 只显示最近10条
+                        memory_lines.append(f"{idx}. [轮次{mem.get('round', '?')}] {mem.get('content', '')}")
+
+                memory_section = '\n'.join(memory_lines) + "\n"
+
         prompt = f"""
 你是{agent_state['name']}的决策者。
 
@@ -422,6 +459,11 @@ class DecisionEngine:
 - 实力层级: {agent_state['power_tier']}
 - 综合国力: {agent_state['power']:.2f}
 - 所属区域: {agent_state['region']}
+
+## 可用国家列表（行动对象必须从此列表中选择）
+{countries_list_str}
+
+重要提醒：你的所有行动对象（如target参数）必须从上述列表中选择，不得选择列表以外的国家。
 
 ## 可用行动
 {', '.join([f.get('name', '') for f in available_functions])}
@@ -432,16 +474,20 @@ class DecisionEngine:
 ## 环境状态
 {self._format_environment_state(environment_state)}
 
+{memory_section}
 ## 任务
 根据当前局势，选择一个合适的行动并给出详细理由。你的决策必须道守以下要求：
 1. 不能选择禁止行动
 2. 只能从可用行动中选择
-3. 提供完整的决策理由，包括局势分析、战略考量、预期结果和替代方案
+3. 行动对象必须从"可用国家列表"中选择，不得选择不存在的国家
+4. 提供完整的决策理由，包括局势分析、战略考量、预期结果和替代方案
+5. 必须提供行动的具体内容描述（action_content），用1-3句话详细说明行动的具体细节
 
 请以JSON格式返回你的决策：
 {{
     "function": "行动名称",
     "arguments": {{"参数名": "参数值"}},
+    "action_content": "行动的具体内容描述（1-3句话，详细说明行动的具体细节）",
     "reasoning": {{
         "situation_analysis": "局势分析",
         "strategic_consideration": "战略考量",
@@ -457,19 +503,39 @@ class DecisionEngine:
         """格式化环境状态"""
         formatted = []
 
-        if 'agents' in environment_state:
+        # 获取其他国家信息
+        agents = environment_state.get('agents', [])
+        if agents:
             formatted.append("### 其他国家情况")
-            for agent in environment_state['agents'][:10]:  # 限制显示数量
-                formatted.append(f"- {agent.get('name', agent.get('agent_id'))}: 实力={agent.get('power', 0):.2f}")
+            for agent in agents[:10]:  # 限制显示数量
+                agent_info = []
+                name = agent.get('name', agent.get('agent_id', '未知国家'))
+                power = agent.get('comprehensive_power', agent.get('power', 0))
+                power_tier = agent.get('power_tier', 'unknown')
+                region = agent.get('region', '未知区域')
 
-        if 'active_events' in environment_state:
+                # 格式化国家信息
+                agent_info.append(name)
+                if power:
+                    agent_info.append(f"实力={power:.2f}")
+                if power_tier and power_tier != 'unknown':
+                    agent_info.append(f"层级={power_tier}")
+                if region and region != '未知区域':
+                    agent_info.append(f"区域={region}")
+
+                formatted.append(f"- {'，'.join(agent_info)}")
+        else:
+            formatted.append("### 其他国家情况\n无其他国家信息")
+
+        if 'active_events' in environment_state and environment_state['active_events']:
             formatted.append("\n### 当前事件")
             for event in environment_state['active_events']:
                 formatted.append(f"- {event.get('description', '未知事件')}")
 
-        if 'alliances' in environment_state:
+        if 'alliances' in environment_state and environment_state['alliances']:
             formatted.append("\n### 现有联盟")
             for alliance in environment_state['alliances'][:5]:
                 formatted.append(f"- {alliance.get('type', '未知联盟')}")
 
+        # 确保返回一个完整的字符串
         return '\n'.join(formatted) if formatted else "暂无特殊环境信息"

@@ -5,7 +5,7 @@ Git提交用户名: yangyh-2025
 Git提交邮箱: yangyuhang2667@163.com
 """
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Set, Any
+from typing import Dict, List, Optional, Set, Any, Union
 from dataclasses import dataclass, field
 from datetime import datetime
 import json
@@ -453,6 +453,10 @@ class BaseAgent(ABC):
             "leader_type": None  # 初始设为None，等待配置
         }
 
+        # 记忆系统
+        self._public_memory = []  # 公开记忆（其他国家的动作）
+        self._private_memory = []  # 私有记忆（自己的决策）
+
         # 临时状态占位
         self.state = None
         self.power_tier = None
@@ -756,3 +760,90 @@ class BaseAgent(ABC):
             学习机制实例
         """
         return self.state.learning if self.state else None
+
+    def record_decision(self, function_name: str, function_args: Dict) -> None:
+        """
+        记录决策到私有记忆
+
+        Args:
+            function_name: 函数名称
+            function_args: 函数参数
+        """
+        memory_item = {
+            "type": "private",
+            "content": {
+                "function": function_name,
+                "arguments": function_args
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+
+        self._private_memory.append(memory_item)
+
+        # 限制私有记忆数量不超过20条
+        if len(self._private_memory) > 20:
+            self._private_memory = self._private_memory[-20:]
+
+    def add_public_memory(self, event: Union[str, Dict]) -> None:
+        """
+        添加公开记忆（其他国家的动作）
+
+        Args:
+            event: 事件描述或结构化数据字典
+        """
+        memory_item = {
+            "type": "public",
+            "content": event,
+            "timestamp": datetime.now().isoformat()
+        }
+
+        self._public_memory.append(memory_item)
+
+        # 限制公开记忆数量不超过50条
+        if len(self._public_memory) > 50:
+            self._public_memory = self._public_memory[-50:]
+
+    def get_memory_for_llm(self) -> Dict[str, List[Dict]]:
+        """
+        获取用于LLM的记忆字典
+
+        Returns:
+            记忆字典，包含 'public' 和 'private' 两个键
+        """
+        public_memories = []
+        for item in self._public_memory:
+            # 格式化公开记忆
+            content = item.get('content', '')
+            # 如果是结构化数据，格式化为易读文本
+            if isinstance(content, dict):
+                initiator = content.get('initiator', '未知')
+                action_name = content.get('action_name', 'unknown')
+                action_content = content.get('action_content', '')
+                target = content.get('target', '')
+                formatted = f"{initiator}对{target}执行{action_name}: {action_content}"
+                public_memories.append({
+                    'round': item.get('round', '?'),
+                    'content': formatted,
+                    'raw_data': content  # 保留原始数据用于查询
+                })
+            else:
+                public_memories.append({
+                    'round': item.get('round', '?'),
+                    'content': str(content)
+                })
+
+        private_memories = []
+        for item in self._private_memory:
+            # 格式化私有记忆
+            content = item.get('content', '')
+            if isinstance(content, dict):
+                content = f"{content.get('function', 'unknown')}: {content.get('arguments', {})}"
+            private_memories.append({
+                'round': item.get('round', '?'),
+                'content': str(content)
+            })
+
+        return {
+            'public': public_memories,
+            'private': private_memories
+        }

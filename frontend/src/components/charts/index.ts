@@ -9,3 +9,4 @@ export { default as PowerTrendChart } from './PowerTrendChart';
 export { default as InteractionHeatmap } from './InteractionHeatmap';
 export { default as DecisionTimeline } from './DecisionTimeline';
 export { default as RelationNetworkGraph } from './RelationNetworkGraph';
+export { default as InteractionDetailsPanel } from './InteractionDetailsPanel';

@@ -6,7 +6,7 @@
  * Git提交用户名: yangyh-2025
  * Git提交邮箱: yangyuhang26@163.com
  */
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;

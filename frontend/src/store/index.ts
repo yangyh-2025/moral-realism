@@ -26,9 +26,7 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: ['websocket/messageReceived'],
-      },
+      serializableCheck: false, // 禁用序列化检查，避免复杂数据对象导致的问题
     }),
 });
 

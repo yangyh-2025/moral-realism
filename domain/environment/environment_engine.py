@@ -200,6 +200,7 @@ class EnvironmentEngine:
         self._initialize_default_norms()
         self._season_cycle = ["spring", "summer", "fall", "winter"]
         self._seed = seed
+        self._agents = []  # 存储智能体列表
 
         # 事件重叠处理策略
         self._overlap_policy = "merge"  # 'merge', 'replace', 'queue', 'ignore'
@@ -619,6 +620,10 @@ class EnvironmentEngine:
             logger.warning("Event impact model not available")
             return []
 
+    def set_agents(self, agents: List) -> None:
+        """设置智能体列表"""
+        self._agents = agents
+
     def get_full_state(self) -> Dict:
         """获取完整环境状态"""
         return {
@@ -646,5 +651,15 @@ class EnvironmentEngine:
                 }
                 for e in self.state.active_events
             ],
-            "scheduler_stats": self.get_scheduler_stats()
+            "scheduler_stats": self.get_scheduler_stats(),
+            "agents": [
+                {
+                    "name": agent.state.name,
+                    "agent_id": agent.state.agent_id,
+                    "region": agent.state.region,
+                    "power": agent.state.power_metrics.calculate_comprehensive_power(),
+                    "power_tier": agent.state.power_tier.value
+                }
+                for agent in self._agents
+            ]
         }

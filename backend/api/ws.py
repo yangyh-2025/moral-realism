@@ -114,8 +114,10 @@ class ConnectionManager:
             message: 消息内容（字典格式）
         """
         if simulation_id not in self._simulation_clients:
+            logger.info(f"仿真 {simulation_id} 没有连接的客户端，无法广播消息")
             return
 
+        logger.info(f"向仿真 {simulation_id} 广播消息: {message.get('type', 'unknown')}")
         for client_id in self._simulation_clients[simulation_id]:
             await self.send_personal_message(client_id, message)
 
@@ -184,6 +186,22 @@ class RealTimeEventPusher:
     def __init__(self, manager: ConnectionManager):
         self.manager = manager
 
+    async def push_order_update(self, simulation_id: str, order_info: dict):
+        """
+        推送秩序类型更新
+
+        Args:
+            simulation_id: 仿真ID
+            order_info: 秩序评估信息
+        """
+        message = {
+            "type": "order_update",
+            "simulation_id": simulation_id,
+            "data": order_info,
+            "timestamp": datetime.now().isoformat()
+        }
+        await self.manager.broadcast_to_simulation(simulation_id, message)
+
     async def push_decision_event(self, simulation_id: str, decision: dict):
         """
         推送决策事件
@@ -216,21 +234,21 @@ class RealTimeEventPusher:
         }
         await self.manager.broadcast_to_simulation(simulation_id, message)
 
-    async def push_metric_update(self, simulation: str, metrics: dict):
+    async def push_metric_update(self, simulation_id: str, metrics: dict):
         """
         推送指标更新
 
         Args:
-            simulation: 仿真ID
+            simulation_id: 仿真ID
             metrics: 指标数据
         """
         message = {
             "type": "metrics",
-            "simulation_id": simulation,
+            "simulation_id": simulation_id,
             "data": metrics,
             "timestamp": datetime.now().isoformat()
         }
-        await self.manager.broadcast_to_simulation(simulation, message)
+        await self.manager.broadcast_to_simulation(simulation_id, message)
 
     async def push_round_complete(self, simulation_id: str, round_info: dict):
         """
@@ -296,6 +314,71 @@ class RealTimeEventPusher:
                 "agent_id": agent_id,
                 "state": state
             },
+            "timestamp": datetime.now().isoformat()
+        }
+        await self.manager.broadcast_to_simulation(simulation_id, message)
+
+    async def push_interactions_update(self, simulation_id: str, interactions: list, round: int):
+        """
+        推送互动了数据更新
+
+        Args:
+            simulation_id: 仿真ID
+            interactions: 互动数据列表
+            round: 当前轮次
+        """
+        message = {
+            "type": "interactions_update",
+            "simulation_id": simulation_id,
+            "data": {
+                "round": round,
+                "interactions": interactions
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+        await self.manager.broadcast_to_simulation(simulation_id, message)
+
+    async def push_llm_log(self, simulation_id: str, agent_id: str, agent_name: str,
+                         request_type: str, content: str, round: int = None):
+        """
+        推送LLM调用日志
+
+        Args:
+            simulation_id: 仿真ID
+            agent_id: 智能体ID
+            agent_name: 智能体名称
+            request_type: 请求类型 (request/response)
+            content: 日志内容
+            round: 当前轮次
+        """
+        message = {
+            "type": "llm_log",
+            "simulation_id": simulation_id,
+            "data": {
+                "agent_id": agent_id,
+                "agent_name": agent_name,
+                "request_type": request_type,
+                "content": content,
+                "round": round,
+                "timestamp": datetime.now().isoformat()
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+        logger.info(f"push_llm_log: {request_type}, agent={agent_name}, sim_id={simulation_id}")
+        await self.manager.broadcast_to_simulation(simulation_id, message)
+
+    async def push_order_update(self, simulation_id: str, order_info: dict):
+        """
+        推送秩序类型更新
+
+        Args:
+            simulation_id: 仿真ID
+            order_info: 秩序评估信息
+        """
+        message = {
+            "type": "order_update",
+            "simulation_id": simulation_id,
+            "data": order_info,
             "timestamp": datetime.now().isoformat()
         }
         await self.manager.broadcast_to_simulation(simulation_id, message)

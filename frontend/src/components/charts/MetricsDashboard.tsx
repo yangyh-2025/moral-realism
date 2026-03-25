@@ -8,9 +8,12 @@ import React from 'react';
 
 interface Metrics {
   power_concentration: number;  // 实力集中度 (0-100)
-  norm_validity: number;        // 规范有效性 (0-100)
+  power_concentration_index: number;  // 实力集中度指数 (0-100)
+  international_norm_effectiveness: number;  // 规范有效性 (0-100)
   conflict_level: number;       // 冲突水平 (0-100)
+  institutionalization_index: number;  // 制度化指数 (0-100)
   order_type: string;           // 秩序类型
+  power_pattern: string;          // 实力模式
   power_distribution: {
     superpower: number;
     great_power: number;
@@ -29,9 +32,12 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
   // Default metrics if not provided
   const defaultMetrics: Metrics = {
     power_concentration: 0,
-    norm_validity: 50,
+    power_concentration_index: 0,
+    international_norm_effectiveness: 50,
     conflict_level: 20,
+    institutionalization_index: 0,
     order_type: 'mixed',
+    power_pattern: '未判定',
     power_distribution: {
       superpower: 1,
       great_power: 3,
@@ -42,7 +48,15 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
     regime_dominance: 30,
   };
 
-  const metricsData = metrics || defaultMetrics;
+  const metricsData = metrics ? {
+    ...defaultMetrics,
+    ...metrics,
+    power_distribution: {
+      ...defaultMetrics.power_distribution,
+      ...metrics.power_distribution
+    }
+  } : defaultMetrics;
+
   const getOrderTypeInfo = (orderType: string) => {
     const info: Record<string, {label: string; description: string; color: string}> = {
       hegemonic: {
@@ -70,14 +84,35 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
         description: '多种秩序模式混合的复杂状态',
         color: 'yellow',
       },
+      单极主导: {
+        label: '单极主导',
+        description: '由单一超级大国主导',
+        color: 'purple',
+      },
+      多极均衡: {
+        label: '多极均衡',
+        description: '由多个大国通过制衡维持',
+        color: 'blue',
+      },
+      力量分散: {
+        label: '力量分散',
+        description: '实力分布较为分散',
+        color: 'gray',
+      },
+      未判定: {
+        label: '未判定',
+        description: '秩序尚未明确',
+        color: 'gray',
+      },
     };
     return info[orderType] || { label: '未判定', description: '秩序尚未明确', color: 'gray' };
   };
 
   const orderInfo = getOrderTypeInfo(metricsData.order_type);
 
-  const createGauge = (value: number, max: number = 100) => {
-    const percentage = (value / max) * 100;
+  const createGauge = (value: number | undefined | null, max: number = 100) => {
+    const safeValue = value ?? 0;
+    const percentage = (safeValue / max) * 100;
     const getColor = (p: number) => {
       if (p < 30) return 'bg-red-500';
       if (p < 60) return 'bg-yellow-500';
@@ -94,7 +129,7 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
           }}
         />
         <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-sm font-bold">
-          {value.toFixed(1)}
+          {safeValue.toFixed(1)}
         </div>
       </div>
     );
@@ -137,10 +172,10 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="text-sm text-gray-600 mb-2">规范有效性</div>
           <div className="flex justify-center mb-3">
-            {createGauge(metricsData.norm_validity)}
+            {createGauge(metricsData.international_norm_effectiveness)}
           </div>
           <div className="text-xs text-gray-500 text-center">
-            {metricsData.norm_validity > 60 ? '有效' : '薄弱'}
+            {metricsData.international_norm_effectiveness > 60 ? '有效' : '薄弱'}
           </div>
         </div>
 
@@ -155,20 +190,20 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
           </div>
         </div>
 
-        {/* 联盟稳定性 */}
+        {/* 制度化程度 */}
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600 mb-2">联盟稳定性</div>
+          <div className="text-sm text-gray-600 mb-2">制度化程度</div>
           <div className="flex justify-center mb-3">
-            {createGauge(metricsData.alliance_stability)}
+            {createGauge(metricsData.institutionalization_index)}
           </div>
           <div className="text-xs text-gray-500 text-center">
-            {metricsData.alliance_stability > 60 ? '稳定' : '不稳定'}
+            {metricsData.institutionalization_index > 60 ? '高度制度' : '低制度'}
           </div>
         </div>
       </div>
 
       {/* 实力分布 */}
-      <div className="bg-white rounded:shadow p-6">
+      <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4">实力层级分布</h3>
         <div className="space-y-3">
           {[
@@ -214,7 +249,7 @@ const MetricsDashboard: React.FC<MetricsDashboardProps> = ({ metrics }) => {
               <span>冲突水平较高，需要关注国际稳定</span>
             </div>
           )}
-          {metricsData.norm_validity > 60 && metricsData.conflict_level < 40 && (
+          {metricsData.international_norm_effectiveness > 60 && metricsData.conflict_level < 40 && (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-green-500">✅</span>
               <span>规范有效且冲突低，制度秩序稳定</span>

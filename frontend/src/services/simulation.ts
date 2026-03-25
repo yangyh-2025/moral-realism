@@ -35,8 +35,7 @@ export const simulationAPI = {
     return await api.post(`/simulation/stop/${simulationId}`);
   },
   getState: async (simulationId: string) => {
-    const response = await api.get(`/simulation/state/${simulationId}`);
-    return response.data;
+    return await api.get(`/simulation/state/${simulationId}`);
   },
   // 使用 create 和 delete 替代 reset
   create: async (config: SimulationConfig) => {

@@ -5,7 +5,7 @@
  * Git提交邮箱: yangyuhari2667@163.com
  */
 import React from 'react';
-import { Icon, IconProps } from './Icon';
+import { IconProps } from './Icon';
 
 export const SaveIcon: React.FC<IconProps> = ({ size = 24, className = '', color = 'currentColor' }) => {
   return (

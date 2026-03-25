@@ -22,6 +22,7 @@ from infrastructure.validation.validator import RuleValidator
 from application.analysis.metrics import MetricsPipeline, CalculationContext
 from application.workflows.single_round import SingleRoundWorkflow
 from application.workflows.multi_round import MultiRoundWorkflow
+from backend.api.ws import get_event_pusher
 
 logger = logging.getLogger(__name__)
 
@@ -303,21 +304,35 @@ class SimulationLifecycle:
                 # 使用空 key 继续运行，但会报错
                 api_keys = [""]
 
+            # 获取事件推送器
+            event_pusher = get_event_pusher()
+
             # 创建 LLM 引擎
+            logger.info(f"LLM 配置加载: base_url={env_config.llm_base_url}, model={env_config.llm_model}, api_keys_count={len(api_keys)}")
             provider = SiliconFlowProvider(
                 api_key=api_keys,
                 base_url=env_config.llm_base_url,
-                model=env_config.llm_model
+                model=env_config.llm_model,
+                event_pusher=event_pusher,
+                simulation_id=simulation.simulation_id
             )
-            llm_engine = LLMEngine(provider)
+            logger.info(f"SiliconFlowProvider 初始化完成: base_url={provider.base_url}, model={provider.model}")
 
-            # 创建其他组件
-            validator = RuleValidator()
+            # 创建 LLM 引擎
+            from infrastructure.llm.llm_engine import LLMEngine
+            llm_engine = LLMEngine(
+                provider=provider,
+                event_pusher=event_pusher,
+                simulation_id=simulation.simulation_id
+            )
+            logger.info(f"LLMEngine 初始化完成")
 
+            # 创建增强日志记录器（传入simulation_id）
             from infrastructure.logging.logger import EnhancedLogger
-            enhanced_logger = EnhancedLogger(log_dir=f"logs/{simulation.simulation_id}")
+            enhanced_logger = EnhancedLogger(log_dir=f"logs/{simulation.simulation_id}", simulation_id=simulation.simulation_id)
 
             # 创建决策引擎
+            validator = RuleValidator()
             decision_engine = DecisionEngine(
                 llm_engine=llm_engine,
                 validator=validator,
@@ -353,6 +368,42 @@ class SimulationLifecycle:
                 simulation.current_round = rnd + 1
                 simulation.progress = ((rnd + 1) / simulation.config.total_rounds) * 100.0
 
+                # 推送轮次完成消息
+                round_info = {
+                    "round": rnd + 1,
+                    "total_rounds": simulation.config.total_rounds,
+                    "progress": simulation.progress,
+                    "status": "completed"
+                }
+                await event_pusher.push_round_complete(sim_id, round_info)
+
+                # 推送指标更新消息
+                if "metrics" in result:
+                    metrics_data = {
+                        "round": rnd + 1,
+                        "metrics": result["metrics"],
+                        "agent_powers": {}
+                    }
+                    # 计算智能体实力数据
+                    agent_powers = {}
+                    for agent in agents:
+                        if hasattr(agent, 'state') and hasattr(agent.state, 'power_metrics'):
+                            agent_powers[agent.state.agent_id] = agent.state.power_metrics.calculate_comprehensive_power()
+                    metrics_data["agent_powers"] = agent_powers
+                    await event_pusher.push_metric_update(sim_id, metrics_data)
+
+                # 推送秩序更新消息
+                if "order_result_dict" in result:
+                    order_info = {
+                        "round": rnd + 1,
+                        **result["order_result_dict"]
+                    }
+                    await event_pusher.push_order_update(sim_id, order_info)
+
+                # 推送互动数据消息
+                if "interactions" in result:
+                    await event_pusher.push_interactions_update(sim_id, result["interactions"], rnd + 1)
+
             multi_round_workflow.callbacks.on_round_start(on_round_start)
             multi_round_workflow.callbacks.on_round_complete(on_round_complete)
 
@@ -373,6 +424,19 @@ class SimulationLifecycle:
                 simulation.end_time = datetime.now()
                 simulation.current_round = simulation.config.total_rounds
                 simulation.progress = 100.0
+
+                # 导出仿真数据到JSON
+                try:
+                    from infrastructure.storage.json_export import JSONExporter
+
+                    exporter = JSONExporter(log_dir="logs")
+
+                    # 导出智能体状态
+                    exporter.export_agent_states(simulation.simulation_id, agents)
+                    logger.info(f"仿真 {simulation.simulation_id} 数据已导出到 logs/{simulation.simulation_id}/")
+
+                except Exception as export_error:
+                    logger.error(f"导出仿真数据失败: {export_error}", exc_info=True)
 
             except Exception as e:
                 logger.error(f"仿真执行失败: {e}", exc_info=True)

@@ -4,9 +4,14 @@
 Git提交用户名: yangyh-2025
 Git提交邮箱: yangyuhang2667@163.com
 """
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List, Optional
 import os
+from dotenv import load_dotenv
+
+# 加载 .env 文件（必须在导入 BaseSettings 之前调用）
+load_dotenv()
 
 
 # 系统常量
@@ -42,7 +47,7 @@ class Constants:
     MAX_LEADER_TERM_ROUNDS = 20  # 最大领导人任期轮次
 
 
-class SimulationConfig(BaseModel):
+class SimulationConfig(BaseSettings):
     """
     仿真配置类 - 对应技术方案4.1.1节 SimulationConfig
 
@@ -70,11 +75,13 @@ class SimulationConfig(BaseModel):
     database_path: str = Field(default="data/database.db", description="数据库文件路径")
     auto_save_interval: int = Field(default=5, ge=1, description="自动保存间隔（轮次）")
 
-    class Config:
-        env_prefix = "MORAL_REALISM_"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_prefix="MORAL_REALISM_",
+        case_sensitive=False,
+        extra="ignore"
+    )
 
-    @validator('llm_api_keys', pre=True, always=True)
+    @field_validator('llm_api_keys', mode='before')
     def load_api_keys(cls, v):
         """
         加载 API key 列表

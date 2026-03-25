@@ -26,9 +26,9 @@ from infrastructure.logging.logging_config import configure_logging, get_logger
 
 # 配置日志
 configure_logging(
-    log_level=os.getenv("LOG_LEVEL", "INFO"),
-    log_file=os.getenv("LOG_FILE", "logs/app.log"),
-    json_logs=os.getenv("ENVIRONMENT", "dev") == "production"
+    log_level=os.getenv("MORAL_REALISM_LOG_LEVEL", "INFO"),
+    log_file=os.getenv("MORAL_REALISM_LOG_FILE", "logs/app.log"),
+    json_logs=os.getenv("APP_ENV", "development") == "production"
 )
 
 # 获取日志记录器
@@ -201,8 +201,8 @@ if __name__ == "__main__":
     # 开发模式启动
     uvicorn.run(
         "backend.main:app",
-        host="0.0.0.0",
-        port=8000,
+        host=os.getenv("API_HOST", "0.0.0.0"),
+        port=int(os.getenv("API_PORT", "8000")),
         reload=True,
         log_level="info"
     )

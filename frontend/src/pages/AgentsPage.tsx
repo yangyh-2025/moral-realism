@@ -28,6 +28,7 @@ const AgentList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTier, setFilterTier] = useState<PowerTier | 'all'>('all');
   const [showEditor, setShowEditor] = useState(false);
+  const [showBatchEditor, setShowBatchEditor] = useState(false);
 
   useEffect(() => {
     fetchAgents();
@@ -57,6 +58,8 @@ const AgentList: React.FC = () => {
         title: '删除成功',
         message: '智能体已删除',
       }));
+      // 重新获取所有智能体数据以更新实力层级
+      await fetchAgents();
     } catch (error) {
       dispatch(addNotification({
         type: 'error',
@@ -98,15 +101,23 @@ const AgentList: React.FC = () => {
       {/* 操作栏 */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">智能体管理</h2>
-        <button
-          onClick={() => {
-            dispatch(setSelectedAgent(null));
-            setShowEditor(true);
-          }}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        >
-          添加智能体
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              dispatch(setSelectedAgent(null));
+              setShowEditor(true);
+            }}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            添加智能体
+          </button>
+          <button
+            onClick={() => setShowBatchEditor(true)}
+            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+          >
+            批量创建
+          </button>
+        </div>
       </div>
 
       {/* 搜索和筛选 */}
@@ -209,13 +220,16 @@ const AgentList: React.FC = () => {
       </div>
 
       {/* 智能体编辑器 */}
-      {showEditor && <AgentEditor onClose={() => setShowEditor(false)} />}
+      {showEditor && <AgentEditor onClose={() => setShowEditor(false)} fetchAgents={fetchAgents} />}
+
+      {/* 批量创建智能体 */}
+      {showBatchEditor && <BatchCreateModal onClose={() => setShowBatchEditor(false)} fetchAgents={fetchAgents} />}
     </div>
   );
 };
 
 // 智能体编辑器组件
-const AgentEditor: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const AgentEditor: React.FC<{ onClose: () => void; fetchAgents: () => Promise<void> }> = ({ onClose, fetchAgents }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { selectedAgent } = useSelector((state: RootState) => state.agents);
 
@@ -317,6 +331,8 @@ const AgentEditor: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         }));
       }
       dispatch(setSelectedAgent(null));
+      // 重新获取所有智能体数据以更新实力层级
+      await fetchAgents();
       onClose();
     } catch (error) {
       dispatch(addNotification({
@@ -682,6 +698,120 @@ const generateNormalCurve = (width: number, height: number, mean: number, stdDev
     points.push(`${x} ${normalizedY}`);
   }
   return `L ${points.join(' L ')}`;
+};
+
+// 批量创建智能体模态框
+const BatchCreateModal: React.FC<{ onClose: () => void; fetchAgents: () => Promise<void> }> = ({ onClose, fetchAgents }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [count, setCount] = useState<number>(5);
+  const [isCreating, setIsCreating] = useState(false);
+  const [progress, setProgress] = useState<{ created: number; total: number }>({ created: 0, total: 0 });
+
+  const handleCreate = async () => {
+    setIsCreating(true);
+    setProgress({ created: 0, total: count });
+
+    try {
+      const response = await api.post('/agents/batch-random', { count });
+      const { data } = response;
+
+      // 添加所有创建的智能体到Redux
+      data.agents.forEach((agent: Agent) => {
+        dispatch(addAgent(agent));
+      });
+
+      dispatch(addNotification({
+        type: 'success',
+        title: '批量创建完成',
+        message: `成功创建 ${data.successful} 个智能体${data.failed > 0 ? `，失败 ${data.failed} 个` : ''}`,
+      }));
+
+      if (data.failed > 0) {
+        console.error('创建失败的智能体：', data.errors);
+      }
+
+      // 重新获取所有智能体数据以更新实力层级
+      await fetchAgents();
+      onClose();
+    } catch (error) {
+      dispatch(addNotification({
+        type: 'error',
+        title: '批量创建失败',
+        message: '无法批量创建智能体，请稍后重试',
+      }));
+    } finally {
+      setIsCreating(false);
+      setProgress({ created: 0, total: 0 });
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg. shadow-xl max-w-md w-full p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold">批量创建智能体</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              智能体数量 (1-50)
+            </label>
+            <input
+              type="number"
+              value={count}
+              onChange={(e) => setCount(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
+              className="w-full px-4 py-2 border rounded-lg"
+              min="1"
+              max="50"
+              disabled={isCreating}
+            />
+            <p className="text-sm text-gray-500 mt-2">
+              系统将随机生成智能体名称、区域和实力指标，并使用LLM为每个智能体生成独特的战略利益。
+            </p>
+          </div>
+
+          {isCreating && (
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+                <span className="text-blue-600">
+                  正在创建智能体...
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isCreating}
+              className="px-6 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              onClick={handleCreate}
+              disabled={isCreating || count < 1}
+              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isCreating ? '创建中...' : '创建'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default AgentList;

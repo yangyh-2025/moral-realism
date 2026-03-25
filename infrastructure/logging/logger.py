@@ -89,15 +89,33 @@ class EnhancedLogger:
     Git提交邮箱: yangyuhang2667@163.com
     """
 
-    def __init__(self, log_dir: str = "logs"):
+    def __init__(self, log_dir: str = "logs", simulation_id: Optional[str] = None):
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
+        self.simulation_id = simulation_id
+
+        # 创建仿真特定的文件夹
+        if self.simulation_id:
+            self.sim_log_dir = self.log_dir / self.simulation_id
+            self.sim_log_dir.mkdir(parents=True, exist_ok=True)
+        else:
+            self.sim_log_dir = self.log_dir
 
         # 配置Python标准日志
         self._setup_standard_logger()
 
         # 日志条目存储
         self._log_entries: List[LogEntry] = []
+        # LLM请求响应存储
+        self._llm_logs: List[Dict] = []
+        # 指标存储
+        self._metrics_logs: List[Dict] = []
+
+        # JSON日志文件路径 - 存储在仿真特定文件夹中
+        if self.simulation_id:
+            self.json_log_file = self.sim_log_dir / "simulation.json"
+        else:
+            self.json_log_file = self.log_dir / "simulation.json"
 
     def _setup_standard_logger(self):
         """设置标准日志记录器"""
@@ -174,6 +192,9 @@ class EnhancedLogger:
             }
         )
 
+        # 保存到JSON文件
+        self._save_to_json()
+
         return log_id
 
     def log_action(
@@ -230,6 +251,8 @@ class EnhancedLogger:
                 "outcome": outcome
             }
         )
+        # 保存到JSON文件
+        self._save_to_json()
         return log_id
 
     def log_speech(
@@ -288,6 +311,8 @@ class EnhancedLogger:
                 "agent_id": agent_id
             }
         )
+        # 保存到JSON文件
+        self._save_to_json()
         return log_id
 
     def log_event(
@@ -333,6 +358,8 @@ class EnhancedLogger:
                 "round": round
             }
         )
+        # 保存到JSON文件
+        self._save_to_json()
         return log_id
 
     def log_error(
@@ -373,6 +400,8 @@ class EnhancedLogger:
                 "error_type": error_type
             }
         )
+        # 保存到JSON文件
+        self._save_to_json()
 
     def log_info(
         self,
@@ -409,6 +438,8 @@ class EnhancedLogger:
                 "agent_id": agent_id
             }
         )
+        # 保存到JSON文件
+        self._save_to_json()
 
     def get_logs(
         self,
@@ -466,3 +497,327 @@ class EnhancedLogger:
             self._log_entries = [log for log in self._log_entries if log.simulation_id != simulation_id]
         else:
             self._log_entries.clear()
+
+    def log_llm_request(
+        self,
+        simulation_id: str,
+        agent_id: str,
+        agent_name: str,
+        round: Optional[int] = None,
+        prompt: str = "",
+        functions: Optional[List[Dict]] = None,
+        model: str = "",
+        system_message: Optional[str] = None
+    ) -> None:
+        """
+        记录LLM请求
+
+        Args:
+            simulation_id: 仿真ID
+            agent_id: 智能体ID
+            agent_name: 智能体名称
+            round: 当前轮次
+            prompt: 提示词
+            functions: 可用函数列表
+            model: 模型名称
+            system_message: system消息内容
+        """
+        log_entry = {
+            "type": "llm_request",
+            "timestamp": datetime.now().isoformat(),
+            "simulation_id": simulation_id,
+            "agent_id": agent_id,
+            "agent_name": agent_name,
+            "round": round,
+            "system_message": system_message,
+            "prompt_preview": prompt[:500] if prompt else "",
+            "prompt": prompt,
+            "functions": [f.get('name', '') for f in functions] if functions else [],
+            "model": model
+        }
+        self._llm_logs.append(log_entry)
+        self._save_to_json()
+
+    def log_llm_response(
+        self,
+        simulation_id: str,
+        agent_id: str,
+        agent_name: str,
+        round: Optional[int] = None,
+        function_name: Optional[str] = None,
+        function_args: Optional[Dict] = None,
+        content: str = "",
+        usage: Optional[Dict] = None,
+        status_code: Optional[int] = None
+    ) -> None:
+        """
+        记录LLM响应
+
+        Args:
+            simulation_id: 仿真ID
+            agent_id: 智能体ID
+            agent_name: 智能体名称
+            round: 当前轮次
+            function_name: 决策函数名称
+            function_args: 决策函数参数
+            content: 响应内容
+            usage: Token使用情况
+            status_code: HTTP状态码
+        """
+        log_entry = {
+            "type": "llm_response",
+            "timestamp": datetime.now().isoformat(),
+            "simulation_id": simulation_id,
+            "agent_id": agent_id,
+            "agent_name": agent_name,
+            "round": round,
+            "function": function_name,
+            "arguments": function_args,
+            "content": content[:500] if content else "",
+            "content_full": content,
+            "usage": usage,
+            "status_code": status_code
+        }
+        self._llm_logs.append(log_entry)
+        self._save_to_json()
+
+    def log_metric(
+        self,
+        simulation_id: str,
+        round: int,
+        metric_name: str,
+        metric_value: float,
+        metric_category: str = "",
+        metadata: Optional[Dict] = None
+    ) -> None:
+        """
+        记录指标数据
+
+        Args:
+            simulation_id: 仿真ID
+            round: 轮次
+            metric_name: 指标名称
+            metric_value: 指标值
+            metric_category: 指标分类
+            metadata: 附加元数据
+        """
+        log_entry = LogEntry(
+            log_id=f"log_metric_{datetime.now().timestamp()}",
+            log_type=LogType.METRIC,
+            simulation_id=simulation_id,
+            round=round,
+            agent_id=None,
+            timestamp=datetime.now(),
+            content=f"[指标] {metric_name}: {metric_value}",
+            details={
+                "metric_name": metric_name,
+                "metric_value": metric_value,
+                "metric_category": metric_category,
+                "metadata": metadata or {}
+            }
+        )
+        self._log_entries.append(log_entry)
+        self._save_to_json()
+
+    def log_power_metrics(
+        self,
+        simulation_id: str,
+        round: int,
+        agent_id: str,
+        agent_name: str,
+        power_metrics: Dict,
+        comprehensive_power: float
+    ) -> None:
+        """
+        记录实力指标
+
+        Args:
+            simulation_id: 仿真ID
+            round: 轮次
+            agent_id: 智能体ID
+            agent_name: 智能体名称
+            power_metrics: 实力指标字典
+            comprehensive_power: 综合实力
+        """
+        metric_entry = {
+            "type": "power_metrics",
+            "timestamp": datetime.now().isoformat(),
+            "simulation_id": simulation_id,
+            "round": round,
+            "agent_id": agent_id,
+            "agent_name": agent_name,
+            "power_metrics": power_metrics,
+            "comprehensive_power": comprehensive_power
+        }
+        self._metrics_logs.append(metric_entry)
+        self._save_to_json()
+
+    def log_order_metrics(
+        self,
+        simulation_id: str,
+        round: int,
+        order_type: str,
+        confidence: float,
+        metrics: Dict
+    ) -> None:
+        """
+        记录国际秩序指标
+
+        Args:
+            simulation_id: 仿真ID
+            round: 轮次
+            order_type: 秩序类型
+            confidence: 置信度
+            metrics: 其他秩序指标
+        """
+        metric_entry = {
+            "type": "order_metrics",
+            "timestamp": datetime.now().isoformat(),
+            "simulation_id": simulation_id,
+            "round": round,
+            "order_type": order_type,
+            "confidence": confidence,
+            "metrics": metrics
+        }
+        self._metrics_logs.append(metric_entry)
+        self._save_to_json()
+
+    def log_environment_indicators(
+        self,
+        simulation_id: str,
+        round: int,
+        indicators: Dict
+    ) -> None:
+        """
+        记录环境指标
+
+        Args:
+            simulation_id: 仿真ID
+            round: 轮次
+            indicators: 环境指标字典
+        """
+        metric_entry = {
+            "type": "environment_indicators",
+            "timestamp": datetime.now().isoformat(),
+            "simulation_id": simulation_id,
+            "round": round,
+            "indicators": indicators
+        }
+        self._metrics_logs.append(metric_entry)
+        self._save_to_json()
+
+    def log_round_summary(
+        self,
+        simulation_id: str,
+        round: int,
+        summary: Dict
+    ) -> None:
+        """
+        记录轮次总结
+
+        Args:
+            simulation_id: 仿真ID
+            round: 轮次
+            summary: 轮次总结信息
+        """
+        metric_entry = {
+            "type": "round_summary",
+            "timestamp": datetime.now().isoformat(),
+            "simulation_id": simulation_id,
+            "round": round,
+            "summary": summary
+        }
+        self._metrics_logs.append(metric_entry)
+        self._save_to_json()
+
+    def _save_to_json(self) -> None:
+        """
+        保存所有日志到JSON文件
+        """
+        try:
+            # 准备JSON数据
+            log_data = {
+                "simulation_id": self.simulation_id or "unknown",
+                "start_time": datetime.now().isoformat(),
+                "entries": [log.to_dict(include_reasoning=True) for log in self._log_entries],
+                "llm_logs": self._llm_logs,
+                "metrics_logs": self._metrics_logs,
+                "total_entries": len(self._log_entries),
+                "total_llm_logs": len(self._llm_logs),
+                "total_metrics_logs": len(self._metrics_logs)
+            }
+
+            # 写入JSON文件
+            with open(self.json_log_file, 'w', encoding='utf-8') as f:
+                json.dump(log_data, f, indent=2, ensure_ascii=False)
+
+            # 同时保存为单独的日志文件分类
+            if self.simulation_id:
+                self._save_categorized_json(log_data)
+
+        except Exception as e:
+            # 避免日志错误影响主流程
+            print(f"保存JSON日志失败: {e}")
+
+    def _save_categorized_json(self, log_data: Dict) -> None:
+        """
+        保存分类的JSON日志文件
+
+        Args:
+            log_data: 日志数据
+        """
+        try:
+            # 保存LLM日志
+            llm_log_file = self.sim_log_dir / "llm_logs.json"
+            with open(llm_log_file, 'w', encoding='utf-8') as f:
+                json.dump(log_data.get("llm_logs", []), f, indent=2, ensure_ascii=False)
+
+            # 保存指标日志
+            metrics_log_file = self.sim_log_dir / "metrics_logs.json"
+            with open(metrics_log_file, 'w', encoding='utf-8') as f:
+                json.dump(log_data.get("metrics_logs", []), f, indent=2, ensure_ascii=False)
+
+            # 保存决策日志
+            decisions = [e for e in log_data.get("entries", []) if e.get("log_type") == "decision"]
+            decisions_log_file = self.sim_log_dir / "decisions.json"
+            with open(decisions_log_file, 'w', encoding='utf-8') as f:
+                json.dump(decisions, f, indent=2, ensure_ascii=False)
+
+            # 保存行动日志
+            actions = [e for e in log_data.get("entries", []) if e.get("log_type") == "action"]
+            actions_log_file = self.sim_log_dir / "actions.json"
+            with open(actions_log_file, 'w', encoding='utf-8') as f:
+                json.dump(actions, f, indent=2, ensure_ascii=False)
+
+            # 保存发言日志
+            speeches = [e for e in log_data.get("entries", []) if e.get("log_type") == "speech"]
+            speeches_log_file = self.sim_log_dir / "speeches.json"
+            with open(speeches_log_file, 'w', encoding='utf-8') as f:
+                json.dump(speeches, f, indent=2, ensure_ascii=False)
+
+            # 保存事件日志
+            events = [e for e in log_data.get("entries", []) if e.get("log_type") == "event"]
+            events_log_file = self.sim_log_dir / "events.json"
+            with open(events_log_file, 'w', encoding='utf-8') as f:
+                json.dump(events, f, indent=2, ensure_ascii=False)
+
+        except Exception as e:
+            print(f"保存分类JSON日志失败: {e}")
+
+    def get_json_logs(self) -> Optional[Dict]:
+        """
+        读取JSON日志
+
+        Returns:
+            日志字典，如果文件不存在返回None
+        """
+        try:
+            if not self.json_log_file.exists():
+                return None
+
+            with open(self.json_log_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+
+        except Exception as e:
+            print(f"读取JSON日志失败: {e}")
+            return None

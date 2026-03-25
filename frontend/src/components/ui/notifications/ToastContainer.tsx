@@ -18,10 +18,10 @@ const ToastContainer: React.FC = () => {
     // Auto-close notifications that have autoClose set
     notifications.forEach((notification) => {
       if (notification.autoClose !== false) {
-        const timeout = setTimeout(() => {
+        const timer = setTimeout(() => {
           dispatch(removeNotification(notification.id));
         }, 5000); // Auto-close after 5 seconds
-        return () => clearTimeout(timeout);
+        return;
       }
     });
   }, [notifications, dispatch]);

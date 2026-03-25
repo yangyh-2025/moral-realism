@@ -4,11 +4,10 @@
  * Git提交用户名: yangyh-2025
  * Git提交邮箱: yangyuhang2667@163.com
  */
-import React, { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider as ReduxProvider, useDispatch, useSelector } from 'react-redux';
 import { store, RootState, AppDispatch } from './store';
-import { setTheme } from './store/slices/uiSlice';
 import { I18nProvider, useTranslation } from './i18n';
 import SimulationPage from './pages/SimulationPage';
 import AgentsPage from './pages/AgentsPage';
@@ -29,18 +28,33 @@ function AppContent() {
   const { t } = useTranslation();
 
   // 初始化WebSocket连接
-  useEffect(() => {
-    const wsClient = getWebSocketClient(undefined, dispatch);
+  const { currentSimulationId } = useSelector((state: RootState) => state.simulation);
+  const [wsClient, setWsClient] = useState<any>(null);
 
-    // 防止重复连接
-    if (!wsClient.isReady()) {
-      wsClient.connect().catch(err => console.error('WebSocket connect failed:', err));
+  useEffect(() => {
+    // 如果有当前仿真ID，连接到对应的WebSocket端点
+    if (currentSimulationId) {
+      const wsUrl = `ws://localhost:8000/ws/simulation/${currentSimulationId}`;
+      console.log(`Connecting to WebSocket: ${wsUrl}`);
+
+      // 断开旧连接
+      if (wsClient) {
+        wsClient.disconnect();
+      }
+
+      // 创建新连接
+      const newWsClient = getWebSocketClient(wsUrl, dispatch);
+      newWsClient.connect().catch(err => console.error('WebSocket connect failed:', err));
+      setWsClient(newWsClient);
     }
 
     return () => {
-      wsClient.disconnect();
+      if (wsClient) {
+        wsClient.disconnect();
+        setWsClient(null);
+      }
     };
-  }, []);
+  }, [currentSimulationId, dispatch]);
 
   // 应用主题
   useEffect(() => {

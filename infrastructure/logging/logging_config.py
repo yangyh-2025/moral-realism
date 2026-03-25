@@ -7,7 +7,7 @@ Git提交邮箱: yangyuhang2667@163.com
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
 try:
     import structlog
@@ -165,3 +165,53 @@ def get_logger(name: str = __name__) -> logging.Logger:
         return structlog.get_logger(name)
     else:
         return logging.getLogger(name)
+
+
+# EnhancedLogger 实例缓存
+_enhanced_loggers: Dict[str, Any] = {}
+
+
+def get_enhanced_logger(simulation_id: str, log_dir: str = "logs") -> Any:
+    """
+    获取增强日志记录器实例（单例模式）
+
+    Args:
+        simulation_id: 仿真ID
+        log_dir: 日志目录
+
+    Returns:
+        EnhancedLogger实例
+    """
+    global _enhanced_loggers
+
+    # 创建仿真特定的日志文件夹
+    log_dir_path = Path(log_dir)
+    if simulation_id:
+        sim_log_dir = log_dir_path / simulation_id
+        sim_log_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        sim_log_dir = log_dir_path
+
+    logger_key = f"enhanced_{simulation_id}"
+    if logger_key not in _enhanced_loggers:
+        from infrastructure.logging.logger import EnhancedLogger
+        _enhanced_loggers[logger_key] = EnhancedLogger(
+            log_dir=log_dir,
+            simulation_id=simulation_id
+        )
+
+    return _enhanced_loggers[logger_key]
+
+
+def clear_enhanced_logger(simulation_id: str) -> None:
+    """
+    清除增强日志记录器实例
+
+    Args:
+        simulation_id: 仿真ID
+    """
+    global _enhanced_loggers
+
+    logger_key = f"enhanced_{simulation_id}"
+    if logger_key in _enhanced_loggers:
+        del _enhanced_loggers[logger_key]

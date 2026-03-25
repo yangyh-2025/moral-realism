@@ -8,16 +8,17 @@ import { AppDispatch } from '../store';
 import {
   updateStatus,
   updateProgress,
+  addLLMLog,
+  updateMetrics,
+  addInteraction,
 } from '../store/slices/simulationSlice';
 import {
   updateAgentPower,
-  updateAgentSupport,
 } from '../store/slices/agentsSlice';
-import { addEvent } from '../store/slices/eventsSlice';
 import { addNotification } from '../store/slices/uiSlice';
 
 // WebSocket 事件类型
-export type WSMessageType = 'decision' | 'action' | 'metrics' | 'round_complete' | 'simulation_complete' | 'error' | 'order_update' | 'agent_state_update';
+export type WSMessageType = 'decision' | 'action' | 'metrics' | 'round_complete' | 'simulation_complete' | 'error' | 'order_update' | 'agent_state_update' | 'llm_log' | 'interactions_update';
 
 export interface WSMessage {
   type: WSMessageType;
@@ -48,12 +49,26 @@ export interface MetricUpdate {
   round: number;
   metrics: {
     power_concentration: number;
+    power_concentration_index: number;
     norm_validity: number;
     conflict_level: number;
     order_type: string;
+    power_pattern: string;
+    institutionalization: number;
   };
   agent_powers: Record<string, number>;
   agent_supports: Record<string, number>;
+}
+
+export interface InteractionsUpdate {
+  round: number;
+  interactions: {
+    round: number;
+    initiator_id: string;
+    target_id: string | null;
+    interaction_type: string;
+    timestamp: string;
+  }[];
 }
 
 export interface RoundComplete {
@@ -82,11 +97,11 @@ class WebSocketClient {
   private isConnected: boolean = false;
   private eventHandlers: Map<WSMessageType, Set<EventHandler<any>>> = new Map();
   private dispatch: AppDispatch | null = null;
-  private heartbeatInterval: NodeJS.Timeout | null = null;
+  private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private lastMessageTime: number = Date.now();
   private heartbeatTimeout: number = 60000; // 60秒
   private connectionStable: boolean = false;
-  private stabilizeTimeout: NodeJS.Timeout | null = null;
+  private stabilizeTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private url: string, dispatch?: AppDispatch) {
     this.dispatch = dispatch || null;
@@ -166,6 +181,7 @@ class WebSocketClient {
                 type: 'error',
                 title: '连接断开',
                 message: 'WebSocket已断开，请刷新页面重试',
+                autoClose: false,
               }));
             }
           }
@@ -281,6 +297,7 @@ class WebSocketClient {
         break;
       case 'order_update':
         // 处理秩序类型更新
+        this.handleOrderUpdate(message.data);
         break;
       case 'agent_state_update':
         // 处理智能体状态更新
@@ -292,13 +309,37 @@ class WebSocketClient {
         this.handleSimulationComplete(message.data as SimulationComplete);
         break;
       case 'error':
-        this.dispatch(addNotification({
-          type: 'error',
-          title: '仿真错误',
-          message: message.data.message || '未知错误',
-        }));
+        if (this.dispatch) {
+          this.dispatch(addNotification({
+            type: 'error',
+            title: '仿真错误',
+            message: message.data.message || '未知错误',
+          }));
+        }
+        break;
+      case 'llm_log':
+        this.handleLLMLog(message.data);
+        break;
+      case 'interactions_update':
+        this.handleInteractionsUpdate(message.data as InteractionsUpdate);
         break;
     }
+  }
+
+  /**
+   * 处理LLM日志
+   */
+  private handleLLMLog(data: any): void {
+    if (!this.dispatch) return;
+
+    this.dispatch(addLLMLog({
+      agent_id: data.agent_id,
+      agent_name: data.agent_name,
+      request_type: data.request_type,
+      content: data.content,
+      round: data.round,
+      timestamp: data.timestamp,
+    }));
   }
 
   /**
@@ -314,6 +355,17 @@ class WebSocketClient {
    */
   private handleAction(data: ActionEvent): void {
     console.log('Action received:', data);
+
+    // 存储互动记录
+    if (this.dispatch) {
+      this.dispatch(addInteraction({
+        round: 0, // 需要从 data 中获取，目前设为0
+        initiator_id: data.agent_id,
+        target_id: data.target_id,
+        interaction_type: data.action_type,
+        timestamp: data.timestamp,
+      }));
+    }
   }
 
   /**
@@ -322,11 +374,26 @@ class WebSocketClient {
   private handleMetricUpdate(data: MetricUpdate): void {
     if (!this.dispatch) return;
 
+    // 添加调试日志
+    console.log('Metrics update received:', {
+      round: data.round,
+      agent_powers: data.agent_powers,
+      metrics: data.metrics
+    });
+
+    // 根据 power_concentration_index 计算实力模式
+    const powerPattern = this.determinePowerPattern({
+      power_concentration_index: data.metrics.power_concentration_index || data.metrics.power_concentration || 0
+    });
+
+    // 计算实力分布（基于综合实力值的分布）
+    const powerDistribution = this.calculatePowerDistribution(data.agent_powers);
+
     // 更新仿真状态
     this.dispatch(updateStatus({
       current_round: data.round,
-      order_type: data.metrics.order_type,
-      ...data.metrics,
+      order_type: data.metrics.order_type || '未判定',
+      power_pattern: data.metrics.power_pattern || powerPattern,
     }));
 
     // 更新进度
@@ -338,16 +405,154 @@ class WebSocketClient {
     Object.entries(data.agent_powers).forEach(([agentId, power]) => {
       this.dispatch(updateAgentPower({
         agentId,
-        power_metrics: { comprehensive_power: power },
+        power: {
+          C: power * 0.2, // 估算基本实体
+          E: power * 0.4, // 估算经济实力
+          M: power * 0.4, // 估算军事实力
+          S: 0.75, // 默认战略目标
+          W: 0.75, // 默认国家意志
+          comprehensive_power: power,
+        },
       }));
     });
+
+    // 更新仪表盘指标数据
+    // 注意：后端现在发送正确的字段名
+    this.dispatch(updateMetrics({
+      round: data.round,
+      power_concentration: data.metrics.power_concentration,
+      power_concentration_index: data.metrics.power_concentration_index || data.metrics.power_concentration || 0,
+      international_norm_effectiveness: data.metrics.international_norm_effectiveness || 0,  // 修复：使用正确的字段名
+      conflict_level: data.metrics.conflict_level || 0,
+      institutionalization_index: data.metrics.institutionalization_index || data.metrics.institutionalization || 0,  // 修复：使用正确的字段名
+      order_type: data.metrics.order_type || '未判定',
+      power_pattern: data.metrics.power_pattern || powerPattern,
+      agent_powers: data.agent_powers,
+      power_distribution: powerDistribution,
+    }));
+  }
+
+  /**
+   * 计算实力分布（基于综合实力值的)
+   */
+  private calculatePowerDistribution(agentPowers: Record<string, number>): {
+    superpower: number;
+    great_power: number;
+    middle_power: number;
+    small_power: number;
+  } {
+    const powers = Object.values(agentPowers);
+    if (powers.length === 0) {
+      return { superpower: 0, great_power: 0, middle_power: 0, small_power: 0 };
+    }
+
+    // 计算平均值和标准差
+    const mean = powers.reduce((sum, p) => sum + p, 0) / powers.length;
+    const variance = powers.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / powers.length;
+    const stdDev = Math.sqrt(variance);
+
+    // 基于 z-score 分类实力层级
+    const distribution = { superpower: 0, great_power: 0, middle_power: 0, small_power: 0 };
+
+    for (const power of powers) {
+      const zScore = stdDev > 0 ? (power - mean) / stdDev : 0;
+
+      if (zScore >= 1.5) {
+        distribution.superpower++;
+      } else if (zScore >= 0.5) {
+        distribution.great_power++;
+      } else if (zScore >= -0.5) {
+        distribution.middle_power++;
+      } else {
+        distribution.small_power++;
+      }
+    }
+
+    return distribution;
+  }
+
+  /**
+   * 处理互动数据更新
+   */
+  private handleInteractionsUpdate(data: InteractionsUpdate): void {
+    if (!this.dispatch) return;
+
+    // 将互动数据添加到 Redux store
+    data.interactions.forEach(interaction => {
+      this.dispatch(addInteraction({
+        round: interaction.round,
+        initiator_id: interaction.initiator_id,
+        target_id: interaction.target_id,
+        interaction_type: interaction.interaction_type,
+        action_content: (interaction as any).action_content || '',  // 确保 action_content 被传递
+        timestamp: interaction.timestamp,
+      }));
+    });
+
+    console.log(`Received ${data.interactions.length} interactions for round ${data.round}`);
+  }
+
+  /**
+   * 处理秩序类型更新
+   */
+  private handleOrderUpdate(data: any): void {
+    if (!this.dispatch) return;
+
+    // 计算实力分布
+    const powerPattern = this.determinePowerPattern(data.indicators);
+    const powerDistribution = this.calculatePowerDistribution(data.indicators?.agent_powers || {});
+
+    // 提取指标数据
+    const indicators = data.indicators || {};
+
+    // 更新仿真状态中的秩序类型
+    this.dispatch(updateStatus({
+      order_type: data.order_type || '未判定',
+      power_pattern: powerPattern,
+    }));
+
+    // 更新仪表盘指标数据（使 indicators 与 metrics 数据同步）
+    // 注意：后端发送的字段名可能与前端期望不完全一致，需要映射
+    this.dispatch(updateMetrics({
+      round: data.round || 0,
+      power_concentration: indicators.power_concentration || indicators.power_concentration_index || 0,
+      power_concentration_index: indicators.power_concentration_index || 0,
+      international_norm_effectiveness: indicators.international_norm_effectiveness || 0,
+      conflict_level: indicators.conflict_level || 0,
+      institutionalization_index: indicators.institutionalization_index || indicators.institutionalization || 0,
+      order_type: data.order_type || '未判定',
+      power_pattern: powerPattern,
+      agent_powers: indicators.agent_powers || {},
+      power_distribution: powerDistribution,
+    }));
+
+    console.log('Order update received:', data);
+  }
+
+  /**
+   * 根据指标确定实力模式
+   */
+  private determinePowerPattern(indicators: any): string {
+    if (!indicators) return '未判定';
+
+    const powerConcentration = indicators.power_concentration_index || 0;
+
+    if (powerConcentration > 60) {
+      return '单极主导';
+    } else if (powerConcentration > 40) {
+      return '多极均衡';
+    } else if (powerConcentration > 20) {
+      return '力量分散';
+    } else {
+      return '未判定';
+    }
   }
 
   /**
    * 处理轮次完成
    */
   private handleRoundComplete(data: RoundComplete): void {
-    if (!this.dispatch) return;
+    if (!this.dispatch) { }
 
     this.dispatch(addNotification({
       type: 'info',
@@ -431,12 +636,12 @@ class WebSocketClient {
    * 指标更新事件处理器（便捷方法）
    */
   onMetricUpdate(callback: EventHandler<MetricUpdate>): void {
-    this.on('metric_update', callback);
+    this.on('metrics', callback);
   }
 
   /**
-   * 轮次完成事件处理器（便捷方法）
-   */
+    * 轮次完成事件处理器（便捷方法）
+    */
   onRoundComplete(callback: EventHandler<RoundComplete>): void {
     this.on('round_complete', callback);
   }
@@ -449,22 +654,52 @@ class WebSocketClient {
   }
 }
 
-// 创建全局WebSocket客户端实例
-let wsClient: WebSocketClient | null = null;
+// 创建全局WebSocket客户端实例管理器
+let wsClients: Map<string, WebSocketClient> = new Map();
+let globalCurrentSimulationId: string | null = null;
 
 export const getWebSocketClient = (url?: string, dispatch?: AppDispatch): WebSocketClient => {
-  if (!wsClient) {
-    const wsUrl = url || import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/simulation/default';
-    wsClient = new WebSocketClient(wsUrl, dispatch);
+  if (!url) {
+    const defaultClient = wsClients.get('default');
+    return defaultClient || null;
   }
+
+  // 如果URL已存在且与当前仿真ID相同，返回现有客户端
+  if (wsClients.has(url) && globalCurrentSimulationId === url) {
+    const existingClient = wsClients.get(url);
+    return existingClient!;
+  }
+
+  // 断开旧连接
+  wsClients.forEach((client) => {
+    client.disconnect();
+  });
+  wsClients.clear();
+
+  // 创建新客户端
+  const wsClient = new WebSocketClient(url, dispatch);
+  wsClients.set(url, wsClient);
+  globalCurrentSimulationId = url;
+
+  console.log(`Created WebSocket client for: ${url}`);
+
   return wsClient;
 };
 
-
-export const disconnectWebSocket = (): void => {
-  if (wsClient) {
-    wsClient.disconnect();
-    wsClient = null;
+export const disconnectWebSocket = (url?: string): void => {
+  if (url) {
+    const client = wsClients.get(url);
+    if (client) {
+      client.disconnect();
+      wsClients.delete(url);
+    }
+  } else {
+    // 断开所有连接
+    wsClients.forEach((client) => {
+      client.disconnect();
+    });
+    wsClients.clear();
+    globalCurrentSimulationId = null;
   }
 };
 
