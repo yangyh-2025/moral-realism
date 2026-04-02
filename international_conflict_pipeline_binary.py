@@ -51,6 +51,24 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 matplotlib.use("Agg")
 
 from matplotlib import pyplot as plt
+from matplotlib import font_manager
+import platform
+
+# 配置中文字体（在Windows上使用微软雅黑或SimHei）
+if platform.system() == "Windows":
+    # Windows平台使用微软雅黑或SimHei
+    fonts = ["Microsoft YaHei", "SimHei", "Arial Unicode MS"]
+    for font in fonts:
+        try:
+            plt.rcParams['font.sans-serif'] = [font]
+            plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+            break
+        except:
+            continue
+else:
+    # 其他平台使用SimHei或其他支持中文的字体
+    plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans']
+    plt.rcParams['axes.unicode_minus'] = False
 
 
 # ============================================
