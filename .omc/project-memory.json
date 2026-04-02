@@ -1,0 +1,158 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1775043413993,
+  "projectRoot": "C:\\Users\\yangy\\myfile\\PAPER\\2026全球冲突风险预测\\2025\\domestic_clean",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "requirements.txt"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pip",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {},
+  "hotPaths": [
+    {
+      "path": "domestic_conflict_pipeline_clean.py",
+      "accessCount": 57,
+      "lastAccessed": 1775058804908,
+      "type": "file"
+    },
+    {
+      "path": "international_conflict_pipeline_binary.py",
+      "accessCount": 38,
+      "lastAccessed": 1775058631007,
+      "type": "file"
+    },
+    {
+      "path": "progress_monitor_win.py",
+      "accessCount": 11,
+      "lastAccessed": 1775049742634,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 8,
+      "lastAccessed": 1775092328516,
+      "type": "directory"
+    },
+    {
+      "path": "使用说明.md",
+      "accessCount": 7,
+      "lastAccessed": 1775092213439,
+      "type": "file"
+    },
+    {
+      "path": "threshold_optimizer.py",
+      "accessCount": 5,
+      "lastAccessed": 1775092265524,
+      "type": "file"
+    },
+    {
+      "path": "progress_monitor.py",
+      "accessCount": 4,
+      "lastAccessed": 1775049742611,
+      "type": "file"
+    },
+    {
+      "path": "debug_arima.py",
+      "accessCount": 3,
+      "lastAccessed": 1775092265330,
+      "type": "file"
+    },
+    {
+      "path": "simple_progress.py",
+      "accessCount": 3,
+      "lastAccessed": 1775092265653,
+      "type": "file"
+    },
+    {
+      "path": "ARIMA预测日志说明.md",
+      "accessCount": 2,
+      "lastAccessed": 1775092213463,
+      "type": "file"
+    },
+    {
+      "path": "详细日志说明.md",
+      "accessCount": 2,
+      "lastAccessed": 1775092213487,
+      "type": "file"
+    },
+    {
+      "path": "debug_each_country.py",
+      "accessCount": 2,
+      "lastAccessed": 1775092265403,
+      "type": "file"
+    },
+    {
+      "path": "fix_main.py",
+      "accessCount": 2,
+      "lastAccessed": 1775092265466,
+      "type": "file"
+    },
+    {
+      "path": "temp_forecast_one_step.py",
+      "accessCount": 2,
+      "lastAccessed": 1775092265553,
+      "type": "file"
+    },
+    {
+      "path": "增强ARIMA日志补丁.py",
+      "accessCount": 2,
+      "lastAccessed": 1775092265582,
+      "type": "file"
+    },
+    {
+      "path": "correct_forecast_one_step.txt",
+      "accessCount": 2,
+      "lastAccessed": 1775092308587,
+      "type": "file"
+    },
+    {
+      "path": "run_pipelines_parallel.py",
+      "accessCount": 1,
+      "lastAccessed": 1775047874185,
+      "type": "file"
+    },
+    {
+      "path": "fix_threshold.py",
+      "accessCount": 1,
+      "lastAccessed": 1775056853685,
+      "type": "file"
+    },
+    {
+      "path": "fix_threshold2.py",
+      "accessCount": 1,
+      "lastAccessed": 1775056953549,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
