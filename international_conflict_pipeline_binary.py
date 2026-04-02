@@ -15,10 +15,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import warnings
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
+
+# 设置stdout为UTF-8编码，解决Windows控制台显示Unicode字符的问题
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 import joblib
 import matplotlib
@@ -318,8 +325,15 @@ def load_international_data(path: Path) -> pd.DataFrame:
     pd.DataFrame
         清洗后的数据框，按国家和年份排序
     """
-    # 读取CSV文件
-    df = pd.read_csv(path)
+    # 识别文件格式，支持CSV和Excel
+    path_obj = Path(path)
+    if path_obj.suffix.lower() in ['.xlsx', '.xls']:
+        df = pd.read_excel(path, sheet_name='sheet1')
+    else:
+        df = pd.read_csv(path)
+
+    # 列名映射：Statename -> country
+    df = df.rename(columns={'Statename': 'country'})
 
     # 检查必需的列是否存在
     required = {"country", "year", "UCDP_National_conflict_0_1", *IV_COLUMNS}
@@ -334,6 +348,9 @@ def load_international_data(path: Path) -> pd.DataFrame:
     # 数据类型转换
     df["country"] = df["country"].astype(str)          # 国家名转为字符串
     df["year"] = df["year"].astype(int)                # 年份转为整数
+
+    # 删除冲突值为NaN的行（数据缺失的年份）
+    df = df.dropna(subset=["UCDP_National_conflict_0_1"])
 
     # 确保冲突强度是二分类（0或1）
     df["UCDP_National_conflict_0_1"] = df["UCDP_National_conflict_0_1"].astype(int)
@@ -876,16 +893,18 @@ def year_block_splits(years: pd.Series, n_splits: int) -> list[tuple[np.ndarray,
     - 每次验证集是下一个年份块
     - 训练集包含之前所有的年份，窗口不断扩大
 
-    对于3折CV的具体配置：
-    - 第一折：训练集1963-1974年（12年），验证集1975-1986年（12年）
-    - 第二折：训练集1963-1986年（24年），验证集1987-1998年（12年）
-    - 第三折：训练集1963-1998年（36年），验证集1999-2010年（12年）
+    块大小根据可用年份动态计算（至少10年）
+    对于3折交叉验证：
+    - 第一折：块0训练，块1验证
+    - 第二折：块0+块1训练，块2验证
+    - 第三折：块0+块1+块2训练，块3验证
 
     这种策略的优点：
     1. 保留了时间序列的因果性，只用过去预测未来
     2. 窗口不断扩大，训练数据逐渐增多
-    3. 每折验证集大小相同（12年），便于比较
+    3. 每折验证集大小相同，便于比较
     4. 模拟真实预测场景，评估模型的泛化能力
+    5. 动态适应不同长度的数据集
 
     Parameters:
     ----------
@@ -903,26 +922,27 @@ def year_block_splits(years: pd.Series, n_splits: int) -> list[tuple[np.ndarray,
     # 获取排序后的唯一年份
     unique_years = np.sort(years.unique())
 
+    # 动态计算块大小以适应可用的年份
+    # 对于3折交叉验证，需要4个块（1个训练块+3个验证块）
+    # 计算合适的块大小，确保所有块都有足够的数据
+    max_blocks = n_splits + 1  # 4个块
+    block_size = max(10, len(unique_years) // (max_blocks + 1))  # 至少10年，动态计算
+
     # 检查是否有足够的年份进行交叉验证
-    # 最少需要 (n_splits + 1) * 12 年（每块12年）
-    min_years = (n_splits + 1) * 12
+    min_years = (n_splits + 1) * block_size
     if len(unique_years) < min_years:
         raise ValueError(f"年份不足进行expanding-window交叉验证。需要至少{min_years}年，实际{len(unique_years)}年。")
 
-    # 定义验证集块的大小（每块12年）
-    block_size = 12
-
     # 定义具体的年份块划分
-    # 将年份分为4个块，每块12年
-    # 块0：训练块1（1963-1974）
-    # 块1：验证块1 / 训练块2（1975-1986）
-    # 块2：验证块2 / 训练块3（1987-1998）
-    # 块3：验证块3（1999-2010）
+    # 块0：训练块1
+    # 块1：验证块1 / 训练块2
+    # 块2：验证块2 / 训练块3
+    # 块3：验证块3
     blocks = [
-        unique_years[0:block_size],      # 1963-1974
-        unique_years[block_size:block_size*2],      # 1975-1986
-        unique_years[block_size*2:block_size*3],    # 1987-1998
-        unique_years[block_size*3:block_size*4],    # 1999-2010
+        unique_years[0:block_size],
+        unique_years[block_size:block_size*2],
+      unique_years[block_size*2:block_size*3],
+        unique_years[block_size*3:block_size*4],
     ]
 
     splits: list[tuple[np.ndarray, np.ndarray]] = []
@@ -1794,7 +1814,7 @@ def build_model_selection_table(search: SearchResult) -> pd.DataFrame:
     params = search.best_params
     rows = [
         {"指标": "最佳因变量滞后期", "数值": str(search.spec.dv_lag)},
-        {"指标": "最佳自变量滞后期", "数值": str(search.spec.iv.iv_lag)},
+        {"指标": "最佳自变量滞后期", "数值": str(search.spec.iv_lag)},
         {"指标": "最佳CV宏平均F1", "数值": f"{search.best_score:.3f}"},
         {"指标": "决策树数量", "数值": str(params["clf__n_estimators"])},
         {"指标": "最大树深", "数值": str(params["clf__max_depth"])},

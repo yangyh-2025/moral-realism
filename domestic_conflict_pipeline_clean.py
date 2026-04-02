@@ -169,8 +169,9 @@ PARAM_GRID = {
                                               # SMOTE（合成少数类过采样技术）
                                               # 通过在少数类样本之间生成新样本来平衡数据集
                                               # k_neighbors表示用于生成新样本的近邻数量
-    "clf__n_estimators": [200],              # 随机森林中决策树的数量
+    "clf__n_estimators": [100],              # 随机森林中决策树的数量 (临时减少以加快回测速度)
                                               # 越多越稳定，但计算成本越高
+                                              # 生产环境建议使用200
     "clf__max_depth": [6, 10, None],         # 决策树的最大深度
                                               # None表示不限制深度
                                               # 较小的深度可以防止过拟合
@@ -2353,11 +2354,14 @@ def run_recursive_backtest(
         (回测结果DataFrame, {总体指标, 距离1年指标, 距离2年指标})
     """
     rows: list[pd.DataFrame] = []
+    total_years = config.observed_last_year - config.train_cutoff + 1
 
     # 遍历所有可能的起始年份
     # 从train_cutoff-1到observed_last_year-1
     # 确保有足够的数据进行2年递推预测
-    for origin_year in range(config.train_cutoff - 1, config.observed_last_year - 1):
+    for i, origin_year in enumerate(range(config.train_cutoff - 1, config.observed_last_year - 1)):
+        progress = (i + 1) / total_years * 100
+        print(f"递推回测进度: {i+1}/{total_years} ({progress:.1f}%) - 起始年份 {origin_year}")
         # 只使用origin_year及之前的数据
         observed_history = raw_df[raw_df["year"] <= origin_year].copy()
 
@@ -2749,7 +2753,7 @@ def run(config: RunConfig) -> None:
         config=config,
         forecast_df=forecast_df,
         metrics=metrics,
-        recursive_backtest=recursive_backtest_df,
+        recursive_backtest_df=recursive_backtest_df,
         classes=classes,
         result_2025=result_2025,
         result_2026=result_2026,
