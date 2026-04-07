@@ -547,6 +547,108 @@ def infer_classes(df: pd.DataFrame) -> list[int]:
     return sorted(df[DV_COLUMN].dropna().astype(int).unique().tolist())
 
 
+def generate_descriptive_stats(df: pd.DataFrame, output_path: Path) -> None:
+    """
+    生成描述性统计并保存为Markdown文件
+
+    参数说明：
+        df: 数据DataFrame
+        output_path: 输出Markdown文件路径
+
+    功能说明：
+        - 计算数据的基本信息（行数、列数、国家数、年份范围）
+        - 计算缺失值数量
+        - 计算数值列的描述性统计（样本量、平均值、标准差、最小值、最大值）
+        - 保存为Markdown格式文件
+    """
+    # 数据基本信息
+    total_rows = len(df)
+    total_cols = len(df.columns)
+    num_countries = df["ccode"].nunique()
+    year_min = df["year"].min()
+    year_max = df["year"].max()
+
+    # 缺失值统计
+    missing_counts = df.isnull().sum()
+
+    # 排除不需要描述性统计的列（ccode, year, 因变量）
+    # 计算自变量的描述性统计
+    numeric_cols = IV_COLUMNS.copy()
+    summary_stats = df[numeric_cols].describe().T[["count", "mean", "std", "min", "max"]]
+
+    # 格式化为三位小数
+    summary_stats = summary_stats.map(lambda x: f"{float(x):.3f}")
+
+    # 列名映射为中文
+    summary_stats.columns = ["样本量", "平均值", "标准差", "最小值", "最大值"]
+
+    # 变量名中文映射
+    var_name_map = {
+        "polity": "政体得分",
+        "GDP_per_capita_ln": "人均GDP（对数）",
+        "GDP_growth": "GDP增长率",
+        "population_size": "0-14岁人口占比",
+        "trade": "贸易额占GDP比重",
+        "ethnic_diversity": "种族分化指数",
+        "national_capacity": "国家综合国力指数",
+        "government": "政府吸纳度",
+        "congress": "议会吸纳度",
+        "ucdp_neighbor_confilctnumber": "邻国冲突数量",
+    }
+
+    # 构建Markdown内容
+    md_lines = [
+        "# 国内冲突预测数据描述性统计",
+        "",
+        "## 数据基本信息",
+        "",
+        f"- **总行数**: {total_rows}",
+        f"- **总列数**: {total_cols}",
+        f"- **国家数量**: {num_countries}",
+        f"- **年份范围**: {year_min}年 - {year_max}年",
+        "",
+        "## 缺失值统计",
+        "",
+        "| 变量名 | 缺失值数量 |",
+        "|---------|------------|",
+    ]
+
+    for col in df.columns:
+        var_name_cn = var_name_map.get(col, col)
+        md_lines.append(f"| {var_name_cn} ({col}) | {missing_counts[col]} |")
+
+    md_lines.extend([
+        "",
+        "## 描述性统计（保留三位小数）",
+        "",
+        "| 变量名 | 样本量 | 平均值 | 标准差 | 最小值 | 最大值 |",
+        "|--------|--------|--------|--------|--------|--------|",
+    ])
+
+    for var_name, row in summary_stats.iterrows():
+        var_name_cn = var_name_map.get(var_name, var_name)
+        md_lines.append(f"| {var_name_cn} ({var_name}) | {row['样本量']} | {row['平均值']} | {row['标准差']} | {row['最小值']} | {row['最大值']} |")
+
+    # 因变量分布统计
+    md_lines.extend([
+        "",
+        "## 因变量（国内冲突水平）分布",
+        "",
+        f"| 冲突水平 | 数量 | 比例 |",
+        f"|----------|------|------|",
+    ])
+
+    dv_counts = df[DV_COLUMN].value_counts().sort_index()
+    dv_total = dv_counts.sum()
+    for level, count in dv_counts.items():
+        ratio = count / dv_total * 100
+        md_lines.append(f"| {int(level)} | {int(count)} | {ratio:.2f}% |")
+
+    # 保存为Markdown文件
+    output_path.write_text("\n".join(md_lines), encoding="utf-8")
+    print(f"已生成描述性统计: {output_path}")
+
+
 # ============================================================================
 # 第四部分：预测函数（使用ARIMA和其他方法预测未来值）
 # ============================================================================
@@ -2639,6 +2741,10 @@ def run(config: RunConfig) -> None:
     # 加载数据
     raw_df = load_domestic_data(config.data_path)
     print(f"数据加载完成：{len(raw_df)} 行，{raw_df['year'].min()}-{raw_df['year'].max()} 年")
+
+    # 生成描述性统计
+    descriptive_stats_path = Path(config.output_prefix + "_descriptive_stats.md")
+    generate_descriptive_stats(raw_df, descriptive_stats_path)
 
     # 推断类别
     classes = infer_classes(raw_df)

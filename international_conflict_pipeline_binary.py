@@ -281,8 +281,8 @@ def parse_args() -> RunConfig:
     )
     parser.add_argument(
         "--data-path",
-        default=str(script_dir / "domestic_conflicts.csv"),
-        help="国际冲突数据CSV文件路径。",
+        default=str(script_dir / "data.xlsx"),
+        help="国际冲突数据文件路径（Excel格式）。",
     )
     parser.add_argument(
         "--output-prefix",
@@ -394,6 +394,108 @@ def infer_classes(df: pd.DataFrame) -> list[int]:
         分类标签列表，已排序
     """
     return sorted(df["UCDP_National_conflict_0_1"].dropna().astype(int).unique().tolist())
+
+
+def generate_descriptive_stats(df: pd.DataFrame, output_path: Path) -> None:
+    """
+    生成描述性统计并保存为Markdown文件
+
+    Parameters:
+    ----------
+    df : pd.DataFrame
+        数据框
+    output_path : Path
+        输出Markdown文件路径
+
+    功能说明：
+        - 计算数据的基本信息（行数、列数、国家数、年份范围）
+        - 计算缺失值数量
+        - 计算数值列的描述性统计（样本量、平均值、标准差、最小值、最大值）
+        - 保存为Markdown格式文件
+    """
+    # 数据基本信息
+    total_rows = len(df)
+    total_cols = len(df.columns)
+    num_countries = df["country"].nunique()
+    year_min = df["year"].min()
+    year_max = df["year"].max()
+
+    # 缺失值统计
+    missing_counts = df.isnull().sum()
+
+    # 排除year列，计算其余数值列的描述性统计
+    numeric_cols = IV_COLUMNS.copy()
+    summary_stats = df[numeric_cols].describe().T[["count", "mean", "std", "min", "max"]]
+
+    # 格式化为三位小数
+    summary_stats = summary_stats.map(lambda x: f"{float(x):.3f}")
+
+    # 列名映射为中文
+    summary_stats.columns = ["样本量", "平均值", "标准差", "最小值", "最大值"]
+
+    # 变量名中文映射
+    var_name_map = {
+        "polity": "政体得分",
+        "GDP_per_capita_ln": "人均GDP（对数）",
+        "GDP_growth": "GDP增长率",
+        "population_density_ln": "人口密度（对数）",
+        "trade": "贸易额占GDP比重",
+        "military_expenditure_final": "军费开支占GDP比重",
+        "national_capacity": "国家综合国力指数",
+    }
+
+    # 构建Markdown内容
+    md_lines = [
+        "# 国际冲突预测数据描述性统计",
+        "",
+        "## 数据基本信息",
+        "",
+        f"- **总行数**: {total_rows}",
+        f"- **总列数**: {total_cols}",
+        f"- **国家数量**: {num_countries}",
+        f"- **年份范围**: {year_min}年 - {year_max}年",
+        "",
+        "## 缺失值统计",
+        "",
+        "| 变量名 | 缺失值数量 |",
+        "|---------|------------|",
+    ]
+
+    for col in df.columns:
+        var_name_cn = var_name_map.get(col, col)
+        md_lines.append(f"| {var_name_cn} ({col}) | {missing_counts[col]} |")
+
+    md_lines.extend([
+        "",
+        "## 描述性统计（保留三位小数）",
+        "",
+        "| 变量名 | 样本量 | 平均值 | 标准差 | 最小值 | 最大值 |",
+        "|--------|--------|--------|--------|--------|--------|",
+    ])
+
+    for var_name, row in summary_stats.iterrows():
+        var_name_cn = var_name_map.get(var_name, var_name)
+        md_lines.append(f"| {var_name_cn} ({var_name}) | {row['样本量']} | {row['平均值']} | {row['标准差']} | {row['最小值']} | {row['最大值']} |")
+
+    # 因变量分布统计
+    md_lines.extend([
+        "",
+        "## 因变量（国际冲突）分布",
+        "",
+        f"| 冲突状态 | 数量 | 比例 |",
+        f"|----------|------|------|",
+    ])
+
+    dv_counts = df["UCDP_National_conflict_0_1"].value_counts().sort_index()
+    dv_total = dv_counts.sum()
+    for level, count in dv_counts.items():
+        level_str = "冲突" if int(level) == 1 else "无冲突"
+        ratio = count / dv_total * 100
+        md_lines.append(f"| {level_str} ({int(level)}) | {int(count)} | {ratio:.2f}% |")
+
+    # 保存为Markdown文件
+    output_path.write_text("\n".join(md_lines), encoding="utf-8")
+    print(f"已生成描述性统计: {output_path}")
 
 
 # ============================================
@@ -2226,6 +2328,10 @@ def run(config: RunConfig) -> None:
     print(f"✓ 已加载数据：{len(raw_df)}行")
     print(f"✓ 数据范围: {raw_df['year'].min()}年 - {raw_df['year'].max()}年")
     print(f"✓ 国家数量: {raw_df['country'].nunique()}个")
+
+    # 生成描述性统计
+    descriptive_stats_path = Path(config.output_prefix + "_descriptive_stats.md")
+    generate_descriptive_stats(raw_df, descriptive_stats_path)
 
     # 推断类别标签
     # 对于二分类问题，应该返回[0, 1]
