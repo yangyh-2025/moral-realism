@@ -1,0 +1,76 @@
+/* Global typography & body styles (no CSS reset to avoid breaking Element Plus). */
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-ink);
+  font-weight: var(--fw-semibold);
+}
+
+h1 {
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-3xl);
+  margin: 0 0 var(--sp-6) 0;
+}
+
+h2 {
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-2xl);
+  margin: 0 0 var(--sp-5) 0;
+}
+
+h3 {
+  font-size: var(--fs-xl);
+  line-height: var(--lh-xl);
+  margin: 0 0 var(--sp-4) 0;
+}
+
+h4 {
+  font-size: var(--fs-lg);
+  line-height: var(--lh-lg);
+  margin: 0 0 var(--sp-3) 0;
+}
+
+h5 {
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  margin: 0 0 var(--sp-2) 0;
+}
+
+h6 {
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  margin: 0 0 var(--sp-2) 0;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}

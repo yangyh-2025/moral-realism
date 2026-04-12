@@ -1,0 +1,529 @@
+[
+  {
+    "pid": 1,
+    "scene": "S1",
+    "exp": "BL",
+    "from_type": "",
+    "to_type": "",
+    "op_ctry": "",
+    "rounds": 50,
+    "followers": {
+      "null": 2.0,
+      "强权型": 3.25,
+      "王道型": 12.86,
+      "霸权型": 4.87
+    },
+    "goal_scores": {
+      "null": 56.72,
+      "强权型": 23.36,
+      "王道型": 84.58,
+      "霸权型": 21.15
+    }
+  },
+  {
+    "pid": 25,
+    "scene": "S2",
+    "exp": "BL",
+    "from_type": "",
+    "to_type": "",
+    "op_ctry": "",
+    "rounds": 32,
+    "followers": {
+      "null": 1.19,
+      "强权型": 3.67,
+      "王道型": 13.5,
+      "霸权型": 1.43
+    },
+    "goal_scores": {
+      "null": 67.35,
+      "强权型": 28.14,
+      "王道型": 72.45,
+      "霸权型": 16.27
+    }
+  },
+  {
+    "pid": 26,
+    "scene": "S3",
+    "exp": "BL",
+    "from_type": "",
+    "to_type": "",
+    "op_ctry": "",
+    "rounds": 50,
+    "followers": {
+      "null": 2.0,
+      "强权型": 6.1,
+      "王道型": 12.48
+    },
+    "goal_scores": {
+      "null": 68.32,
+      "强权型": 17.05,
+      "王道型": 67.21
+    }
+  },
+  {
+    "pid": 52,
+    "scene": "S1",
+    "exp": "G1",
+    "from_type": "强权",
+    "to_type": "王道",
+    "op_ctry": "GMY",
+    "rounds": 50,
+    "followers": {
+      "强权型": 2.59,
+      "王道型": 6.79,
+      "霸权型": 1.0
+    },
+    "goal_scores": {
+      "null": 67.23,
+      "强权型": 23.17,
+      "王道型": 36.23,
+      "霸权型": 59.55
+    }
+  },
+  {
+    "pid": 54,
+    "scene": "S1",
+    "exp": "G2",
+    "from_type": "强权",
+    "to_type": "霸权",
+    "op_ctry": "GMY",
+    "rounds": 50,
+    "followers": {
+      "null": 1.0,
+      "强权型": 1.0,
+      "王道型": 12.48,
+      "霸权型": 4.02
+    },
+    "goal_scores": {
+      "null": 73.86,
+      "强权型": 38.48,
+      "王道型": 64.82,
+      "霸权型": 31.2
+    }
+  },
+  {
+    "pid": 55,
+    "scene": "S1",
+    "exp": "G3",
+    "from_type": "强权",
+    "to_type": "昏庸",
+    "op_ctry": "GMY",
+    "rounds": 50,
+    "followers": {
+      "null": 1.0,
+      "强权型": 1.0,
+      "昏庸型": 4.56,
+      "王道型": 11.08,
+      "霸权型": 1.0
+    },
+    "goal_scores": {
+      "null": 74.17,
+      "强权型": 39.98,
+      "昏庸型": 11.0,
+      "王道型": 59.23,
+      "霸权型": 61.89
+    }
+  },
+  {
+    "pid": 56,
+    "scene": "S1",
+    "exp": "R1",
+    "from_type": "强权",
+    "to_type": "王道",
+    "op_ctry": "RUS",
+    "rounds": 50,
+    "followers": {
+      "null": 1.03,
+      "强权型": 2.12,
+      "王道型": 6.32,
+      "霸权型": 1.0
+    },
+    "goal_scores": {
+      "null": 71.94,
+      "强权型": 13.8,
+      "王道型": 62.3,
+      "霸权型": 41.95
+    }
+  },
+  {
+    "pid": 59,
+    "scene": "S1",
+    "exp": "U1",
+    "from_type": "王道",
+    "to_type": "强权",
+    "op_ctry": "UKG",
+    "rounds": 50,
+    "followers": {
+      "强权型": 6.8,
+      "霸权型": 1.22
+    },
+    "goal_scores": {
+      "null": 64.47,
+      "强权型": 30.19,
+      "霸权型": 46.24
+    }
+  },
+  {
+    "pid": 60,
+    "scene": "S1",
+    "exp": "U2",
+    "from_type": "王道",
+    "to_type": "霸权",
+    "op_ctry": "UKG",
+    "rounds": 50,
+    "followers": {
+      "null": 1.0,
+      "强权型": 4.75,
+      "霸权型": 10.92
+    },
+    "goal_scores": {
+      "null": 70.74,
+      "强权型": 22.71,
+      "霸权型": 46.39
+    }
+  },
+  {
+    "pid": 61,
+    "scene": "S1",
+    "exp": "U3",
+    "from_type": "王道",
+    "to_type": "昏庸",
+    "op_ctry": "UKG",
+    "rounds": 50,
+    "followers": {
+      "null": 1.0,
+      "强权型": 6.5,
+      "昏庸型": 2.27,
+      "霸权型": 1.06
+    },
+    "goal_scores": {
+      "null": 72.83,
+      "强权型": 27.92,
+      "昏庸型": 30.15,
+      "霸权型": 45.96
+    }
+  },
+  {
+    "pid": 62,
+    "scene": "S2",
+    "exp": "R1",
+    "from_type": "霸权",
+    "to_type": "王道",
+    "op_ctry": "RUS",
+    "rounds": 32,
+    "followers": {
+      "强权型": 3.03,
+      "王道型": 10.89
+    },
+    "goal_scores": {
+      "null": 74.0,
+      "强权型": 16.67,
+      "王道型": 64.88
+    }
+  },
+  {
+    "pid": 63,
+    "scene": "S2",
+    "exp": "R2",
+    "from_type": "霸权",
+    "to_type": "强权",
+    "op_ctry": "RUS",
+    "rounds": 32,
+    "followers": {
+      "null": 1.0,
+      "强权型": 2.08,
+      "王道型": 20.84
+    },
+    "goal_scores": {
+      "null": 77.57,
+      "强权型": 22.59,
+      "王道型": 84.03
+    }
+  },
+  {
+    "pid": 64,
+    "scene": "S2",
+    "exp": "R3",
+    "from_type": "霸权",
+    "to_type": "昏庸",
+    "op_ctry": "RUS",
+    "rounds": 32,
+    "followers": {
+      "null": 1.0,
+      "强权型": 2.94,
+      "昏庸型": 1.66,
+      "王道型": 19.91
+    },
+    "goal_scores": {
+      "null": 79.13,
+      "强权型": 20.39,
+      "昏庸型": 22.94,
+      "王道型": 75.39
+    }
+  },
+  {
+    "pid": 65,
+    "scene": "S2",
+    "exp": "G1",
+    "from_type": "强权",
+    "to_type": "王道",
+    "op_ctry": "GMY",
+    "rounds": 32,
+    "followers": {
+      "null": 1.0,
+      "王道型": 9.64,
+      "霸权型": 5.62
+    },
+    "goal_scores": {
+      "null": 70.7,
+      "王道型": 45.46,
+      "霸权型": 43.16
+    }
+  },
+  {
+    "pid": 66,
+    "scene": "S2",
+    "exp": "G2",
+    "from_type": "强权",
+    "to_type": "霸权",
+    "op_ctry": "GMY",
+    "rounds": 32,
+    "followers": {
+      "null": 1.0,
+      "王道型": 15.75,
+      "霸权型": 4.47
+    },
+    "goal_scores": {
+      "null": 76.36,
+      "王道型": 82.29,
+      "霸权型": 33.44
+    }
+  },
+  {
+    "pid": 68,
+    "scene": "S2",
+    "exp": "U1",
+    "from_type": "王道",
+    "to_type": "强权",
+    "op_ctry": "UKG",
+    "rounds": 32,
+    "followers": {
+      "null": 1.0,
+      "强权型": 9.27,
+      "霸权型": 5.62
+    },
+    "goal_scores": {
+      "null": 74.78,
+      "强权型": 32.48,
+      "霸权型": 36.52
+    }
+  },
+  {
+    "pid": 69,
+    "scene": "S2",
+    "exp": "U2",
+    "from_type": "王道",
+    "to_type": "霸权",
+    "op_ctry": "UKG",
+    "rounds": 32,
+    "followers": {
+      "null": 1.2,
+      "强权型": 1.91,
+      "霸权型": 11.39
+    },
+    "goal_scores": {
+      "null": 79.29,
+      "强权型": 15.83,
+      "霸权型": 56.53
+    }
+  },
+  {
+    "pid": 70,
+    "scene": "S2",
+    "exp": "U3",
+    "from_type": "王道",
+    "to_type": "昏庸",
+    "op_ctry": "UKG",
+    "rounds": 32,
+    "followers": {
+      "null": 1.0,
+      "强权型": 5.81,
+      "昏庸型": 7.13,
+      "霸权型": 11.62
+    },
+    "goal_scores": {
+      "null": 80.61,
+      "强权型": 13.76,
+      "昏庸型": 43.65,
+      "霸权型": 21.81
+    }
+  },
+  {
+    "pid": 71,
+    "scene": "S3",
+    "exp": "R1",
+    "from_type": "强权",
+    "to_type": "王道",
+    "op_ctry": "RUS",
+    "rounds": 50,
+    "followers": {
+      "王道型": 11.46
+    },
+    "goal_scores": {
+      "null": 63.89,
+      "王道型": 33.8
+    }
+  },
+  {
+    "pid": 72,
+    "scene": "S3",
+    "exp": "R2",
+    "from_type": "强权",
+    "to_type": "霸权",
+    "op_ctry": "RUS",
+    "rounds": 50,
+    "followers": {
+      "王道型": 18.46,
+      "霸权型": 4.5
+    },
+    "goal_scores": {
+      "null": 69.58,
+      "王道型": 84.86,
+      "霸权型": 15.0
+    }
+  },
+  {
+    "pid": 73,
+    "scene": "S3",
+    "exp": "R3",
+    "from_type": "强权",
+    "to_type": "昏庸",
+    "op_ctry": "RUS",
+    "rounds": 50,
+    "followers": {
+      "昏庸型": 3.9,
+      "王道型": 19.02
+    },
+    "goal_scores": {
+      "null": 71.03,
+      "昏庸型": 12.0,
+      "王道型": 84.61
+    }
+  },
+  {
+    "pid": 74,
+    "scene": "S3",
+    "exp": "U1",
+    "from_type": "王道",
+    "to_type": "强权",
+    "op_ctry": "UKG",
+    "rounds": 50,
+    "followers": {
+      "null": 1.0,
+      "强权型": 11.18
+    },
+    "goal_scores": {
+      "null": 69.89,
+      "强权型": 29.31
+    }
+  },
+  {
+    "pid": 75,
+    "scene": "S3",
+    "exp": "U2",
+    "from_type": "王道",
+    "to_type": "霸权",
+    "op_ctry": "UKG",
+    "rounds": 50,
+    "followers": {
+      "强权型": 6.44,
+      "霸权型": 16.52
+    },
+    "goal_scores": {
+      "null": 73.53,
+      "强权型": 17.27,
+      "霸权型": 54.7
+    }
+  },
+  {
+    "pid": 76,
+    "scene": "S3",
+    "exp": "U3",
+    "from_type": "王道",
+    "to_type": "昏庸",
+    "op_ctry": "UKG",
+    "rounds": 50,
+    "followers": {
+      "null": 1.0,
+      "强权型": 6.08,
+      "昏庸型": 16.22
+    },
+    "goal_scores": {
+      "null": 72.86,
+      "强权型": 14.5,
+      "昏庸型": 41.69
+    }
+  },
+  {
+    "pid": 77,
+    "scene": "S2",
+    "exp": "G3",
+    "from_type": "强权",
+    "to_type": "昏庸",
+    "op_ctry": "GMY",
+    "rounds": 32,
+    "followers": {
+      "null": 1.0,
+      "昏庸型": 2.65,
+      "王道型": 21.78,
+      "霸权型": 2.67
+    },
+    "goal_scores": {
+      "null": 77.23,
+      "昏庸型": 11.67,
+      "王道型": 89.41,
+      "霸权型": 41.75
+    }
+  },
+  {
+    "pid": 78,
+    "scene": "S1",
+    "exp": "R2",
+    "from_type": "强权",
+    "to_type": "霸权",
+    "op_ctry": "RUS",
+    "rounds": 50,
+    "followers": {
+      "null": 1.0,
+      "强权型": 3.9,
+      "王道型": 11.44,
+      "霸权型": 2.4
+    },
+    "goal_scores": {
+      "null": 72.64,
+      "强权型": 14.5,
+      "王道型": 52.81,
+      "霸权型": 50.9
+    }
+  },
+  {
+    "pid": 79,
+    "scene": "S1",
+    "exp": "R3",
+    "from_type": "强权",
+    "to_type": "昏庸",
+    "op_ctry": "RUS",
+    "rounds": 50,
+    "followers": {
+      "强权型": 3.0,
+      "王道型": 12.94
+    },
+    "goal_scores": {
+      "null": 71.1,
+      "强权型": 16.05,
+      "昏庸型": 32.56,
+      "王道型": 63.17,
+      "霸权型": 49.82
+    }
+  }
+]

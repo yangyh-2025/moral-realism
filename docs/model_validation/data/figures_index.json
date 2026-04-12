@@ -1,0 +1,12 @@
+{
+  "fig1": "fig1_overall_comparison.png",
+  "fig2": "fig2_per_round_timeseries.png",
+  "fig3": "fig3_error_structure.png",
+  "fig4": "fig4_f1_distribution.png",
+  "fig5": "fig5_cross_country_f1.png",
+  "fig6": "fig6_country_stability.png",
+  "fig7": "fig7_bloc_alignment.png",
+  "fig8": "fig8_italy_case_study.png",
+  "fig9": "fig9_gp_independence.png",
+  "fig10": "fig10_summary_dashboard.png"
+}

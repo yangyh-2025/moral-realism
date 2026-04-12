@@ -1,0 +1,52 @@
+/* Element Plus theme overrides - aligned with design tokens. */
+
+:root {
+  --el-color-primary: var(--color-accent);
+  --el-color-primary-light-3: #4F7DE3;
+  --el-color-primary-light-5: #7B9DEB;
+  --el-color-primary-light-7: #A8BEF2;
+  --el-color-primary-light-8: #BCCDF5;
+  --el-color-primary-light-9: var(--color-accent-soft);
+  --el-color-primary-dark-2: #1543B0;
+
+  --el-text-color-primary: var(--color-ink);
+  --el-text-color-regular: var(--color-ink-2);
+  --el-text-color-secondary: var(--color-ink-3);
+  --el-text-color-placeholder: var(--color-ink-muted);
+
+  --el-border-color: var(--color-border);
+  --el-border-color-light: var(--color-border);
+  --el-border-color-lighter: var(--color-border);
+
+  --el-fill-color-blank: var(--color-bg);
+  --el-fill-color-light: var(--color-surface);
+  --el-fill-color: var(--color-surface-2);
+
+  --el-bg-color: var(--color-bg);
+  --el-bg-color-page: var(--color-bg);
+
+  --el-font-family: var(--font-sans);
+  --el-border-radius-base: var(--radius-md);
+  --el-border-radius-small: var(--radius-sm);
+}
+
+.el-card {
+  box-shadow: var(--shadow-1);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.el-button {
+  font-weight: var(--fw-medium);
+  border-radius: var(--radius-md);
+}
+
+.el-tabs__item.is-active {
+  color: var(--color-accent);
+  font-weight: var(--fw-semibold);
+}
+
+.el-tabs__active-bar {
+  background-color: var(--color-accent);
+  height: 2px;
+}
