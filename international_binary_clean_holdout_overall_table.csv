@@ -1,3 +1,0 @@
-﻿指标,精确度（Precision）,召回率（Recall）,F1 得分（F1-score）
-宏平均（Macro Avg）,0.926,0.687,0.760
-加权平均（Weighted Avg）,0.994,0.995,0.994

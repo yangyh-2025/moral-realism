@@ -1,5 +1,0 @@
-.omc/
-.venv/
-__pycache__/
-*.pyc
-maps_cache/
