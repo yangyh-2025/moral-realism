@@ -81,6 +81,7 @@ class AgentConfig(Base):
     targetted_actions = relationship("ActionRecord", foreign_keys="ActionRecord.target_agent_id", back_populates="target_agent")
     follower_relations = relationship("FollowerRelation", foreign_keys="FollowerRelation.follower_agent_id", back_populates="agent")
     power_histories = relationship("AgentPowerHistory", back_populates="agent")
+    goal_evaluations = relationship("StrategicGoalEvaluation", back_populates="agent")
 
     def __repr__(self) -> str:
         return f"<AgentConfig(id={self.agent_id}, name={self.agent_name}, power_level={self.power_level})>"

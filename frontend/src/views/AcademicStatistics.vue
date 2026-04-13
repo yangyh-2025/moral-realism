@@ -22,7 +22,6 @@
                       <el-option
                         v-for="agent in agents"
                         :key="agent.id"
-"
                         :label="agent.name"
                         :value="agent.id"
                       />
@@ -85,7 +84,6 @@
                       <el-option
                         v-for="agent in agents"
                         :key="agent.id"
-"
                         :label="agent.name"
                         :value="agent.id"
                       />
@@ -111,7 +109,7 @@
                     <el-button type="primary" @click="loadActionStats">分析</el-button>
                   </el-form-item>
                 </el-form>
-          </el-col>
+              </el-col>
             </el-row>
 
             <div ref="actionStatsChart" class="chart-container"></div>
@@ -125,10 +123,82 @@
           </div>
         </el-tab-pane>
 
+        <el-tab-pane label="战略目标评估" name="goal">
+          <div class="tab-content">
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <el-form inline>
+                  <el-form-item label="评估轮次区间">
+                    <el-input-number v-model="evalStartRound" :min="1" placeholder="起始轮次" />
+                    <span style="margin: 0 10px;">-</span>
+                    <el-input-number v-model="evalEndRound" :min="1" placeholder="结束轮次" />
+                  </el-form-item>
+                  <el-form-item label="智能体">
+                    <el-select v-model="evalSelectedAgent" placeholder="全部智能体" clearable>
+                      <el-option
+                        v-for="agent in agents"
+                        :key="agent.id"
+                        :label="agent.name"
+                        :value="agent.id"
+                      />
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item>
+                    <el-button type="primary" @click="loadGoalEvaluations">查询评估</el-button>
+                  </el-form-item>
+                </el-form>
+              </el-col>
+            </el-row>
+
+            <!-- 评估统计概览 -->
+            <el-row :gutter="20" style="margin-top: 20px;">
+              <el-col :span="8">
+                <el-card>
+                  <template #header>
+                    <h4>平均目标达成度</h4>
+                  </template>
+                  <div class="stat-value">{{ avgGoalAchievement.toFixed(2) }}%</div>
+                </el-card>
+              </el-col>
+              <el-col :span="8">
+                <el-card>
+                  <template #header>
+                    <h4>评估轮次总数</h4>
+                  </template>
+                  <div class="stat-value">{{ totalEvaluationRounds }}</div>
+                </el-card>
+              </el-col>
+              <el-col :span="8">
+                <el-card>
+                  <template #header>
+                    <h4>已评估国家数</h4>
+                  </template>
+                  <div class="stat-value">{{ evaluatedAgentsCount }}</div>
+                </el-card>
+              </el-col>
+            </el-row>
+
+            <!-- 趋势图表 -->
+            <div ref="goalTrendChart" class="chart-container"></div>
+
+            <!-- 评估详情表格 -->
+            <el-table :data="goalEvaluationData" border style="margin-top: 20px;">
+              <el-table-column prop="evaluationRound" label="评估轮次" />
+              <el-table-column prop="agentName" label="国家名称" />
+              <el-table-column prop="goalAchievementScore" label="目标达成度(%)" :formatter="(row, column, cellValue) => cellValue.toFixed(2)" />
+              <el-table-column prop="powerGrowthContribution" label="国力贡献度(%)" :formatter="(row, column, cellValue) => cellValue ? cellValue.toFixed(2) : 'N/A'" />
+              <el-table-column prop="actionEffectiveness" label="行为有效性(%)" :formatter="(row, column, cellValue) => cellValue ? cellValue.toFixed(2) : 'N/A'" />
+              <el-table-column prop="leadershipAlignment" label="领导一致性(%)" :formatter="(row, column, cellValue) => cellValue ? cellValue.toFixed(2) : 'N/A'" />
+              <el-table-column prop="overallAssessment" label="综合评估" show-overflow-tooltip />
+            </el-table>
+          </div>
+        </el-tab-pane>
+
         <el-tab-pane label="数据导出" name="export">
           <div class="tab-content">
             <el-row :gutter="20">
               <el-col :span="8">
+">
                 <el-card>
                   <template #header>
                     <h4>导出选项</h4>
@@ -177,9 +247,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts'
+import { getGoalEvaluations } from '../api/statistics'
 
 const activeTab = ref('power')
 const startRound = ref(1)
@@ -198,8 +269,18 @@ const actionStatsData = ref([])
 
 const powerStatsChart = ref(null)
 const actionStatsChart = ref(null)
+const goalTrendChart = ref(null)
 
 let charts = []
+
+// 战略目标评估相关
+const evalStartRound = ref(1)
+const evalEndRound = ref(50)
+const evalSelectedAgent = ref(null)
+const goalEvaluationData = ref([])
+const avgGoalAchievement = ref(0)
+const totalEvaluationRounds = ref(0)
+const evaluatedAgentsCount = ref(0)
 
 onMounted(() => {
   initializeCharts()
@@ -233,6 +314,19 @@ function initializeCharts() {
       tooltip: { trigger: 'axis' },
       xAxis: { type: 'category', axisLabel: { rotate: 45 } },
       yAxis: { type: 'value' },
+      series: []
+    })
+    charts.push(chart)
+  }
+
+  if (goalTrendChart.value) {
+    const chart = echarts.init(goalTrendChart.value)
+    chart.setOption({
+      title: { text: '目标达成度趋势' },
+      tooltip: { trigger: 'axis' },
+      legend: { data: [] },
+      xAxis: { type: 'category' },
+      yAxis: { type: 'value', min: 0, max: 100 },
       series: []
     })
     charts.push(chart)
@@ -274,6 +368,75 @@ async function exportOrderData() {
   ElMessage.success('秩序数据导出成功')
 }
 
+async function loadGoalEvaluations() {
+  try {
+    const projectId = 1 // TODO: 从路由或状态获取
+    const response = await getGoalEvaluations(projectId, {
+      start_round: evalStartRound.value,
+      end_round: evalEndRound.value,
+      agent_id: evalSelectedAgent.value
+    })
+
+    goalEvaluationData.value = response.data
+
+    // 计算统计数据
+    if (response.data.length > 0) {
+      const totalScore = response.data.reduce((sum, item) => sum + item.goal_achievement_score, 0)
+      avgGoalAchievement.value = totalScore / response.data.length
+
+      const uniqueRounds = [...new Set(response.data.map(item => item.evaluation_round))]
+      totalEvaluationRounds.value = uniqueRounds.length
+
+      const uniqueAgents = [...new Set(response.data.map(item => item.agent_id))]
+      evaluatedAgentsCount.value = uniqueAgents.length
+    }
+
+    // 更新趋势图表
+    updateGoalTrendChart(response.data)
+
+    ElMessage.success('评估数据加载成功')
+  } catch (error) {
+    ElMessage.error('评估数据加载失败: ' + error.message)
+  }
+}
+
+function updateGoalTrendChart(data) {
+  if (!goalTrendChart.value) return
+
+  // 按国家分组
+  const agentGroups = {}
+  data.forEach(item => {
+    if (!agentGroups[item.agent_name]) {
+      agentGroups[item.agent_name] = []
+    }
+    agentGroups[item.agent_name].push({
+      round: item.evaluation_round,
+      score: item.goal_achievement_score
+    })
+  })
+
+  // 构建图表数据
+  const rounds = [...new Set(data.map(item => item.evaluation_round))].sort()
+  const series = Object.keys(agentGroups).map(agentName => ({
+    name: agentName,
+    type: 'line',
+    data: rounds.map(round => {
+      const record = agentGroups[agentName].find(r => r.round === round)
+      return record ? record.score : null
+    }),
+    smooth: true
+  }))
+
+  const chart = charts.find(c => c.getDom() === goalTrendChart.value)
+  if (chart) {
+    chart.setOption({
+      legend: { data: Object.keys(agentGroups) },
+      xAxis: { data: rounds, name: '评估轮次' },
+      series: series
+    })
+  }
+}
+
 function handleResize() {
   charts.forEach(chart => chart.resize())
 }
@@ -313,5 +476,13 @@ function disposeCharts() {
 .tab-content ul {
   line-height: 2;
   color: #606266;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: bold;
+  color: #409eff;
+  text-align: center;
+  padding: 20px 0;
 }
 </style>

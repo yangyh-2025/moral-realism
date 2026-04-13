@@ -53,3 +53,24 @@ export function getRoundDetail(projectId, roundNum) {
     params: { round_num: roundNum }
   })
 }
+
+/**
+ * Get goal evaluations
+ */
+export function getGoalEvaluations(projectId, params) {
+  return request({
+    url: `/simulation/${projectId}/stats/goal-evaluations`,
+    method: 'get',
+    params
+  })
+}
+
+/**
+ * Get goal evaluation trend for specific agent
+ */
+export function getGoalEvaluationTrend(projectId, agentId) {
+  return request({
+    url: `/simulation/${projectId}/stats/goal-evaluation-trend/${agentId}`,
+    method: 'get'
+  })
+}
