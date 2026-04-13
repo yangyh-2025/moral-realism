@@ -67,6 +67,9 @@ class SimulationProject(Base):
     power_histories = relationship(
         "AgentPowerHistory", back_populates="project", cascade="all, delete-orphan"
     )
+    goal_evaluations = relationship(
+        "StrategicGoalEvaluation", back_populates="project", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<SimulationProject(id={self.project_id}, name={self.project_name}, status={self.status})>"

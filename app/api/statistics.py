@@ -53,6 +53,22 @@ class RoundDetailResponse(BaseModel):
     follower_relations: List[dict]
 
 
+class GoalEvaluationResponse(BaseModel):
+    evaluation_id: int
+    agent_id: int
+    agent_name: str
+    evaluation_round: int
+    evaluation_round_start: int
+    evaluation_round_end: int
+    goal_achievement_score: float
+    power_growth_contribution: Optional[float] = None
+    action_effectiveness: Optional[float] = None
+    leadership_alignment: Optional[float] = None
+    overall_assessment: Optional[str] = None
+    specific_achievements: Optional[str] = None
+    challenges: Optional[str] = None
+
+
 @router.get("/{project_id}/stats/power-history", response_model=List[PowerHistoryResponse])
 async def get_power_history(project_id: int, agent_id: Optional[int] = None, start_round: Optional[int] = None, end_round: Optional[int] = None):
     """
@@ -116,4 +132,35 @@ async def get_round_detail(project_id: int, round_num: int):
     )
     if data is None:
         raise HTTPException(status_code=404, detail="Round not found")
+    return data
+
+
+@router.get("/{project_id}/stats/goal-evaluations", response_model=List[GoalEvaluationResponse])
+async def get_goal_evaluations(
+    project_id: int,
+    agent_id: Optional[int] = None,
+    start_round: Optional[int] = None,
+    end_round: Optional[int] = None
+):
+    """
+    获取战略目标评估数据
+    """
+    data = await statistics_service.get_goal_evaluations(
+        project_id=project_id,
+        agent_id=agent_id,
+        start_round=start_round,
+        end_round=end_round
+    )
+    return data
+
+
+@router.get("/{project_id}/stats/goal-evaluation-trend/{agent_id}", response_model=List[GoalEvaluationResponse])
+async def get_goal_evaluation_trend(project_id: int, agent_id: int):
+    """
+    获取单个国家的目标达成度趋势
+    """
+    data = await statistics_service.get_goal_evaluation_trend(
+        project_id=project_id,
+        agent_id=agent_id
+    )
     return data
