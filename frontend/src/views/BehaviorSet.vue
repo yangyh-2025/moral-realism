@@ -71,37 +71,6 @@
                 </el-descriptions-item>
               </el-descriptions>
 
-              <el-divider></el-divider>
-
-              <div class="permission-section">
-                <p class="section-title">发起权限：</p>
-                <el-tag
-                  v-for="level in action.allowed_initiator_level"
-                  :key="level"
-                  size="small"
-                  style="margin: 2px;"
-                >
-                  {{ level }}
-                </el-tag>
-              </div>
-
-              <div class="permission-section" v-if="action.forbidden_leader_type.length > 0">
-                <p class="section-title">禁止领导类型：</p>
-                <el-tag
-                  v-for="type in action.forbidden_leader_type"
-                  :key="type"
-                  type="danger"
-                  size="small"
-                  style="margin: 2px;"
-                >
-                  {{ type }}
-                </el-tag>
-              </div>
-
-              <div class="permission-section" v-else>
-                <p class="section-title">禁止领导类型：</p>
-                <el-tag type="info" size="small">无限制</el-tag>
-              </div>
             </div>
           </el-card>
         </el-col>
@@ -206,14 +175,4 @@ function formatChange(change) {
   line-height: 1.5;
 }
 
-.permission-section {
-  margin-top: 10px;
-}
-
-.section-title {
-  margin: 0 0 5px 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: #409eff;
-}
 </style>

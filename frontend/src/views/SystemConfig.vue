@@ -114,7 +114,7 @@
         <el-descriptions-item label="仿真并发数">
           {{ config.simulationConcurrency }}
         </el-descriptions-item>
-        <el-descriptions-item label="默认场景。
+        <el-descriptions-item label="默认场景">
           {{ config.defaultSceneId }}
         </el-descriptions-item>
         <el-descriptions-item label="日志级别">
@@ -127,7 +127,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ElMessage() } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { getSystemConfig, updateSystemConfig } from '@/api/system'
 
 const config = ref({

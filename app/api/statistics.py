@@ -2,6 +2,7 @@
 from fastapi import APIRouter, HTTPException
 from typing import List, Optional
 from pydantic import BaseModel
+from app.services.statistics_service import statistics_service
 
 router = APIRouter(prefix="/simulation", tags=["statistics"])
 
@@ -57,8 +58,13 @@ async def get_power_history(project_id: int, agent_id: Optional[int] = None, sta
     """
     获取项目全量智能体国力历史数据
     """
-    # TODO: Implement actual logic to fetch power history
-    return []
+    data = await statistics_service.get_power_history(
+        project_id=project_id,
+        agent_id=agent_id,
+        start_round=start_round,
+        end_round=end_round
+    )
+    return data
 
 
 @router.get("/{project_id}/stats/power-growth-rate", response_model=List[GrowthRateResponse])
@@ -66,8 +72,12 @@ async def get_power_growth_rate(project_id: int, start_round: int = 1, end_round
     """
     计算自定义轮次区间的实力增长率
     """
-    # TODO: Implement actual logic to calculate growth rates
-    return []
+    data = await statistics_service.calculate_power_growth_rate(
+        project_id=project_id,
+        start_round=start_round,
+        end_round=end_round
+    )
+    return data
 
 
 @router.get("/{project_id}/stats/action-preference", response_model=List[ActionPreferenceResponse])
@@ -75,8 +85,15 @@ async def get_action_preference(project_id: int, agent_id: Optional[int] = None,
     """
     获取行为偏好统计数据
     """
-    # TODO: Implement actual logic to calculate action preferences
-    return []
+    data = await statistics_service.get_action_preference(
+        project_id=project_id,
+        agent_id=agent_id,
+        power_level=power_level,
+        leader_type=leader_type,
+        start_round=start_round,
+        end_round=end_round
+    )
+    return data
 
 
 @router.get("/{project_id}/stats/order-evolution", response_model=List[OrderEvolutionResponse])
@@ -84,8 +101,8 @@ async def get_order_evolution(project_id: int):
     """
     获取国际秩序演变时序数据
     """
-    # TODO: Implement actual logic to fetch order evolution
-    return []
+    data = await statistics_service.get_order_evolution(project_id=project_id)
+    return data
 
 
 @router.get("/{project_id}/stats/round-detail", response_model=RoundDetailResponse)
@@ -93,5 +110,10 @@ async def get_round_detail(project_id: int, round_num: int):
     """
     获取单轮仿真完整详情
     """
-    # TODO: Implement actual logic to fetch round detail
-    raise HTTPException(status_code=404, detail="Round not found")
+    data = await statistics_service.get_round_detail(
+        project_id=project_id,
+        round_num=round_num
+    )
+    if data is None:
+        raise HTTPException(status_code=404, detail="Round not found")
+    return data

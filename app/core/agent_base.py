@@ -9,7 +9,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
-from .klein_equation import PowerLevelEnum, calculate_klein_power, determine_power_level
+from .klein_equation import PowerLevelEnumari, calculate_klein_power, determine_power_level
 
 
 class RegionEnum(str, Enum):
@@ -30,7 +30,7 @@ class LeaderTypeEnum(str, Enum):
 
 
 class ActionConfig(BaseModel):
-    """互动行为配置数据模型"""
+    """互动行为配置数据模型 - 对齐学术文档"""
     action_id: int
     action_name: str
     action_en_name: str
@@ -41,9 +41,6 @@ class ActionConfig(BaseModel):
     target_power_change: int
     is_initiative: bool
     is_response: bool
-    allowed_initiator_level: List[PowerLevelEnum]
-    allowed_responder_level: List[PowerLevelEnum]
-    forbidden_leader_type: List[LeaderTypeEnum]
 
 
 class AgentBase(BaseModel):
@@ -77,12 +74,12 @@ class AgentBase(BaseModel):
     s_score: float = Field(
         ge=0,
         le=2,
-        description="战略目的初始系数，克莱因官方标准值0.5"
+        description="战略目的对数，克莱因标准值0.5"
     )
     w_score: float = Field(
         ge=0,
         le=2,
-        description="国家战略意志初始系数，克莱因官方标准值0.5"
+        description="国家战略意志对数，克莱因标准值0.5"
     )
 
     # 只读自动计算字段（由model_post_init初始化）
@@ -94,8 +91,8 @@ class AgentBase(BaseModel):
         default=0.0,
         description="实时综合国力，每轮更新"
     )
-    power_level: PowerLevelEnum = Field(
-        default=PowerLevelEnum.SMALL_STATE,
+    power_level: PowerLevelEnumari = Field(
+        default=PowerLevelEnumari.SMALL_STATE,
         description="综合国力层级，自动计算，每轮更新"
     )
 
@@ -111,7 +108,7 @@ class AgentBase(BaseModel):
         description="由实力层级决定的国家利益偏好"
     )
 
-    # 允许执行的行为列表
+    # 允许执行的行为列表（简化为区分发起/响应）
     allowed_actions: Dict[str, List[ActionConfig]] = Field(
         default_factory=lambda: {
             "all_allowed": [],
@@ -142,14 +139,14 @@ class AgentBase(BaseModel):
             data = info.data
             c_score = data.get("c_score", 0)
             e_score = data.get("e_score", 0)
-            m_score = data.get("m_score", 0)
+                       m_score = data.get("m_score", 0)
             s_score = data.get("s_score", 0)
             w_score = data.get("w_score", 0)
 
             power = calculate_klein_power(c_score, e_score, m_score, s_score, w_score)
             power_level = determine_power_level(power)
 
-            if power_level not in [PowerLevelEnum.SUPERPOWER, PowerLevelEnum.GREAT_POWER]:
+            if power_level not in [PowerLevelEnumari.SUPERPOWER, PowerLevelEnumari.GREAT_POWER]:
                 raise ValueError(
                     "仅超级大国与大国可配置领导集体类型，中小国家禁止设置该字段"
                 )
@@ -174,7 +171,7 @@ class AgentBase(BaseModel):
         # 映射国家利益偏好
         self.national_interest = self._get_national_interest()
 
-        # 生成允许执行的行为列表
+        # 生成允许执行的行为列表（简化为区分发起/响应，无限制过滤）
         self.allowed_actions = self._get_allowed_actions()
 
     def _calculate_initial_power(self) -> float:
@@ -192,7 +189,7 @@ class AgentBase(BaseModel):
             self.w_score
         )
 
-    def _calculate_power_level(self, power: float) -> PowerLevelEnum:
+    def _calculate_power_level(self, power: float) -> PowerLevelEnumari:
         """
         根据综合国力判定实力层级
 
@@ -214,28 +211,28 @@ class AgentBase(BaseModel):
             国家利益偏好列表
         """
         interest_mapping = {
-            PowerLevelEnum.SUPERPOWER: [
+            PowerLevelEnumari.SUPERPOWER: [
                 "争夺全球绝对领导权",
                 "维护全球体系主导权",
                 "巩固全球盟友/伙伴追随体系",
                 "垄断国际规则制定权",
                 "遏制新兴大国的系统性挑战"
             ],
-            PowerLevelEnum.GREAT_POWER: [
+            PowerLevelEnumari.GREAT_POWER: [
                 "提升全球话语权",
                 "扩大国际影响力",
                 "争取国际规则制定权",
                 "保障本国核心安全与经济利益",
                 "争夺区域/全球领导权"
             ],
-            PowerLevelEnum.MIDDLE_POWER: [
+            PowerLevelEnumari.MIDDLE_POWER: [
                 "维护区域影响力",
                 "保障主权与领土安全",
                 "实现经济稳定发展",
                 "规避大国冲突波及",
                 "在大国博弈中实现自身利益最大化"
             ],
-            PowerLevelEnum.SMALL_STATE: [
+            PowerLevelEnumari.SMALL_STATE: [
                 "保障国家生存与主权独立",
                 "获取外部经济援助与安全保障",
                 "避免卷入区域或全球冲突",
@@ -247,9 +244,9 @@ class AgentBase(BaseModel):
 
     def _get_allowed_actions(self) -> Dict[str, List[ActionConfig]]:
         """
-        获取允许执行的行为列表
+        获取允许执行的行为列表（简化版本，无限制过滤）
 
-        基于实力层级和领导类型过滤20项标准互动行为集。
+        所有智能体都可以发起所有符合行为类型（发起/响应）的行为。
 
         Returns:
             包含all_allowed、initiative、response的字典
@@ -258,23 +255,11 @@ class AgentBase(BaseModel):
 
         all_actions = get_all_actions()
 
-        # 按实力层级过滤发起权限
-        level_filtered = [
-            action for action in all_actions
-            if self.power_level in action.allowed_initiator_level
-        ]
-
-        # 按领导类型过滤禁止行为
-        leader_filtered = [
-            action for action in level_filtered
-            if self.leader_type not in action.forbidden_leader_type
-        ]
-
-        # 区分发起类/响应类行为
+        # 区分发起类/响应类行为，无任何过滤
         return {
-            "all_allowed": leader_filtered,
-            "initiative": [action for action in leader_filtered if action.is_initiative],
-            "response": [action for action in leader_filtered if action.is_response]
+            "all_allowed": all_actions,
+            "initiative": [action for action in all_actions if action.is_initiative],
+            "response": [action for action in all_actions if action.is_response]
         }
 
     def update_power(self, power_change: float) -> None:
@@ -345,6 +330,4 @@ class AgentBase(BaseModel):
         Returns:
             智能体属性字典
         """
-        return {
-self.model_dump()
-        }
+        return self.model_dump()

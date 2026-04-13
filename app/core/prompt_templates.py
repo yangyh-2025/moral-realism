@@ -1,11 +1,10 @@
 """
 Prompt templates for LLM decision engine.
 Implements decision prompt engineering with 20 standard behaviors embedded.
-Aligned with technical spec section 4.2.4.
+Aligned with academic model table 1.
 """
 
 from typing import Dict, Any, List
-
 
 class PromptTemplates:
     """Centralized prompt template management for LLM decision engine."""
@@ -13,7 +12,7 @@ class PromptTemplates:
     # System role template
     SYSTEM_ROLE_TEMPLATE = """
 你是{agent_name}的国家领导集体，所属区域为{region}。
-基于克莱因综合国力方程，该国初始综合国力得分为{initial_total_power}，当前实时综合国力得分为{current_total_power}，实力层级为{power_level}。
+基于克莱因综合国力方程，该国初始综合国力得分为{initial_total_power}，当前当前综合国力得分为{current_total_power}，实力层级为{power_level}。
 """
 
     # Core rules template
@@ -73,7 +72,7 @@ class PromptTemplates:
         "decision_reason": "整体决策的核心逻辑与成本收益总览",
         "actions": [
             {
-                "aaction_id": "行为ID",
+                "action_id": "行为ID",
                 "action_category": "行为分类",
                 "action_name": "行为名称，必须与列表完全一致",
                 "target_agent_id": "目标国家ID",
@@ -103,8 +102,8 @@ class PromptTemplates:
                 f"名称:{action['action_name']} ({action['action_en_name']}) | "
                 f"分类:{action['action_category']} | "
                 f"尊重主权:{action['respect_sov']} | "
-                f"发起国国力变化:{action['initiator_power_change']} | "
-                f"目标国国力变化:{action['target_power_change']} | "
+                f"发起国力变化:{action['initiator_power_change']} | "
+                f"目标国力变化:{action['target_power_change']} | "
                 f"简介:{action['action_desc']}"
             )
             table_lines.append(line)
@@ -126,7 +125,7 @@ class PromptTemplates:
             agent_info: Agent information including name, region, power, etc.
             allowed_actions: List of allowed action configurations
             info_pool: Information pool with all agents, history, etc.
-            leader_type: Leader type of the agent
+            leader_type: Leader type of agent
 
         Returns:
             Complete decision prompt string
@@ -228,306 +227,246 @@ class PromptTemplates:
         return True, ""
 
 
-# Standard 20 GDELT interaction behaviors for reference
+# Standard 20 GDELT interaction behaviors for reference - 使用学术文档完整描述
 STANDARD_BEHAVIORS = [
     {
         "action_id": 1,
         "action_name": "发表公开声明",
         "action_en_name": "MAKE PUBLIC STATEMENT",
         "action_category": "外交手段",
-        "action_desc": "通过官方渠道发表声明、演讲或公告，表达对国际事务的立场或观点",
+        "action_desc": "行为方针对目标方发表各类公开声明，涵盖拒绝评论、发表正负向评论、考量政策选项、承认/宣示/否认责任、开展象征性行动、表达共情评论、传递共识等所有未另行分类的公开言语表述行为，是基础的二元言语互动行为",
         "respect_sov": True,
         "initiator_power_change": 0,
         "target_power_change": 0,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国", "小国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": []
+        "is_response": True
     },
     {
         "action_id": 2,
         "action_name": "呼吁/请求",
         "action_en_name": "APPEAL",
         "action_category": "外交手段",
-        "action_desc": "向其他国家或国际社会发出呼吁或请求，寻求支持或合作",
+        "action_desc": "行为方向目标方提出各类诉求与请求，包括呼吁开展经济/军事/司法/情报领域合作、寻求外交政策支持、申请各类援助、呼吁政治改革/对方做出让步，以及请求开展谈判、调解、争端解决等所有未另行分类的诉求表达行为",
         "respect_sov": True,
         "initiator_power_change": 1,
         "target_power_change": 0,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国", "小国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": []
+        "is_response": True
     },
     {
         "action_id": 3,
         "action_name": "表达合作意向",
         "action_en_name": "EXPRESS INTENT TO COOPERATE",
         "action_category": "外交手段",
-        "action_desc": "正式表达与其他国家建立或深化合作关系的意愿",
+        "action_desc": "行为方明确表达与目标方未来开展合作的意愿，涵盖表达各领域合作意向、承诺提供各类援助、表达实施政治改革的意愿、承诺做出让步，以及表达参与谈判、调解、争端解决的意向等所有未另行分类的合作意愿表达行为",
         "respect_sov": True,
         "initiator_power_change": 2,
         "target_power_change": 1,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国", "小国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": []
+        "is_response": True
     },
     {
         "action_id": 4,
         "action_name": "协商/磋商",
         "action_en_name": "CONSULT",
         "action_category": "外交手段",
-        "action_desc": "与相关方进行正式磋商或协商，寻求共识或解决方案",
+        "action_desc": "行为方与目标方开展双向沟通协商，包括电话沟通、出访、接待来访、第三方地点会面、开展调解、进行谈判等所有未另行分类的主体间平等磋商互动行为",
         "respect_sov": True,
         "initiator_power_change": 3,
         "target_power_change": 3,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国", "小国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": []
+        "is_response": True
     },
     {
         "action_id": 5,
         "action_name": "开展外交合作",
         "action_en_name": "ENGAGE IN DIPLOMATIC COOPERATION",
         "action_category": "外交手段",
-        "action_desc": "与其他国家建立正式外交合作关系，包括建交、互访等",
+        "action_desc": "行为方与目标方开展官方外交层面的合作互动，涵盖赞扬/背书、口头辩护、为对方声援、授予外交承认、正式道歉、宽恕、签署正式协议等所有未另行分类的外交合作行为",
         "respect_sov": True,
         "initiator_power_change": 4,
         "target_power_change": 4,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国", "小国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": []
+        "is_response": True
     },
     {
         "action_id": 6,
         "action_name": "开展实质性合作",
         "action_en_name": "ENGAGE IN MATERIAL COOPERATION",
         "action_category": "经济手段",
-        "action_desc": "开展实质性的双边或多边合作，包括贸易、投资、技术交流等",
+        "action_desc": "行为方与目标方开展实体层面的实质性合作，包括经济合作、军事合作、司法合作、情报/信息共享等所有未另行分类的、非言语的实际合作行动",
         "respect_sov": True,
         "initiator_power_change": 5,
         "target_power_change": 5,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国", "小国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": []
+        "is_response": True
     },
     {
         "action_id": 7,
         "action_name": "提供援助",
         "action_en_name": "PROVIDE AID",
         "action_category": "经济手段",
-        "action_desc": "向其他国家提供经济、技术或人道主义援助",
+        "action_desc": "行为方针对目标方提供各类援助支持，涵盖经济援助、军事援助、人道主义援助、军事保护/维和行动，以及授予庇护等所有未另行分类的援助提供行为",
         "respect_sov": True,
         "initiator_power_change": 2,
         "target_power_change": 6,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": []
+        "is_response": True
     },
     {
         "action_id": 8,
         "action_name": "让步/屈服",
         "action_en_name": "YIELD",
         "action_category": "外交手段",
-        "action_desc": "在冲突或争端中做出让步或屈服，接受对方的要求",
+        "action_desc": "行为方向目标方做出妥协与让步，包括放宽行政制裁、缓和异议管控、接受政治改革诉求、归还/释放人员与财产、放宽经济制裁、允许国际介入、军事行动降级、宣布停火、撤军/军事投降等所有未另行分类的让步行为",
         "respect_sov": True,
         "initiator_power_change": -5,
         "target_power_change": 5,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国", "小国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": []
+        "is_response": True
     },
     {
         "action_id": 9,
         "action_name": "调查",
         "action_en_name": "INVESTIGATE",
         "action_category": "信息手段",
-        "action_desc": "对其他国家的行为、政策或情况进行调查或监督",
+        "action_desc": "行为方针对目标方开展各类官方调查活动，涵盖犯罪/腐败调查、人权侵犯调查、军事行动调查、战争罪调查等所有未另行分类的调查行为",
         "respect_sov": False,
         "initiator_power_change": -1,
         "target_power_change": -2,
         "is_initiative": True,
-        "is_response": False,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": ["王道型"]
+        "is_response": False
     },
     {
         "action_id": 10,
         "action_name": "要求/索要",
         "action_en_name": "DEMAND",
         "action_category": "外交手段",
-        "action_desc": "向其他国家提出强制性要求，要求对方满足特定条件",
+        "action_desc": "行为方向目标方提出各类强制性要求，包括要求对方开展合作、提供援助、实施政治改革、做出让步，以及要求对方进行谈判、调解、争端解决等所有未另行分类的、具有强制诉求属性的行为",
         "respect_sov": False,
         "initiator_power_change": -2,
         "target_power_change": -1,
         "is_initiative": True,
-        "is_response": False,
-        "allowed_initiator_level": ["超级大国", "大国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": ["王道型"]
+        "is_response": False
     },
     {
         "action_id": 11,
         "action_name": "表达不满/不赞成",
         "action_en_name": "DISAPPROVE",
         "action_category": "外交手段",
-        "action_desc": "公开表达对其他国家行为或政策的不满或反对",
+        "action_desc": "行为方向目标方表达负面态度与异议，涵盖批评/谴责、各类指控、煽动反对、正式投诉、提起诉讼、司法定罪等所有未另行分类的不赞成不赞成行为",
         "respect_sov": False,
         "initiator_power_change": 0,
         "target_power_change": -1,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国", "小国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": []
+        "is_response": True
     },
     {
         "action_id": 12,
         "action_name": "拒绝",
         "action_en_name": "REJECT",
         "action_category": "外交手段",
-        "action_desc": "明确拒绝其他国家的要求、提议或合作请求",
+        "action_desc": "行为方拒绝目标方提出的各类诉求与提议，包括拒绝合作、拒绝援助/改革诉求、拒绝做出让步、拒绝谈判/调解/争端解决方案、违背规范/法律、行使否决权等所有未另行分类的拒绝行为",
         "respect_sov": True,
         "initiator_power_change": 1,
         "target_power_change": -1,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国", "小国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": []
+        "is_response": True
     },
     {
         "action_id": 13,
         "action_name": "威胁",
         "action_en_name": "THREATEN",
         "action_category": "信息手段",
-        "action_desc": "对其他国家发出威胁，警告若不满足要求将采取进一步行动",
+        "action_desc": "行为方向目标方发出各类威胁性表述，涵盖非武力制裁威胁、行政制裁威胁、煽动抗议/镇压威胁、中断谈判/调解威胁、军事武力威胁、发出最后通牒等所有未另行分类的威胁行为",
         "respect_sov": False,
         "initiator_power_change": -3,
         "target_power_change": -2,
         "is_initiative": True,
-        "is_response": False,
-        "allowed_initiator_level": ["超级大国", "大国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": ["王道型"]
+        "is_response": False
     },
     {
         "action_id": 14,
         "action_name": "抗议",
         "action_en_name": "PROTEST",
         "action_category": "外交手段",
-        "action_desc": "对其他国家的行为或政策提出正式抗议",
+        "action_desc": "行为方针对目标方开展各类政治异议与抗议行动，涵盖集会示威、绝食抗议、罢工/抵制、封锁道路、暴力抗议/骚乱等所有未另行分类的集体政治抗议行为",
         "respect_sov": False,
         "initiator_power_change": -4,
         "target_power_change": -3,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国", "小国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": ["王道型"]
+        "is_response": True
     },
     {
         "action_id": 15,
         "action_name": "展示军事姿态",
         "action_en_name": "EXHIBIT MILITARY POSTURE",
         "action_category": "军事手段",
-        "action_desc": "通过军事演习、部署或调动展示军事力量和决心",
+        "action_desc": "行为方针对目标方展示军警力量与军事威慑姿态，包括提升警察/军事警戒级别、动员/增强警察/武装/网络军事力量等所有未实际使用武力、仅做力量展示的行为",
         "respect_sov": False,
         "initiator_power_change": -2,
         "target_power_change": -3,
         "is_initiative": True,
-        "is_response": False,
-        "allowed_initiator_level": ["超级大国", "大国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": ["王道型"]
+        "is_response": False
     },
     {
         "action_id": 16,
         "action_name": "降级关系",
         "action_en_name": "REDUCE RELATIONS",
         "action_category": "外交手段",
-        "action_desc": "降低与另一国的外交关系等级或减少官方接触",
+        "action_desc": "行为方针对目标方降级双边互动关系，涵盖降级/断绝外交关系、削减/ari止各类援助、实施禁运/抵制/制裁、中断谈判/调解、驱逐/撤出相关人员与机构等所有未另行分类的关系降级行为",
         "respect_sov": True,
         "initiator_power_change": -1,
         "target_power_change": -4,
         "is_initiative": True,
-        "is_response": True,
-        "allowed_initiator_level": ["超级大国", "大国", "中等强国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": []
+        "is_response": True
     },
     {
         "action_id": 17,
         "action_name": "胁迫/强制",
         "action_en_name": "COERCE",
-        "action_category": "强制手段",
-        "action_desc": "使用政治、经济或军事压力强制其他国家接受特定要求",
+        "action_category": "军事手段",
+        "action_desc": "行为方针对目标方实施强制性胁迫行动，涵盖扣押/损毁财产、实施行政制裁、逮捕/拘留、驱逐个人、暴力镇压、网络攻击等所有未另行分类的强制胁迫行为",
         "respect_sov": False,
         "initiator_power_change": -5,
         "target_power_change": -6,
         "is_initiative": True,
-        "is_response": False,
-        "allowed_initiator_level": ["超级大国", "大国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": ["王道型", "霸权型"]
+        "is_response": False
     },
     {
         "action_id": 18,
         "action_name": "攻击/袭击",
         "action_en_name": "ASSAULT",
         "action_category": "军事手段",
-        "action_desc": "对其他国家进行军事攻击或武力袭击",
+        "action_desc": "行为方针对目标方使用非常规暴力行动，涵盖绑架/劫持人质、人身/性侵犯、酷刑、各类非军事爆炸袭击、使用人肉盾牌、暗杀/暗杀未遂等所有未另行分类的非常规暴力行为",
         "respect_sov": False,
         "initiator_power_change": -8,
         "target_power_change": -7,
         "is_initiative": True,
-        "is_response": False,
-        "allowed_initiator_level": ["超级大国", "大国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": ["王道型", "霸权型"]
+        "is_response": False
     },
     {
         "action_id": 19,
         "action_name": "交战/使用常规军事武力",
         "action_en_name": "FIGHT",
         "action_category": "军事手段",
-        "action_desc": "与另一国进入交战状态，使用常规军事武力",
+        "action_desc": "行为方针对目标方使用常规军事武力开展交战，涵盖实施军事封锁、占领领土、轻武器交火、火炮/坦克作战、空中军事打击、违反停火协议等所有未另行分类的常规军事武力使用行为",
         "respect_sov": False,
         "initiator_power_change": -7,
         "target_power_change": -9,
         "is_initiative": True,
-        "is_response": False,
-        "allowed_initiator_level": ["超级大国", "大国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": ["王道型", "霸权型"]
+        "is_response": False
     },
     {
         "action_id": 20,
         "action_name": "实施非常规大规模暴力",
         "action_en_name": "ENGAGE IN UNCONVENTIONAL MASS VIOLENCE",
         "action_category": "军事手段",
-        "action_desc": "使用非常规手段或实施大规模暴力行动",
+        "action_desc": "行为方针对目标方实施非常规大规模暴力行动，涵盖大规模驱逐、大规模屠杀、种族清洗、使用化学/生物/放射性/核武器等大规模杀伤性武器的所有未另行分类的极端暴力行为",
         "respect_sov": False,
         "initiator_power_change": -10,
         "target_power_change": -10,
         "is_initiative": True,
-        "is_response": False,
-        "allowed_initiator_level": ["超级大国", "大国"],
-        "allowed_responder_level": ["超级大国", "大国", "中等强国", "小国"],
-        "forbidden_leader_type": ["王道型", "霸权型", "强权型"]
+        "is_response": False
     }
 ]

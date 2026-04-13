@@ -4,6 +4,8 @@ from typing import List
 from pydantic import BaseModel
 from datetime import datetime
 
+from app.services.scene_service import scene_service
+
 router = APIRouter(prefix="/preset-scene", tags=["preset_scene"])
 
 # Request/Response Models
@@ -34,20 +36,8 @@ async def get_preset_scenes():
     """
     获取所有预置仿真场景列表
     """
-    # TODO: Implement actual logic to fetch preset scenes from database
-    # This is a placeholder implementation
-    return [
-        PresetSceneResponse(
-            scene_id=1,
-            scene_name="单极霸权体系",
-            scene_desc="模拟单极体系下超级大国霸权维持与新兴大国挑战的动态博弈",
-            total_rounds=50,
-            agent_config_json='{"agents": []}',
-            is_default=True,
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-    ]
+    scenes = await scene_service.get_preset_scenes()
+    return [PresetSceneResponse(**scene) for scene in scenes]
 
 
 @router.get("/{scene_id}", response_model=PresetSceneResponse)
@@ -55,29 +45,28 @@ async def get_preset_scene(scene_id: int):
     """
     获取单个场景详情
     """
-    # TODO: Implement actual logic to fetch single preset scene
-    if scene_id == 1:
-        return PresetSceneResponse(
-            scene_id=1,
-            scene_name="单极霸权体系",
-            scene_desc="模拟单极体系下超级大国霸权维持与新兴大国挑战的动态博弈",
-            total_rounds=50,
-            agent_config_json='{"agents": []}',
-            is_default=True,
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-    raise HTTPException(status_code=404, detail="Preset scene not found")
+    scene = await scene_service.get_preset_scene(scene_id)
+    if not scene:
+        raise HTTPException(status_code=404, detail="Preset scene not found")
+    return PresetSceneResponse(**scene)
 
 
 @router.post("/{scene_id}/create-project", response_model=CreateProjectFromSceneResponse)
-async def create_project_from_scene(request: CreateProjectFromSceneRequest):
+async def create_project_from_scene(scene_id: int, request: CreateProjectFromSceneRequest):
     """
     从预置场景一键创建仿真项目
     """
-    # TODO: Implement actual logic to create project from preset scene
+    project = await scene_service.create_project_from_scene(
+        scene_id=scene_id,
+        project_name=request.project_name,
+        project_desc=request.project_desc
+    )
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Preset scene not found")
+
     return CreateProjectFromSceneResponse(
-        project_id=1,
-        project_name=request.project_name or f"Project from Scene {request.scene_id}",
-        status="未启动"
+        project_id=project["project_id"],
+        project_name=project["project_name"],
+        status=project["status"]
     )

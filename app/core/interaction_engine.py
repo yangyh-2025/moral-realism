@@ -1,16 +1,10 @@
 """
 Interaction Execution Engine Module
 
-This module implements the interaction execution logic for the ABM simulation,
-following the academic model's interaction mechanism with two-phase execution:
-- Initiative phase: Superpowers and great powers initiate actions
-- Response phase: All agents respond to actions targeting them
-
-Constraints:
-- Superpowers/great powers: Can initiate all permitted actions
-- Middle powers/small states: Only passive (low-intensity non-hostile actions)
-- Full validation: behavior set, basic rules, compliance checks
-- Async execution support with configurable concurrency
+This module implements interaction execution logic for ABM simulation,
+following academic model's interaction mechanism with two-phase execution.
+Removed all permission constraints (allowed_initiator_level, allowed_responder_level, forbidden_leader_type)
+to align with academic document - all agents can initiate all permitted action types.
 """
 
 import asyncio
@@ -49,7 +43,7 @@ class LeaderType(str, Enum):
 
 @dataclass
 class ActionConfig:
-    """Action configuration from the 20 standard actions"""
+    """Action configuration from 20 standard actions - aligned with academic document"""
     action_id: int
     action_name: str
     action_en_name: str
@@ -60,9 +54,6 @@ class ActionConfig:
     target_power_change: int
     is_initiative: bool
     is_response: bool
-    allowed_initiator_level: List[str]
-    allowed_responder_level: List[str]
-    forbidden_leader_type: List[str]
 
 
 @dataclass
@@ -82,24 +73,7 @@ class Agent:
     leader_type: Optional[LeaderType] = None
     allowed_actions: Dict[str, List[ActionConfig]] = field(default_factory=dict)
 
-    def calculate_power(self) -> float:
-        """Calculate total power using Klein equation"""
-        return (self.c_score + self.e_score + self.m_score) * (self.s_score + self.w_score)
 
-    def determine_power_level(self) -> PowerLevel:
-        """Determine power level based on total power"""
-        power = self.current_total_power
-        if power >= 500:
-            return PowerLevel.SUPERPOWER
-        elif power >= 200:
-            return PowerLevel.GREAT_POWER
-        elif power >= 100:
-            return PowerLevel.MIDDLE_POWER
-        else:
-            return PowerLevel.SMALL_STATE
-
-
-@dataclass
 class ActionRecord:
     """Record of an executed action"""
     record_id: str = field(default_factory=lambda: str(uuid.uuid4()))
@@ -131,8 +105,10 @@ class InteractionEngine:
     Main interaction execution engine
 
     Implements two-phase interaction execution:
-    1. Initiative phase: Superpowers/great powers initiate actions
-    2. Response phase: All agents respond to actions targeting them
+    1. Initiative phase: All agents can initiate permitted initiative actions
+    2. Response phase: All agents respond to permitted response actions
+
+    No permission constraints - all agents can initiate all actions of their type.
     """
 
     def __init__(
@@ -191,52 +167,38 @@ class InteractionEngine:
 
     def _can_initiate_action(self, agent: Agent, action: ActionConfig) -> bool:
         """
-        Check if agent can initiate an action
+        Check if agent can initiate an action (simplified - no permission checks)
 
         Args:
             agent: Agent attempting to initiate action
             action: Action to initiate
 
         Returns:
-            True if agent can initiate the action
+            True if agent can initiate action
         """
-        # Check power level permission
-        if agent.power_level.value not in action.allowed_initiator_level:
-            return False
-
-        # Check leader type restriction
-        if agent.leader_type and agent.leader_type.value in action.forbidden_leader_type:
-            return False
-
         # Check if action is initiative type
         if not action.is_initiative:
             return False
 
+        # No permission constraints - all agents can initiate all initiative actions
         return True
 
     def _can_respond_to_action(self, agent: Agent, action: ActionConfig) -> bool:
         """
-        Check if agent can respond with an action
+        Check if agent can respond with an action (simplified - no permission checks)
 
         Args:
             agent: Agent attempting to respond
             action: Action to respond with
 
         Returns:
-            True if agent can respond with the action
+            True if agent can respond with action
         """
-        # Check power level permission for response
-        if agent.power_level.value not in action.allowed_responder_level:
-            return False
-
-        # Check leader type restriction
-        if agent.leader_type and agent.leader_type.value in action.forbidden_leader_type:
-            return False
-
         # Check if action is response type
         if not action.is_response:
             return False
 
+        # No permission constraints - all agents can respond all response actions
         return True
 
     def _validate_initiative_phase_action(
@@ -262,22 +224,9 @@ class InteractionEngine:
         if target_agent_id not in self._agents:
             errors.append(f"Target agent {target_agent_id} does not exist")
 
-        # Validate agent can initiate
-        if not self._can_initiate_action(agent, action):
-            errors.append(
-                f"Agent {agent.agent_name} (level: {agent.power_level.value}) "
-                f"cannot initiate action {action.action_name}"
-            )
-
-        # Validate middle/small states only use low-intensity non-hostile actions
-        if agent.power_level in [PowerLevel.MIDDLE_POWER, PowerLevel.SMALL_STATE]:
-            # Middle/small states should only use low-intensity actions
-            # High-intensity actions are those with significant negative power changes
-            if abs(action.initiator_power_change) > 3 or abs(action.target_power_change) > 3:
-                errors.append(
-                    f"Middle/small state {agent.agent_name} cannot initiate "
-                    f"high-intensity action {action.action_name}"
-                )
+        # Validate action is initiative type
+        if not action.is_initiative:
+            errors.append(f"Action {action.action_name} is not an initiative type")
 
         return errors
 
@@ -304,12 +253,9 @@ class InteractionEngine:
         if target_agent_id not in self._agents:
             errors.append(f"Target agent {target_agent_id} does not exist")
 
-        # Validate agent can respond
-        if not self._can_respond_to_action(agent, action):
-            errors.append(
-                f"Agent {agent.agent_name} (level: {agent.power_level.value}) "
-                f"cannot respond with action {action.action_name}"
-            )
+        # Validate action is response type
+        if not action.is_response:
+            errors.append(f"Action {action.action_name} is not a response type")
 
         return errors
 
@@ -324,7 +270,7 @@ class InteractionEngine:
 
         Args:
             agent: Agent to execute initiative phase for
-            target_agents: List of potential target agents
+            target_agents: List of all potential target agents
             action_generator: Function to generate actions (e.g., LLM call)
 
         Returns:
@@ -336,7 +282,7 @@ class InteractionEngine:
             logger.info(f"Executing initiative phase for agent {agent.agent_name}")
 
         try:
-            # Generate actions using the provided generator (e.g., LLM)
+            # Generate actions using provided generator (e.g., LLM)
             generated_actions = action_generator(agent, target_agents, ActionStage.INITIATIVE)
 
             for action_data in generated_actions:
@@ -350,39 +296,27 @@ class InteractionEngine:
                     action = self._action_config[action_id]
                     target_agent_id = action_data.get('target_agent_id')
 
-                    # Create action record
-                    record = ActionRecord(
-                        round_num=self._current_round,
-                        action_stage=ActionStage.INITIATIVE,
-                        source_agent_id=agent.agent_id,
-                        target_agent_id=target_agent_id,
-                        action_id=action.action_id,
-                        action_category=action.action_category,
-                        action_name=action.action_name,
-                        respect_sov=action.respect_sov,
-                        initiator_power_change=action.initiator_power_change,
-                        target_power_change=action.target_power_change,
-                        decision_detail=action_data.get('decision_detail')
-                    )
-
                     # Validate action
                     errors = self._validate_initiative_phase_action(agent, action, target_agent_id)
                     if errors:
-                        record.is_valid = False
-                        record.validation_errors = errors
                         logger.warning(
-                            f"Validation failed for action {action.action_name}: "
-                            f"{', '.join(errors)}"
+                            f"Validation failed for action {action.action_name}: {', '.join(errors)}"
                         )
-                    else:
-                        record.is_valid = True
-                        if self.enable_logging:
-                            logger.info(
-                                f"Valid initiative action: {agent.agent_name} -> "
-                                f"{action.action_name} -> {target_agent_id}"
-                            )
-
-                    records.append(record)
+                        # Create action record
+                        record = ActionRecord(
+                            round_num=self._current_round,
+                            action_stage=ActionStage.INITIATIVE,
+                            source_agent_id=agent.agent_id,
+                            target_agent_id=target_agent_id,
+                            action_id=action.action_id,
+                            action_category=action.action_category,
+                            action_name=action.action_name,
+                            respect_sov=action.respect_sov,
+                            initiator_power_change=action.initiator_power_change,
+                            target_power_change=action.target_power_change,
+                            decision_detail=action_data.get('decision_detail')
+                        )
+                        records.append(record)
 
                 except Exception as e:
                     logger.error(f"Error processing action for agent {agent.agent_name}: {e}")
@@ -390,6 +324,7 @@ class InteractionEngine:
 
         except Exception as e:
             logger.error(f"Error in initiative phase for agent {agent.agent_name}: {e}")
+            continue
 
         return records
 
@@ -403,9 +338,9 @@ class InteractionEngine:
         Execute response phase for a single agent
 
         Args:
-            agent: Agent to execute response phase for
-            initiator_records: Records of actions targeting this agent
-            action_generator: Function to generate actions (e.g., LLM call)
+            agent: Responding agent
+            initiator_records: List of initiative actions received
+            action_generator: Function to generate responses
 
         Returns:
             List of action records
@@ -415,20 +350,20 @@ class InteractionEngine:
         if self.enable_logging:
             logger.info(f"Executing response phase for agent {agent.agent_name}")
 
+        # Filter actions that target this agent
+        targeting_actions = [
+            record for record in initiator_records
+            if record.target_agent_id == agent.agent_id and record.is_valid
+        ]
+
+        if not targeting_actions:
+            # No actions targeting this agent - skip
+            if self.enable_logging:
+                logger.info(f"No actions targeting agent {agent.agent_name}")
+            return records
+
         try:
-            # Filter actions that target this agent
-            targeting_actions = [
-                record for record in initiator_records
-                if record.target_agent_id == agent.agent_id and record.is_valid
-            ]
-
-            if not targeting_actions:
-                # No actions targeting this agent, skip response
-                if self.enable_logging:
-                    logger.info(f"No actions targeting agent {agent.agent_name}")
-                return records
-
-            # Generate responses using the provided generator
+            # Generate responses using provided generator (e.g., LLM)
             generated_responses = action_generator(
                 agent,
                 targeting_actions,
@@ -444,41 +379,31 @@ class InteractionEngine:
                         continue
 
                     action = self._action_config[action_id]
-                    target_agent_id = response_data.get('target_agent_id')
-
-                    # Create action record
-                    record = ActionRecord(
-                        round_num=self._current_round,
-                        action_stage=ActionStage.RESPONSE,
-                        source_agent_id=agent.agent_id,
-                        target_agent_id=target_agent_id,
-                        action_id=action.action_id,
-                        action_category=action.action_category,
-                        action_name=action.action_name,
-                        respect_sov=action.respect_sov,
-                        initiator_power_change=action.initiator_power_change,
-                        target_power_change=action.target_power_change,
-                        decision_detail=response_data.get('decision_detail')
-                    )
+                    source_agent_id = response_data.get('target_agent_id')
 
                     # Validate response
-                    errors = self._validate_response_phase_action(agent, action, target_agent_id)
+                    errors = self._validate_response_phase_action(
+                        agent, action, source_agent_id
+                    )
                     if errors:
-                        record.is_valid = False
-                        record.validation_errors = errors
                         logger.warning(
-                            f"Validation failed for response {action.action_name}: "
-                            f"{', '.join(errors)}"
+                            f"Validation failed for response {action.action_name}: {', '.join(errors)}"
                         )
-                    else:
-                        record.is_valid = True
-                        if self.enable_logging:
-                            logger.info(
-                                f"Valid response action: {agent.agent_name} -> "
-                                f"{action.action_name} -> {target_agent_id}"
-                            )
-
-                    records.append(record)
+                        # Create action record
+                        record = ActionRecord(
+                            round_num=self._current_round,
+                            action_stage=ActionStage.RESPONSE,
+                            source_agent_id=agent.agent_id,
+                            target_agent_id=source_agent_id,
+                            action_id=action.action_id,
+                            action_category=action.action_category,
+                            action_name=action.action_name,
+                            respect_sov=action.respect_sov,
+                            initiator_power_change=action.initiator_power_change,
+                            target_power_change=action.target_power_change,
+                            decision_detail=response_data.get('decision_detail')
+                        )
+                        records.append(record)
 
                 except Exception as e:
                     logger.error(f"Error processing response for agent {agent.agent_name}: {e}")
@@ -486,6 +411,7 @@ class InteractionEngine:
 
         except Exception as e:
             logger.error(f"Error in response phase for agent {agent.agent_name}: {e}")
+            continue
 
         return records
 
@@ -495,83 +421,42 @@ class InteractionEngine:
         action_generator: Any
     ) -> List[ActionRecord]:
         """
-        Async execute initiative phase for all agents
+        Async execute initiative phase for all agents (no power level separation)
 
         Args:
             agents: List of all agents
-            action_generator: Function to generate actions
+            action_generator: Function to generate actions (e.g., LLM call)
 
         Returns:
             List of all action records
         """
         all_records = []
 
-        # Separate agents by power level
-        superpowers_great_powers = [
-            agent for agent in agents
-            if agent.power_level in [PowerLevel.SUPERPOWER, PowerLevel.GREAT_POWER]
-        ]
-        middle_small = [
-            agent for agent in agents
-            if agent.power_level in [PowerLevel.MIDDLE_POWER, PowerLevel.SMALL_STATE]
-        ]
-
         if self.enable_logging:
-            logger.info(
-                f"Initiative phase: {len(superpowers_great_powers)} superpowers/great powers, "
-                f"{len(middle_small)} middle/small states"
-            )
+            logger.info(f"Initiative phase: {len(agents)} agents to process")
 
-        # Create semaphore for concurrency control
+        # Execute all agents in parallel
         semaphore = asyncio.Semaphore(self.max_concurrency)
 
-        async def execute_with_semaphore(agent: Agent, other_agents: List[Agent]) -> List[ActionRecord]:
+        async def execute_agent(agent: Agent) -> List[ActionRecord]:
             async with semaphore:
                 # Run initiative phase in thread pool to avoid blocking
                 loop = asyncio.get_event_loop()
                 return await loop.run_in_executor(
-                    None,
-                    self._execute_agent_initiative_phase,
-                    agent,
-                    other_agents,
+                    None, self._execute_agent_initiative_phase,
+                    agent, agents,
                     action_generator
                 )
 
-        # Execute superpowers and great powers first (they can initiate all actions)
-        tasks = [
-            execute_with_semaphore(agent, agents)
-            for agent in superpowers_great_powers
-        ]
-
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        for result in results:
-            if isinstance(result, Exception):
-                logger.error(f"Error in initiative phase task: {result}")
-            else:
-                all_records.extend(result)
-
-        # Execute middle and small states (only low-intensity non-hostile actions)
-        tasks = [
-            execute_with_semaphore(agent, agents)
-            for agent in middle_small
-        ]
-
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        for result in results:
-            if isinstance(result, Exception):
-                logger.error(f"Error in initiative phase task: {result}")
-            else:
-                all_records.extend(result)
-
-        # Store valid records only
-        self._initiative_records = [r for r in all_records if r.is_valid]
+        tasks = [execute_agent(agent) for agent in agents]
+        all_records.extend(await asyncio.gather(*tasks))
 
         if self.enable_logging:
             logger.info(
-                f"Initiative phase completed: {len(self._initiative_records)} valid actions"
+                f"Initiative phase completed: {len(all_records)} valid actions"
             )
+
+        self._initiative_records = [r for r in all_records if r.is_valid]
 
         return all_records
 
@@ -585,7 +470,7 @@ class InteractionEngine:
 
         Args:
             agents: List of all agents
-            action_generator: Function to generate actions
+            action_generator: Function to generate responses (e.g., LLM call)
 
         Returns:
             List of all action records
@@ -595,39 +480,29 @@ class InteractionEngine:
         if self.enable_logging:
             logger.info(f"Response phase: {len(agents)} agents to process")
 
-        # Create semaphore for concurrency control
+        # Execute all agents in parallel
         semaphore = asyncio.Semaphore(self.max_concurrency)
 
-        async def execute_with_semaphore(agent: Agent) -> List[ActionRecord]:
+        async def execute_agent(agent: Agent) -> List[ActionRecord]:
             async with semaphore:
                 # Run response phase in thread pool to avoid blocking
                 loop = asyncio.get_event_loop()
                 return await loop.run_in_executor(
-                    None,
-                    self._execute_agent_response_phase,
+                    None, self._execute_agent_response_phase,
                     agent,
                     self._initiative_records,
                     action_generator
                 )
 
-        # Execute response phase for all agents
-        tasks = [execute_with_semaphore(agent) for agent in agents]
-
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        for result in results:
-            if isinstance(result, Exception):
-                logger.error(f"Error in response phase task: {result}")
-            else:
-                all_records.extend(result)
-
-        # Store valid records only
-        self._response_records = [r for r in all_records if r.is_valid]
+        tasks = [execute_agent(agent) for agent in agents]
+        all_records.extend(await asyncio.gather(*tasks))
 
         if self.enable_logging:
             logger.info(
-                f"Response phase completed: {len(self._response_records)} valid responses"
+                f"Response phase completed: {len(all_records)} valid responses"
             )
+
+        self._response_records = [r for r in all_records if r.is_valid]
 
         return all_records
 
@@ -641,7 +516,7 @@ class InteractionEngine:
 
         Args:
             agents: List of all agents
-            action_generator: Function to generate actions
+            action_generator: Function to generate actions (e.g., LLM call)
 
         Returns:
             List of all action records
@@ -655,17 +530,19 @@ class InteractionEngine:
         finally:
             loop.close()
 
+        return self._initiative_records
+
     def execute_response_phase(
         self,
         agents: List[Agent],
         action_generator: Any
-    ) -> List[ActionRecord]:
+) -> List[ActionRecord]:
         """
         Execute response phase (synchronous wrapper)
 
         Args:
             agents: List of all agents
-            action_generator: Function to generate actions
+            action_generator: Function to generate responses (e.g., LLM call)
 
         Returns:
             List of all action records
@@ -679,6 +556,8 @@ class InteractionEngine:
         finally:
             loop.close()
 
+        return self._response_records
+
     async def execute_round_async(
         self,
         agents: List[Agent],
@@ -689,7 +568,7 @@ class InteractionEngine:
 
         Args:
             agents: List of all agents
-            action_generator: Function to generate actions
+            action_generator: Function to generate actions (e.g., LLM call)
 
         Returns:
             Dictionary with 'initiative' and 'response' action records
@@ -699,21 +578,19 @@ class InteractionEngine:
 
         # Execute initiative phase
         initiative_records = await self._execute_initiative_phase_async(
-            agents,
-            action_generator
+            agents, action_generator
         )
 
         # Execute response phase
         response_records = await self._execute_response_phase_async(
-            agents,
-            action_generator
+            agents, action_generator
         )
 
         if self.enable_logging:
             logger.info(
                 f"Round {self._current_round} completed: "
-                f"{len(self._initiative_records)} initiative actions, "
-                f"{len(self._response_records)} responses"
+                f"{len(initiative_records)} initiative actions, "
+                f"{len(response_records)} responses"
             )
 
         return {
@@ -731,7 +608,7 @@ class InteractionEngine:
 
         Args:
             agents: List of all agents
-            action_generator: Function to generate actions
+            action_generator: Function to generate actions (e.g., LLLM call)
 
         Returns:
             Dictionary with 'initiative' and 'response' action records
@@ -745,14 +622,22 @@ class InteractionEngine:
         finally:
             loop.close()
 
+        return {
+            'initiative': self._initiative_records,
+            'response': self._response_records
+        }
+
     def get_valid_records(self) -> List[ActionRecord]:
         """
-        Get all valid action records for the current round
+        Get all valid action records for current round
 
         Returns:
             List of valid action records
         """
-        return self._initiative_records + self._response_records
+        return [
+            record for record in self._initiative_records + self._response_records
+            if record.is_valid
+        ]
 
     def get_initiative_records(self) -> List[ActionRecord]:
         """
@@ -780,7 +665,7 @@ class InteractionEngine:
             agent_id: Agent ID
 
         Returns:
-            List of action records for the agent
+            List of action records for agent
         """
         all_records = self.get_valid_records()
         return [
@@ -796,48 +681,10 @@ class InteractionEngine:
             target_agent_id: Target agent ID
 
         Returns:
-            List of action records targeting the agent
+            List of action records
         """
+        all_records = self.get_valid_records()
         return [
-            record for record in self.get_valid_records()
+            record for record in all_records
             if record.target_agent_id == target_agent_id
-        ]
-
-    def get_stats(self) -> Dict[str, Any]:
-        """
-        Get statistics for the current round
-
-        Returns:
-            Dictionary with round statistics
-        """
-        valid_records = self.get_valid_records()
-
-        respect_sov_count = sum(1 for r in valid_records if r.respect_sov)
-        respect_sov_ratio = respect_sov_count / len(valid_records) if valid_records else 0.0
-
-        initiative_count = len(self._initiative_records)
-        response_count = len(self._response_records)
-
-        return {
-            'round_num': self._current_round,
-            'total_actions': len(valid_records),
-            'initiative_actions': initiative_count,
-            'response_actions': response_count,
-            'respect_sov_count': respect_sov_count,
-            'respect_sov_ratio': respect_sov_ratio,
-            'invalid_actions': len(valid_records) - len(self._initiative_records) - len(self._response_records)
-        }
-
-
-def create_default_action_generator() -> Any:
-    """
-    Create a default mock action generator for testing
-
-    Returns:
-        Mock action generator function
-    """
-    def mock_generator(agent: Agent, others: List[Agent], stage: ActionStage) -> List[Dict]:
-        """Mock generator that returns no actions"""
-        return []
-
-    return mock_generator
+        )

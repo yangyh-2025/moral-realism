@@ -4,12 +4,10 @@ SystemConfig model - 系统配置表
 
 from datetime import datetime
 
-from sqlalchemy import String, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import DateTime, String, func
+from sqlalchemy.orm import Mapped, mapped_column
 
-
-class Base(DeclarativeBase):
-    pass
+from ..models import Base
 
 
 class SystemConfig(Base):
@@ -27,10 +25,10 @@ class SystemConfig(Base):
     config_desc: Mapped[str] = mapped_column(String(1000), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        type_=func.now(), nullable=False
+        DateTime, default=func.now(), nullable=False
     )  # SQLite compatibility
     updated_at: Mapped[datetime] = mapped_column(
-        type_=func.now(), nullable=False, server_default=func.now()
+        DateTime, default=func.now(), onupdate=func.now(), nullable=False
     )  # SQLite compatibility
 
     def __repr__(self) -> str:

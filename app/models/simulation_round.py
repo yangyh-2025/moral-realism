@@ -6,17 +6,15 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import Float, Integer, String, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from ..models import Base
 
 if TYPE_CHECKING:
     from .simulation_project import SimulationProject
     from .action_record import ActionRecord
     from .follower_relation import FollowerRelation
-
-
-class Base(DeclarativeBase):
-    pass
 
 
 class OrderTypeEnum(str, PyEnum):
@@ -35,20 +33,20 @@ class SimulationRound(Base):
     __tablename__ = "simulation_round"
 
     round_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    project_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("simulation_project.project_id"), nullable=False, index=True)
     round_num: Mapped[int] = mapped_column(Integer, nullable=False)
     total_action_count: Mapped[int] = mapped_column(Integer, nullable=False)
     respect_sov_action_count: Mapped[int] = mapped_column(Integer, nullable=False)
     respect_sov_ratio: Mapped[float] = mapped_column(Float, nullable=False)
     has_leader: Mapped[bool] = mapped_column(String(10), nullable=False, default="false")
-    leader_agent_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    leader_agent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("agent_config.agent_id"), nullable=True)
     leader_follower_ratio: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     order_type: Mapped[str] = mapped_column(String(50), nullable=False)
     round_start_time: Mapped[datetime] = mapped_column(
-        type_=func.now(), nullable=False
+        DateTime, default=func.now(), nullable=False
     )  # SQLite compatibility
     round_end_time: Mapped[datetime] = mapped_column(
-        type_=func.now(), nullable=False
+        DateTime, default=func.now(), nullable=False
     )  # SQLite compatibility
 
     # Relationships

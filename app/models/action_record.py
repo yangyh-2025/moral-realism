@@ -6,18 +6,16 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Integer, String, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from ..models import Base
 
 if TYPE_CHECKING:
     from .simulation_project import SimulationProject
     from .simulation_round import SimulationRound
     from .agent_config import AgentConfig
     from .action_config import ActionConfig
-
-
-class Base(DeclarativeBase):
-    pass
 
 
 class ActionStageEnum(str, PyEnum):
@@ -34,13 +32,13 @@ class ActionRecord(Base):
     __tablename__ = "action_record"
 
     record_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    project_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
-    round_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("simulation_project.project_id"), nullable=False, index=True)
+    round_id: Mapped[int] = mapped_column(ForeignKey("simulation_round.round_id"), nullable=False, index=True)
     round_num: Mapped[int] = mapped_column(Integer, nullable=False)
     action_stage: Mapped[str] = mapped_column(String(50), nullable=False)
-    source_agent_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
-    target_agent_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
-    action_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    source_agent_id: Mapped[int] = mapped_column(ForeignKey("agent_config.agent_id"), nullable=False, index=True)
+    target_agent_id: Mapped[int] = mapped_column(ForeignKey("agent_config.agent_id"), nullable=False, index=True)
+    action_id: Mapped[int] = mapped_column(ForeignKey("action_config.action_id"), nullable=False, index=True)
     action_category: Mapped[str] = mapped_column(String(50), nullable=False)
     action_name: Mapped[str] = mapped_column(String(255), nullable=False)
     respect_sov: Mapped[bool] = mapped_column(String(10), nullable=False, default="false")
@@ -49,7 +47,7 @@ class ActionRecord(Base):
     decision_detail: Mapped[str] = mapped_column(String(5000), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        type_=func.now(), nullable=False
+        DateTime, default=func.now(), nullable=False
     )  # SQLite compatibility
 
     # Relationships

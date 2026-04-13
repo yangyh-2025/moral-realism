@@ -48,7 +48,7 @@ class ProjectService:
         # TODO: Implement actual database operations
         return None
 
-    async def delete()project(self, project_id: int) -> bool:
+    async def delete_project(self, project_id: int) -> bool:
         """
         删除仿真项目
         """

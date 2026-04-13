@@ -157,7 +157,6 @@ const totalRounds = ref(50)
 const totalActions = ref(0)
 const respectSovRatio = ref(0)
 const orderType = ref('未判定')
-')
 
 const logs = ref([])
 const logContainer = ref(null)

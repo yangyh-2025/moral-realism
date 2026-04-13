@@ -1,8 +1,30 @@
 # FastAPI Application Entry Point
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from .api.router import api_router
+from .config.database import db_config, init_database, init_default_data
 import os
+from pathlib import Path
+
+# Get the project root directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = BASE_DIR / "frontend" / "dist"
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan manager"""
+    # Startup
+    await init_database()
+    await init_default_data()
+    yield
+    # Shutdown
+    await db_config.close()
+
 
 # Create FastAPI application
 app = FastAPI(
@@ -10,7 +32,8 @@ app = FastAPI(
     description="基于大语言模型的国际秩序ABM仿真系统 - 克莱因国力方程修订版V1.3",
     version="1.3.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Configure CORS middleware
@@ -29,8 +52,11 @@ app.include_router(api_router)
 @app.get("/")
 async def root():
     """
-    Root endpoint - returns system information
+    Root endpoint - serves the frontend index.html
     """
+    index_file = FRONTEND_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
     return {
         "system": "International Order ABM Simulation System",
         "version": "1.3.0",
@@ -50,6 +76,11 @@ async def health_check():
         "status": "healthy",
         "system": "International Order ABM"
     }
+
+
+# Mount static files for frontend assets
+if FRONTEND_DIR.exists():
+    app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR / "assets")), name="assets")
 
 
 if __name__ == "__main__":

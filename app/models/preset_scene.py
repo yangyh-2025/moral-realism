@@ -4,12 +4,10 @@ PresetScene model - 预置仿真场景表
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, Integer, String, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import Boolean, DateTime, Integer, String, func
+from sqlalchemy.orm import Mapped, mapped_column
 
-
-class Base(DeclarativeBase):
-    pass
+from ..models import Base
 
 
 class PresetScene(Base):
@@ -28,10 +26,10 @@ class PresetScene(Base):
     is_default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     created_at: Mapped[datetime] = mapped_column(
-        type_=func.now(), nullable=False
+        DateTime, default=func.now(), nullable=False
     )  # SQLite compatibility
     updated_at: Mapped[datetime] = mapped_column(
-        type_=func.now(), nullable=False, server_default=func.now()
+        DateTime, default=func.now(), onupdate=func.now(), nullable=False
     )  # SQLite compatibility
 
     def __repr__(self) -> str:
