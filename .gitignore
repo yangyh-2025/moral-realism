@@ -93,6 +93,7 @@ htmlcov/
 # Oh-My-ClaudeCode state (privacy)
 .omc/state/
 .omc/sessions/
+.omc/project-memory.json
 !.omc/
 
 # Temporary files
