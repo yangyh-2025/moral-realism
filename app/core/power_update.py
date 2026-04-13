@@ -17,13 +17,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import uuid
 
-# Import from interaction engine
-from .interaction_engine import (
-    Agent,
-    ActionRecord,
-    PowerLevel,
-    ActionStage
-)
+# Import enums from agent_base to maintain consistency
+from .agent_base import PowerLevelEnumEnum
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -53,8 +48,8 @@ class PowerUpdateResult:
     end_power: float
     change_value: float
     change_rate: float
-    old_power_level: PowerLevel
-    new_power_level: PowerLevel
+    old_power_level: PowerLevelEnum
+    new_power_level: PowerLevelEnum
     action_count: int = 0
     initiator_changes: List[Tuple[int, int]] = field(default_factory=list)  # (action_id, change)
     target_changes: List[Tuple[int, int]] = field(default_factory=list)  # (action_id, change)
@@ -196,7 +191,7 @@ class PowerUpdateEngine:
         self,
         agent: Agent,
         power_change: float
-    ) -> PowerLevel:
+    ) -> PowerLevelEnum:
         """
         Update agent's power and recalculate power level
 
@@ -481,7 +476,7 @@ class PowerUpdateEngine:
 
         return self._agents[agent_id].current_total_power
 
-    def get_agent_power_level(self, agent_id: int) -> Optional[PowerLevel]:
+    def get_agent_power_level(self, agent_id: int) -> Optional[PowerLevelEnum]:
         """
         Get current power level for an agent
 

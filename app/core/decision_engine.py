@@ -7,7 +7,6 @@ Aligned with technical spec section 4.2.4.
 import asyncio
 from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
-from enum import Enum
 
 from loguru import logger
 
@@ -20,27 +19,8 @@ except ImportError:
     from app.core.decision_validation import DecisionValidator, ValidationError
     from app.services.llm_service import LLMService, LLMConfig, get_llm_service
 
-
-class ActionStageEnum(str, Enum):
-    """Action stage enumeration."""
-    INITIATIVE = "initiative"  # 发起阶段
-    RESPONSE = "response"  # 响应阶段
-
-
-class PowerLevelEnum(str, Enum):
-    """Power level enumeration."""
-    SUPERPOWER = "超级大国"
-    GREAT_POWER = "大国"
-    MIDDLE_POWER = "中等强国"
-    SMALL_STATE = "小国"
-
-
-class LeaderTypeEnum(str, Enum):
-    """Leader type enumeration."""
-    KINGLY = "王道型"
-    HEGEMONIC = "霸权型"
-    TYRANICAL = "强权型"
-    INEPT = "昏庸型"
+# Import enums from agent_base to avoid duplication
+from .agent_base import ActionStageEnum, PowerLevelEnum, LeaderTypeEnum
 
 
 @dataclass

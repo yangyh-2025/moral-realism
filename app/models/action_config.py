@@ -6,15 +6,13 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Integer, String, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from ..models import Base
 
 if TYPE_CHECKING:
     from .action_record import ActionRecord
-
-
-class Base(DeclarativeBase):
-    pass
 
 
 class ActionCategoryEnum(str, PyEnum):
@@ -45,7 +43,7 @@ class ActionConfig(Base):
     is_response: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
-        type_=func.now(), nullable=False
+        DateTime, default=func.now(), nullable=False
     )
 
     # Relationships

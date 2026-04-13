@@ -25,9 +25,8 @@ from .action_manager import (
     get_all_actions,
     get_action_by_id,
     get_action_by_name,
-    filter_actions_by_power_level,
-    validate_action_permission,
-    validate_action_power_change,
+    get_initiative_actions,
+    get_response_actions,
     get_action_statistics
 )
 
@@ -58,9 +57,8 @@ __all__ = [
     "get_all_actions",
     "get_action_by_id",
     "get_action_by_name",
-    "filter_actions_by_power_level",
-    "validate_action_permission",
-    "validate_action_power_change",
+    "get_initiative_actions",
+    "get_response_actions",
     "get_action_statistics",
 
     # Environment

@@ -4,26 +4,14 @@ Implements three-tier decision validation as per technical spec section 4.2.4.
 """
 
 from typing import Dict, Any, List, Tuple
-from enum import Enum
+
+# Import enums from agent_base to avoid duplication
+from .agent_base import PowerLevelEnum, LeaderTypeEnum
 
 
 class ValidationError(Exception):
     """Custom exception for validation errors."""
     pass
-
-
-class PowerLevelEnum(str, Enum):
-    SUPERPOWER = "超级大国"
-    GREAT_POWER = "大国"
-    MIDDLE_POWER = "中等强国"
-    SMALL_STATE = "小国"
-
-
-class LeaderTypeEnum(str, Enum):
-    KINGLY = "王道型"
-    HEGEMONIC = "霸权型"
-    TYRANICAL = "强权型"
-    INEPT = "昏庸型"
 
 
 class DecisionValidator:
@@ -89,7 +77,7 @@ class DecisionValidator:
 
         Args:
             decision: Decision dict from LLM
-            agent_id: ID of the agent making the decision
+            agent_id: ID of agent making decision
             all_agent_ids: List of all valid agent IDs in system
             action_stage: Current action stage ("initiative" or "response")
 

@@ -44,9 +44,9 @@ def open_browser():
     time.sleep(3)  # Wait for server to start
     print()
     print("Server started successfully!")
-    print(f"  Opening browser at: {DOCS_URL}")
+    print(f"  Opening browser at: {API_URL}")
     print()
-    webbrowser.open(DOCS_URL)
+    webbrowser.open(API_URL)
 
 
 def start_server():

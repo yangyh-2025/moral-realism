@@ -91,10 +91,8 @@ htmlcov/
 .coverage.*
 
 # Oh-My-ClaudeCode state (privacy)
-.omc/state/
-.omc/sessions/
-.omc/project-memory.json
-!.omc/
+.claude/
+.omc/
 
 # Temporary files
 *.tmp
