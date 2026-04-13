@@ -27,7 +27,7 @@ class ActionCategoryEnum(str, PyEnum):
 class ActionConfig(Base):
     """
     互动行为配置表
-    100%对齐《模型建构_改6.docx》表1的20项互动行为集，硬编码所有行为属性。
+    100%对齐《模型建构_改6.docx》表1的20项互动行为集，只保留学术文档中定义的字段。
     系统初始化时自动入库，全程不可修改。
     """
 
@@ -39,17 +39,14 @@ class ActionConfig(Base):
     action_category: Mapped[str] = mapped_column(String(50), nullable=False)
     action_desc: Mapped[str] = mapped_column(String(1000), nullable=False)
     respect_sov: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    initiator_power_change: Mapped[int] = mapped_column(Integer, nullable=False)  # 绝对值≤10
-    target_power_change: Mapped[int] = mapped_column(Integer, nullable=False)  # 绝对值≤10
+    initiator_power_change: Mapped[int] = mapped_column(Integer, nullable=False)
+    target_power_change: Mapped[int] = mapped_column(Integer, nullable=False)
     is_initiative: Mapped[bool] = mapped_column(Boolean, nullable=False)
     is_response: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    allowed_initiator_level: Mapped[str] = mapped_column(String(500), nullable=False)  # JSON array
-    allowed_responder_level: Mapped[str] = mapped_column(String(500), nullable=False)  # JSON array
-    forbidden_leader_type: Mapped[str] = mapped_column(String(500), nullable=False)  # JSON array
 
     created_at: Mapped[datetime] = mapped_column(
         type_=func.now(), nullable=False
-    )  # SQLite compatibility
+    )
 
     # Relationships
     action_records = relationship("ActionRecord", back_populates="action_config")

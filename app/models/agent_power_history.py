@@ -5,17 +5,15 @@ AgentPowerHistory model - 智能体国力历史表
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Float, Integer, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from ..models import Base
 
 if TYPE_CHECKING:
     from .simulation_project import SimulationProject
     from .agent_config import AgentConfig
     from .simulation_round import SimulationRound
-
-
-class Base(DeclarativeBase):
-    pass
 
 
 class AgentPowerHistory(Base):
@@ -27,9 +25,9 @@ class AgentPowerHistory(Base):
     __tablename__ = "agent_power_history"
 
     history_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    project_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
-    agent_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
-    round_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("simulation_project.project_id"), nullable=False, index=True)
+    agent_id: Mapped[int] = mapped_column(ForeignKey("agent_config.agent_id"), nullable=False, index=True)
+    round_id: Mapped[int] = mapped_column(ForeignKey("simulation_round.round_id"), nullable=False, index=True)
     round_num: Mapped[int] = mapped_column(Integer, nullable=False)
     round_start_power: Mapped[float] = mapped_column(Float, nullable=False)
     round_end_power: Mapped[float] = mapped_column(Float, nullable=False)
@@ -37,7 +35,7 @@ class AgentPowerHistory(Base):
     round_change_rate: Mapped[float] = mapped_column(Float, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
-        type_=func.now(), nullable=False
+        DateTime, default=func.now(), nullable=False
     )  # SQLite compatibility
 
     # Relationships

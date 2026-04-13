@@ -6,18 +6,16 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import Float, Integer, String, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from ..models import Base
 
 if TYPE_CHECKING:
     from .simulation_project import SimulationProject
     from .action_record import ActionRecord
     from .follower_relation import FollowerRelation
     from .agent_power_history import AgentPowerHistory
-
-
-class Base(DeclarativeBase):
-    pass
 
 
 class RegionEnum(str, PyEnum):
@@ -51,7 +49,7 @@ class AgentConfig(Base):
     __tablename__ = "agent_config"
 
     agent_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    project_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("simulation_project.project_id"), nullable=False, index=True)
     agent_name: Mapped[str] = mapped_column(String(255), nullable=False)
     region: Mapped[str] = mapped_column(String(50), nullable=False)
 
@@ -71,17 +69,17 @@ class AgentConfig(Base):
     leader_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        type_=func.now(), nullable=False
+        DateTime, default=func.now(), nullable=False
     )  # SQLite compatibility
     updated_at: Mapped[datetime] = mapped_column(
-        type_=func.now(), nullable=False, server_default=func.now()
+        DateTime, default=func.now(), onupdate=func.now(), nullable=False
     )  # SQLite compatibility
 
     # Relationships
     project = relationship("SimulationProject", back_populates="agents")
     initiated_actions = relationship("ActionRecord", foreign_keys="ActionRecord.source_agent_id", back_populates="source_agent")
     targetted_actions = relationship("ActionRecord", foreign_keys="ActionRecord.target_agent_id", back_populates="target_agent")
-    follower_relations = relationship("FollowerRelation", back_populates="agent")
+    follower_relations = relationship("FollowerRelation", foreign_keys="FollowerRelation.follower_agent_id", back_populates="agent")
     power_histories = relationship("AgentPowerHistory", back_populates="agent")
 
     def __repr__(self) -> str:

@@ -30,7 +30,7 @@ const routes = [
     path: '/results',
     name: 'SimulationResults',
     component: SimulationResults,
-    meta props: { title: '仿真结果' }
+    meta: { title: '仿真结果' }
   },
   {
     path: '/statistics',

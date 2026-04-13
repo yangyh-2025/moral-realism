@@ -2,6 +2,14 @@
 Database models for the ABM simulation system.
 """
 
+from sqlalchemy.orm import DeclarativeBase
+
+
+class Base(DeclarativeBase):
+    """Base class for all models"""
+    pass
+
+
 from .simulation_project import SimulationProject
 from .agent_config import AgentConfig
 from .action_config import ActionConfig
@@ -13,6 +21,7 @@ from .preset_scene import PresetScene
 from .system_config import SystemConfig
 
 __all__ = [
+    "Base",
     "SimulationProject",
     "AgentConfig",
     "ActionConfig",
