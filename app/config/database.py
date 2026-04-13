@@ -21,7 +21,9 @@ DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
 # Database URL - using SQLite with async support
-DATABASE_URL = f"sqlite+aiosqlite://{DATA_DIR}/abm_simulation.db"
+# Convert path to forward slashes for URL compatibility
+db_path = str(DATA_DIR / "abm_simulation.db").replace("\\", "/")
+DATABASE_URL = f"sqlite+aiosqlite:///{db_path}"
 
 class DatabaseConfig:
     """Database configuration class"""
@@ -131,7 +133,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": True,
             "initiator_power_change": 0,
             "target_power_change": 0,
-            "is_initator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -142,7 +144,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": True,
             "initiator_power_change": 1,
             "target_power_change": 0,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -153,7 +155,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": True,
             "initiator_power_change": 2,
             "target_power_change": 1,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -164,7 +166,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": True,
             "initiator_power_change": 3,
             "target_power_change": 3,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -175,7 +177,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": True,
             "initiator_power_change": 4,
             "target_power_change": 4,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -186,7 +188,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": True,
             "initiator_power_change": 5,
             "target_power_change": 5,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -197,7 +199,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": True,
             "initiator_power_change": 2,
             "target_power_change": 6,
-            "isator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -208,7 +210,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": True,
             "initiator_power_change": -5,
             "target_power_change": 5,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -219,7 +221,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": False,
             "initiator_power_change": -1,
             "target_power_change": -2,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": False
         },
         {
@@ -230,7 +232,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": False,
             "initiator_power_change": -2,
             "target_power_change": -1,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": False
         },
         {
@@ -241,7 +243,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": False,
             "initiator_power_change": 0,
             "target_power_change": -1,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -252,7 +254,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": True,
             "initiator_power_change": 1,
             "target_power_change": -1,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -263,7 +265,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": False,
             "initiator_power_change": -3,
             "target_power_change": -2,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": False
         },
         {
@@ -274,7 +276,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": False,
             "initiator_power_change": -4,
             "target_power_change": -3,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -285,7 +287,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": False,
             "initiator_power_change": -2,
             "target_power_change": -3,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": False
         },
         {
@@ -296,7 +298,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": True,
             "initiator_power_change": -1,
             "target_power_change": -4,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": True
         },
         {
@@ -307,7 +309,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": False,
             "initiator_power_change": -5,
             "target_power_change": -6,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": False
         },
         {
@@ -318,7 +320,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": False,
             "initiator_power_change": -8,
             "target_power_change": -7,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": False
         },
         {
@@ -329,7 +331,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": False,
             "initiator_power_change": -7,
             "target_power_change": -9,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": False
         },
         {
@@ -340,7 +342,7 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "respect_sov": False,
             "initiator_power_change": -10,
             "target_power_change": -10,
-            "is_initiator": True,
+            "is_initiative": True,
             "is_response": False
         }
     ]

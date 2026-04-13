@@ -19,12 +19,8 @@ from enum import Enum
 from datetime import datetime
 import uuid
 
-# Import from interaction engine
-from .interaction_engine import (
-    ActionRecord,
-    Agent,
-    PowerLevel
-)
+# Import enums from agent_base to maintain consistency
+from .agent_base import PowerLevelEnumEnum
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -166,7 +162,7 @@ class OrderDeterminationEngine:
 
         for agent_id, agent in self._agents.items():
             # Only superpowers and great powers can be leaders
-            if agent.power_level in [PowerLevel.SUPERPOWER, PowerLevel.GREAT_POWER]:
+            if agent.power_level in [PowerLevelEnum.SUPERPOWER, PowerLevelEnum.GREAT_POWER]:
                 candidates.append(agent_id)
 
         if self.enable_logging:
@@ -278,7 +274,7 @@ class OrderDeterminationEngine:
                     w_score=0,
                     initial_total_power=0,
                     current_total_power=0,
-                    power_level=PowerLevel.SMALL_STATE
+                    power_level=PowerLevelEnum.SMALL_STATE
                 )).agent_name if leader_agent_id in self._agents else "Unknown"
 
                 logger.info(

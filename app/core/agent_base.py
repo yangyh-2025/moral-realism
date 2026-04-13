@@ -9,7 +9,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
-from .klein_equation import PowerLevelEnumari, calculate_klein_power, determine_power_level
+from .klein_equation import PowerLevelEnum, calculate_klein_power, determine_power_level
 
 
 class RegionEnum(str, Enum):
@@ -91,8 +91,8 @@ class AgentBase(BaseModel):
         default=0.0,
         description="实时综合国力，每轮更新"
     )
-    power_level: PowerLevelEnumari = Field(
-        default=PowerLevelEnumari.SMALL_STATE,
+    power_level: PowerLevelEnum = Field(
+        default=PowerLevelEnum.SMALL_STATE,
         description="综合国力层级，自动计算，每轮更新"
     )
 
@@ -139,14 +139,14 @@ class AgentBase(BaseModel):
             data = info.data
             c_score = data.get("c_score", 0)
             e_score = data.get("e_score", 0)
-                       m_score = data.get("m_score", 0)
+            m_score = data.get("m_score", 0)
             s_score = data.get("s_score", 0)
             w_score = data.get("w_score", 0)
 
             power = calculate_klein_power(c_score, e_score, m_score, s_score, w_score)
             power_level = determine_power_level(power)
 
-            if power_level not in [PowerLevelEnumari.SUPERPOWER, PowerLevelEnumari.GREAT_POWER]:
+            if power_level not in [PowerLevelEnum.SUPERPOWER, PowerLevelEnum.GREAT_POWER]:
                 raise ValueError(
                     "仅超级大国与大国可配置领导集体类型，中小国家禁止设置该字段"
                 )
@@ -189,7 +189,7 @@ class AgentBase(BaseModel):
             self.w_score
         )
 
-    def _calculate_power_level(self, power: float) -> PowerLevelEnumari:
+    def _calculate_power_level(self, power: float) -> PowerLevelEnum:
         """
         根据综合国力判定实力层级
 
@@ -211,28 +211,28 @@ class AgentBase(BaseModel):
             国家利益偏好列表
         """
         interest_mapping = {
-            PowerLevelEnumari.SUPERPOWER: [
+            PowerLevelEnum.SUPERPOWER: [
                 "争夺全球绝对领导权",
                 "维护全球体系主导权",
                 "巩固全球盟友/伙伴追随体系",
                 "垄断国际规则制定权",
                 "遏制新兴大国的系统性挑战"
             ],
-            PowerLevelEnumari.GREAT_POWER: [
+            PowerLevelEnum.GREAT_POWER: [
                 "提升全球话语权",
                 "扩大国际影响力",
                 "争取国际规则制定权",
                 "保障本国核心安全与经济利益",
                 "争夺区域/全球领导权"
             ],
-            PowerLevelEnumari.MIDDLE_POWER: [
+            PowerLevelEnum.MIDDLE_POWER: [
                 "维护区域影响力",
                 "保障主权与领土安全",
                 "实现经济稳定发展",
                 "规避大国冲突波及",
                 "在大国博弈中实现自身利益最大化"
             ],
-            PowerLevelEnumari.SMALL_STATE: [
+            PowerLevelEnum.SMALL_STATE: [
                 "保障国家生存与主权独立",
                 "获取外部经济援助与安全保障",
                 "避免卷入区域或全球冲突",

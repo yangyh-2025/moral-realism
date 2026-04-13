@@ -10,8 +10,8 @@ to align with academic document - all agents can initiate all permitted action t
 import asyncio
 import logging
 from typing import Dict, List, Optional, Any, Set
+
 from dataclasses import dataclass, field
-from enum import Enum
 import uuid
 from datetime import datetime
 
@@ -19,26 +19,14 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 
-class ActionStage(Enum):
+class ActionStage:
     """Action execution stage"""
     INITIATIVE = "initiative"
     RESPONSE = "response"
 
 
-class PowerLevel(str, Enum):
-    """Power level enumeration"""
-    SUPERPOWER = "超级大国"
-    GREAT_POWER = "大国"
-    MIDDLE_POWER = "中等强国"
-    SMALL_STATE = "小国"
-
-
-class LeaderType(str, Enum):
-    """Leadership type enumeration"""
-    KINGLY = "王道型"
-    HEGEMONIC = "霸权型"
-    TYRANICAL = "强权型"
-    INEPT = "昏庸型"
+# Import enums from agent_base to avoid duplication
+from .agent_base import PowerLevelEnum, LeaderTypeEnum
 
 
 @dataclass
@@ -687,4 +675,4 @@ class InteractionEngine:
         return [
             record for record in all_records
             if record.target_agent_id == target_agent_id
-        )
+        ]
