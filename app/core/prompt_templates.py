@@ -1,7 +1,9 @@
 """
-Prompt templates for LLM decision engine.
-Implements decision prompt engineering with 20 standard behaviors embedded.
-Aligned with academic model table 1.
+LLM决策引擎提示模板模块
+Prompt Templates Module for LLM Decision Engine
+
+实现内嵌20种标准行为的决策提示工程。
+完全对齐学术模型表1。
 """
 
 from typing import Dict, Any, List
@@ -225,6 +227,52 @@ class PromptTemplates:
                     return False, f"行为{i+1}缺少必需字段: {field}"
 
         return True, ""
+
+    # 领导竞争参与决策提示模板
+    LEADERSHIP_PARTICIPATION_TEMPLATE = """
+【领导竞争参与决策】
+你是{agent_name}的国家领导集体，当前综合国力为{current_total_power}，实力层级为{power_level}。
+
+【当前国际体系状态】
+体系内所有国家信息：{all_agent_info}
+上一轮国际秩序类型：{last_order_type}
+上一轮领导状况：{last_leader_info}
+
+【决策要求】
+请决定是否参与本轮国际领导竞争：
+- 选择"参与"：如果希望参与国际领导竞争，争取成为体系领导者
+- 选择"不参与"：如果不想参与领导竞争，保持现状或仅作为追随者
+
+【输出要求】
+必须输出JSON格式：{{"decision": "参与"或"不参与", "reason": "决策理由"}}
+"""
+
+    # 追随投票决策提示模板
+    FOLLOWER_VOTE_TEMPLATE = """
+【追随投票决策】
+你是{agent_name}的国家领导集体，当前综合国力为{current_total_power}，实力层级为{power_level}。
+
+【当前国际体系状态】
+体系内所有国家信息：{all_agent_info}
+上一轮国际秩序类型：{last_order_type}
+
+【本轮领导竞争参选者】
+以下国家决定参与本轮国际领导竞争：
+{leader_candidates_info}
+
+【决策要求】
+请选择一个国家作为追随对象，或选择"中立"：
+- 选择某个参选者：如果你希望追随该国家，在follower_agent_id字段填写该国家ID
+- 选择"中立"：如果你不想追随任何国家，在follower_agent_id字段填写null
+
+【输出要求】
+必须输出JSON格式：
+{{
+    "follower_agent_id": <国家ID或null>,
+    "follower_agent_name": <国家名称或"中立">,
+    "reason": "决策理由"
+}}
+"""
 
 
 # Standard 20 GDELT interaction behaviors for reference - 使用学术文档完整描述

@@ -1,5 +1,7 @@
 """
-SimulationRound model - 仿真轮次表
+仿真轮次模型 - SimulationRound
+记录仿真过程中每个轮次的关键指标，包括秩序类型、尊重主权比例、
+领导者信息等，用于分析国际秩序的演变过程研究。
 """
 
 from datetime import datetime
@@ -18,6 +20,10 @@ if TYPE_CHECKING:
 
 
 class OrderTypeEnum(str, PyEnum):
+    """国际秩序类型枚举
+
+    定义根据学术模型判定的四种国际秩序类型。
+    """
     NORMATIVE_ACCEPTANCE = "规范接纳型"
     NON_INTERFERENCE = "不干涉型"
     BIG_STICK_DETERRENCE = "大棒威慑型"
@@ -27,7 +33,15 @@ class OrderTypeEnum(str, PyEnum):
 class SimulationRound(Base):
     """
     仿真轮次表
+
     移除用户关联字段，完全对齐学术模型的秩序判定规则，细化核心指标存储。
+
+    属性说明：
+    - 项目/轮次关联：所属项目和轮次编号
+    - 行为统计：总行为数、尊重主权行为数、尊重主权比例
+    - 领导权信息：是否存在领导者、领导者ID、领导者追随比例
+    - 秩序类型：规范接纳型/不干涉型/大棒威慑型/恐怖平衡型
+    - 时间信息：轮次开始和结束时间
     """
 
     __tablename__ = "simulation_round"

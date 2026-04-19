@@ -1,5 +1,7 @@
 """
-PresetScene model - 预置仿真场景表
+预置仿真场景模型 - PresetScene
+存储系统提供的预置仿真场景配置，支持一键启动标准化的学术仿真实验。
+场景配置包含智能体参数、行为规则等完整信息的JSON格式存储。
 """
 
 from datetime import datetime
@@ -13,7 +15,12 @@ from ..models import Base
 class PresetScene(Base):
     """
     预置仿真场景表
+
     新增核心表，用于存储开箱即用的标准学术仿真场景，实现一键启动能力。
+
+    属性说明：
+    - 场景信息：名称、描述、是否为默认场景
+    - 仿真配置：总轮次数、智能体配置JSON
     """
 
     __tablename__ = "preset_scene"

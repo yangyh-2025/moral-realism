@@ -1,5 +1,7 @@
 """
-AgentConfig model - 智能体配置表
+智能体配置模型 - AgentConfig
+用于存储智能体的基础信息、初始国力参数、领导类型等配置数据。
+智能体是仿真系统中的基本行为主体，代表不同的国家或政治实体。
 """
 
 from datetime import datetime
@@ -19,6 +21,10 @@ if TYPE_CHECKING:
 
 
 class RegionEnum(str, PyEnum):
+    """地理区域枚举类型
+
+    定义智能体所属的地理区域分类。
+    """
     AFRICA = "非洲"
     AMERICA = "美洲"
     ASIA = "亚洲"
@@ -27,6 +33,10 @@ class RegionEnum(str, PyEnum):
 
 
 class PowerLevelEnum(str, PyEnum):
+    """国力等级枚举类型
+
+    根据综合国力对智能体进行分级。
+    """
     SUPERPOWER = "超级大国"
     GREAT_POWER = "大国"
     MIDDLE_POWER = "中等强国"
@@ -34,6 +44,10 @@ class PowerLevelEnum(str, PyEnum):
 
 
 class LeaderTypeEnum(str, PyEnum):
+    """领导类型枚举类型
+
+    定义超级大国或大国的领导集体类型，影响其行为策略。
+    """
     KINGLY = "王道型"
     HEGEMONIC = "霸权型"
     TYRANICAL = "强权型"
@@ -43,7 +57,15 @@ class LeaderTypeEnum(str, PyEnum):
 class AgentConfig(Base):
     """
     智能体配置表
+
+    存储智能体的基础信息、初始国力参数和行为权限配置。
     核心优化：补全行为权限关联逻辑，移除用户关联字段，强化初始指标与实时国力的隔离，完全对齐学术模型设定。
+
+    属性说明：
+    - 基础信息：名称、所属区域、国力等级
+    - 克莱因国力方程指标：基本实体、经济实力、军事实力、战略目的、国家战略意志
+    - 自动计算字段：初始总国力、当前总国力、国力等级
+    - 领导类型：仅超级大国/大国可配置，影响行为策略
     """
 
     __tablename__ = "agent_config"

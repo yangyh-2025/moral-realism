@@ -1,5 +1,7 @@
 """
-ActionRecord model - 互动行为记录表
+互动行为记录模型 - ActionRecord
+记录智能体在仿真过程中的实际互动行为，包括行为类型、发起方、目标方、
+行为阶段等信息，以及行为对双方国力的影响。
 """
 
 from datetime import datetime
@@ -19,6 +21,10 @@ if TYPE_CHECKING:
 
 
 class ActionStageEnum(str, PyEnum):
+    """行为阶段枚举
+
+    定义互动行为的两个阶段：发起阶段和响应阶段。
+    """
     INITIATIVE = "发起阶段"
     RESPONSE = "响应阶段"
 
@@ -26,7 +32,14 @@ class ActionStageEnum(str, PyEnum):
 class ActionRecord(Base):
     """
     互动行为记录表
+
     核心优化：与20项互动行为集强绑定，补全行为全属性记录，移除用户关联字段。
+
+    属性说明：
+    - 项目/轮次关联：所属项目和具体轮次
+    - 行为信息：行为阶段、发起方、目标方、行为类型
+    - 行为属性：是否尊重主权、对双方国力的影响
+    - 决策详情：LLM 决策过程的详细记录
     """
 
     __tablename__ = "action_record"

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试页面</title>
+</head>
+<body>
+  <h1 style="color: green;">前端服务器正常工作！</h1>
+  <p>如果你看到这个页面，说明Vite服务器运行正常。</p>
+  <button onclick="testAPI()">测试API连接</button>
+  <div id="result"></div>
+
+  <script>
+    async function testAPI() {
+      const result = document.getElementById('result');
+      try {
+        const response = await fetch('/api/v1/preset-scene/list');
+        const data = await response.json();
+        result.innerHTML = '<p style="color: green;">API连接成功！找到 ' + data.length + ' 个预设场景。</p>';
+      } catch (error) {
+        result.innerHTML = '<p style="color: red;">API连接失败: ' + error.message + '</p>';
+      }
+    }
+  </script>
+</body>
+</html>
