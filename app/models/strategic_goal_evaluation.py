@@ -1,5 +1,7 @@
 """
-StrategicGoalEvaluation model - 战略目标评估记录表
+战略目标评估模型 - StrategicGoalEvaluation
+用于评估智能体在一段时间内的战略目标达成情况。
+每隔一定轮次（默认10轮）对每个智能体的目标达成度进行综合评估。
 """
 
 from datetime import datetime
@@ -18,7 +20,14 @@ if TYPE_CHECKING:
 class StrategicGoalEvaluation(Base):
     """
     战略目标评估记录表
+
     存储每10轮对每个国家的战略目标达成度评估结果。
+
+    属性说明：
+    - 项目/智能体关联：所属项目和智能体
+    - 评估轮次信息：评估时的轮次、评估区间起始和结束轮次
+    - 评估结果：综合目标达成度、国力增长贡献度、行为有效性、领导类型一致性
+    - 评估说明：综合评估说明、具体成就、面临挑战
     """
 
     __tablename__ = "strategic_goal_evaluation"

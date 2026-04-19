@@ -1,7 +1,7 @@
 """
-LLM service for ABM simulation.
-Handles LLM model configuration, API calls, and response parsing.
-Aligned with technical spec section 4.2.4.
+LLM服务模块 - 为ABM仿真提供大语言模型支持
+负责LLM模型配置、API调用和响应解析
+与技术规范第4.2.4节对齐
 """
 
 import asyncio
@@ -17,40 +17,56 @@ from loguru import logger
 
 
 class LLMProviderEnum(str, Enum):
-    """Supported LLM providers."""
+    """支持的LLM服务提供商枚举"""
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
     AZURE = "azure"
 
 
 class LLMError(Exception):
-    """Custom exception for LLM-related errors."""
+    """LLM相关错误的自定义异常类"""
     pass
 
 
 @dataclass
 class LLMConfig:
-    """LLM configuration."""
-    provider: str = "openai"
-    model_name: str = "gpt-4"
-    api_key: str = ""
-    api_base: str = ""  # Optional custom API base URL
-    max_tokens: int = 2000
-    temperature: float = 0.7
-    timeout: int = 60  # seconds
-    max_retries: int = 3
-    retry_delay: float = 1.0  # seconds
+    """
+    LLM配置数据类
+
+    存储LLM服务的所有配置参数，包括：
+    - 提供商和模型选择
+    - API认证信息
+    - 调用参数（最大令牌数、温度等）
+    - 重试策略配置
+    """
+    provider: str = "openai"  # LLM服务提供商
+    model_name: str = "gpt-4"  # 模型名称
+    api_key: str = ""  # API密钥
+    api_base: str = ""  # 可选的自定义API基础URL
+    max_tokens: int = 2000  # 最大生成令牌数
+    temperature: float = 0.7  # 温度参数（控制随机性）
+    timeout: int = 60  # 超时时间（秒）
+    max_retries: int = 3  # 最大重试次数
+    retry_delay: float = 1.0  # 重试延迟（秒）
 
 
 class LLMService:
-    """Service for LLM operations with retry logic and error handling."""
+    """
+    LLM服务类 - 提供LLM操作功能，包含重试逻辑和错误处理
+
+    主要功能：
+    - 初始化和配置LLM客户端
+    - 执行异步LLM调用（带重试）
+    - 批量LLM调用（带并发控制）
+    - 响应解析和验证
+    """
 
     def __init__(self, config: Optional[LLMConfig] = None):
         """
-        Initialize LLM service.
+        初始化LLM服务
 
         Args:
-            config: LLM configuration (uses env vars if not provided)
+            config: LLM配置对象，如果未提供则从环境变量加载
         """
         self.config = config or self._load_default_config()
         self._client: Optional[AsyncOpenAI] = None
@@ -58,10 +74,21 @@ class LLMService:
 
     def _load_default_config(self) -> LLMConfig:
         """
-        Load default configuration from environment variables.
+        从环境变量加载默认配置
+
+        环境变量列表：
+        - LLM_PROVIDER: 服务提供商
+        - LLM_MODEL: 模型名称
+        - OPENAI_API_KEY: API密钥
+        - OPENAI_API_BASE: API基础URL
+        - LLM_MAX_TOKENS: 最大令牌数
+        - LLM_TEMPERATURE: 温度参数
+        - LLM_TIMEOUT: 超时时间
+        - LLM_MAX_RETRIES: 最大重试次数
+        - LLM_RETRY_DELAY: 重试延迟
 
         Returns:
-            LLMConfig with values from environment
+            从环境变量构建的LLMConfig对象
         """
         return LLMConfig(
             provider=os.getenv("LLM_PROVIDER", "openai"),
@@ -76,32 +103,38 @@ class LLMService:
         )
 
     def _initialize_client(self):
-        """Initialize OpenAI async client."""
+        """
+        初始化OpenAI异步客户端
+
+        根据配置创建AsyncOpenAI客户端实例，
+        并记录初始化日志。
+        """
         try:
             client_kwargs = {
                 "api_key": self.config.api_key,
                 "timeout": self.config.timeout
             }
 
+            # 如果配置了自定义API基础URL，则使用它
             if self.config.api_base:
                 client_kwargs["base_url"] = self.config.api_base
 
             self._client = AsyncOpenAI(**client_kwargs)
-            logger.info(f"LLM client initialized: {self.config.provider}/{self.config.model_name}")
+            logger.info(f"LLM客户端初始化完成: {self.config.provider}/{self.config.model_name}")
         except Exception as e:
-            logger.error(f"Failed to initialize LLM client: {e}")
-            raise LLMError(f"LLM client initialization failed: {e}")
+            logger.error(f"LLM客户端初始化失败: {e}")
+            raise LLMError(f"LLM客户端初始化失败: {e}")
 
     def update_config(self, new_config: LLMConfig):
         """
-        Update LLM configuration and reinitialize client.
+        更新LLM配置并重新初始化客户端
 
         Args:
-            new_config: New LLM configuration
+            new_config: 新的LLM配置对象
         """
         self.config = new_config
         self._initialize_client()
-        logger.info("LLM configuration updated")
+        logger.info("LLM配置已更新")
 
     async def call_llm_async(
         self,
@@ -109,33 +142,36 @@ class LLMService:
         system_prompt: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Async LLM call with retry logic.
+        异步LLM调用，带重试逻辑
+
+        使用指数退避重试策略，在失败时自动重试。
 
         Args:
-            prompt: User prompt
-            system_prompt: Optional system prompt
+            prompt: 用户提示词
+            system_prompt: 可选的系统提示词
 
         Returns:
-            Parsed JSON response from LLM
+            解析后的JSON响应字典
 
         Raises:
-            LLMError: If all retries fail
+            LLMError: 当所有重试都失败时抛出
         """
+        # 循环尝试配置的最大重试次数
         for attempt in range(self.config.max_retries):
             try:
                 response = await self._single_llm_call(prompt, system_prompt)
                 return response
             except Exception as e:
-                logger.warning(f"LLM call attempt {attempt + 1} failed: {e}")
+                logger.warning(f"LLM调用第 {attempt + 1} 次尝试失败: {e}")
 
                 if attempt < self.config.max_retries - 1:
-                    # Wait before retry with exponential backoff
+                    # 使用指数退避算法计算延迟时间
                     delay = self.config.retry_delay * (2 ** attempt)
-                    logger.info(f"Retrying in {delay} seconds...")
+                    logger.info(f"将在 {delay} 秒后重试...")
                     await asyncio.sleep(delay)
                 else:
-                    logger.error(f"All {self.config.max_retries} LLM retry attempts failed")
-                    raise LLMError(f"LLM call failed after {self.config.max_retries} retries: {e}")
+                    logger.error(f"所有 {self.config.max_retries} 次LLM重试尝试都失败了")
+                    raise LLMError(f"LLM调用在 {self.config.max_retries} 次重试后失败: {e}")
 
     async def _single_llm_call(
         self,
@@ -143,50 +179,52 @@ class LLMService:
         system_prompt: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Single LLM API call.
+        单次LLM API调用
+
+        构建消息、调用API、解析响应的完整流程。
 
         Args:
-            prompt: User prompt
-            system_prompt: Optional system prompt
+            prompt: 用户提示词
+            system_prompt: 可选的系统提示词
 
         Returns:
-            Parsed JSON response
+            解析后的JSON响应
 
         Raises:
-            Exception: If API call fails
+            Exception: 当API调用失败时抛出
         """
         if not self._client:
-            raise LLMError("LLM client not initialized")
+            raise LLMError("LLM客户端未初始化")
 
-        # Build messages
+        # 构建消息列表
         messages = []
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
-        # Make API call
-        logger.debug(f"Calling LLM with model: {self.config.model_name}")
+        # 执行API调用
+        logger.debug(f"使用模型调用LLM: {self.config.model_name}")
         response = await self._client.chat.completions.create(
             model=self.config.model_name,
             messages=messages,
             max_tokens=self.config.max_tokens,
             temperature=self.config.temperature,
-            response_format={"type": "json_object"}  # Force JSON output
+            response_format={"type": "json_object"}  # 强制JSON格式输出
         )
 
-        # Extract response text
+        # 提取响应文本
         response_text = response.choices[0].message.content
-        logger.debug(f"LLM raw response: {response_text[:200]}...")
+        logger.debug(f"LLM原始响应: {response_text[:200]}...")
 
-        # Parse JSON
+        # 解析JSON响应
         try:
             parsed_response = json.loads(response_text)
-            logger.info("LLM response parsed successfully")
+            logger.info("LLM响应解析成功")
             return parsed_response
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse LLM JSON response: {e}")
-            logger.error(f"Raw response: {response_text}")
-            raise LLMError(f"Invalid JSON response from LLM: {e}")
+            logger.error(f"解析LLM JSON响应失败: {e}")
+            logger.error(f"原始响应: {response_text}")
+            raise LLMError(f"LLM返回的JSON格式无效: {e}")
 
     async def call_llm_batch_async(
         self,
@@ -195,32 +233,38 @@ class LLMService:
         max_concurrent: int = 5
     ) -> List[Dict[str, Any]]:
         """
-        Batch LLM calls with concurrency control.
+        批量LLM调用，带并发控制
+
+        使用信号量限制同时进行的API调用数量，
+        避免超过API速率限制。
 
         Args:
-            prompts: List of prompts
-            system_prompt: Optional system prompt
-            max_concurrent: Maximum concurrent calls
+            prompts: 提示词列表
+            system_prompt: 可选的系统提示词
+            max_concurrent: 最大并发调用数
 
         Returns:
-            List of parsed JSON responses
+            解析后的JSON响应列表（顺序与输入对应）
         """
+        # 创建信号量用于并发控制
         semaphore = asyncio.Semaphore(max_concurrent)
 
         async def limited_call(prompt: str) -> Dict[str, Any]:
+            """受信号量限制的单个LLM调用"""
             async with semaphore:
                 return await self.call_llm_async(prompt, system_prompt)
 
-        logger.info(f"Starting batch LLM calls: {len(prompts)} prompts, max_concurrent={max_concurrent}")
+        logger.info(f"开始批量LLM调用: {len(prompts)} 个提示词, 最大并发={max_concurrent}")
+        # 并发执行所有调用，异常不会中断整个批次
         results = await asyncio.gather(*[limited_call(p) for p in prompts], return_exceptions=True)
 
-        # Check for errors
+        # 检查并处理错误结果
         for i, result in enumerate(results):
             if isinstance(result, Exception):
-                logger.error(f"Batch call {i} failed: {result}")
+                logger.error(f"批次调用 {i} 失败: {result}")
                 results[i] = {"error": str(result)}
 
-        logger.info(f"Batch LLM calls completed: {len(results)} results")
+        logger.info(f"批量LLM调用完成: {len(results)} 个结果")
         return results
 
     def parse_decision_response(
@@ -229,20 +273,22 @@ class LLMService:
         validate_structure: bool = True
     ) -> Dict[str, Any]:
         """
-        Parse LLM decision response.
+        解析LLM决策响应
+
+        处理可能包含额外文本的响应，尝试从中提取JSON。
 
         Args:
-            response_text: Raw response text from LLM
-            validate_structure: Whether to validate JSON structure
+            response_text: LLM返回的原始响应文本
+            validate_structure: 是否验证JSON结构
 
         Returns:
-            Parsed decision dict
+            解析后的决策字典
 
         Raises:
-            LLMError: If parsing or validation fails
+            LLMError: 当解析或验证失败时抛出
         """
         try:
-            # Try to find JSON in response (in case of extra text)
+            # 尝试在响应中找到JSON（可能有额外文本）
             json_start = response_text.find('{')
             json_end = response_text.rfind('}')
 
@@ -250,35 +296,35 @@ class LLMService:
                 json_text = response_text[json_start:json_end + 1]
                 parsed = json.loads(json_text)
             else:
-                # Try to parse entire response as JSON
+                # 尝试将整个响应解析为JSON
                 parsed = json.loads(response_text)
 
-            # Basic structure validation
+            # 基本结构验证
             if validate_structure:
                 if 'decision_reason' not in parsed:
-                    raise ValueError("Missing required field: decision_reason")
+                    raise ValueError("缺少必需字段: decision_reason")
                 if 'actions' not in parsed:
-                    raise ValueError("Missing required field: actions")
+                    raise ValueError("缺少必需字段: actions")
 
             return parsed
 
         except json.JSONDecodeError as e:
-            logger.error(f"JSON parsing failed: {e}")
-            raise LLMError(f"Failed to parse LLM JSON response: {e}")
+            logger.error(f"JSON解析失败: {e}")
+            raise LLMError(f"解析LLM JSON响应失败: {e}")
         except ValueError as e:
-            logger.error(f"Response validation failed: {e}")
-            raise LLMError(f"Invalid response structure: {e}")
+            logger.error(f"响应验证失败: {e}")
+            raise LLMError(f"响应结构无效: {e}")
 
     @staticmethod
     def format_error_response(error: str) -> Dict[str, Any]:
         """
-        Format error response for failed LLM calls.
+        为失败的LLM调用格式化错误响应
 
         Args:
-            error: Error message
+            error: 错误消息
 
         Returns:
-            Error response dict
+            标准化的错误响应字典
         """
         return {
             "decision_reason": f"决策生成失败: {error}",
@@ -288,22 +334,28 @@ class LLMService:
 
 
 class PromptManager:
-    """Manager for prompt templates and prompt engineering."""
+    """
+    提示词模板管理器 - 管理提示词模板和提示词工程
+
+    主要功能：
+    - 加载和存储提示词模板
+    - 提供模板检索和更新接口
+    """
 
     def __init__(self):
-        """Initialize prompt manager."""
+        """初始化提示词管理器"""
         self.templates = {}
         self._load_default_templates()
 
     def _load_default_templates(self):
-        """Load default prompt templates."""
+        """加载默认提示词模板"""
         self.templates = {
             "decision": self._get_decision_template(),
             "validation_error": self._get_validation_error_template()
         }
 
     def _get_decision_template(self) -> str:
-        """Get decision prompt template."""
+        """获取决策提示词模板"""
         return """你是一个国际关系模拟系统中的国家决策制定者。
 
 【系统角色】
@@ -350,7 +402,7 @@ class PromptManager:
 """
 
     def _get_validation_error_template(self) -> str:
-        """Get validation error retry template."""
+        """获取验证错误重试模板"""
         return """你的上一次决策没有通过验证，请重新生成决策。
 
 【验证失败原因】
@@ -367,46 +419,48 @@ class PromptManager:
 
     def get_template(self, template_name: str) -> str:
         """
-        Get prompt template by name.
+        根据名称获取提示词模板
 
         Args:
-            template_name: Template name
+            template_name: 模板名称
 
         Returns:
-            Template string
+            模板字符串
 
         Raises:
-            KeyError: If template not found
+            KeyError: 当模板不存在时抛出
         """
         if template_name not in self.templates:
-            raise KeyError(f"Template '{template_name}' not found")
+            raise KeyError(f"模板 '{template_name}' 未找到")
         return self.templates[template_name]
 
     def add_template(self, name: str, template: str):
         """
-        Add or update a prompt template.
+        添加或更新提示词模板
 
         Args:
-            name: Template name
-            template: Template string
+            name: 模板名称
+            template: 模板字符串
         """
         self.templates[name] = template
-        logger.info(f"Prompt template added/updated: {name}")
+        logger.info(f"提示词模板已添加/更新: {name}")
 
 
-# Global LLM service instance
+# 全局LLM服务单例实例
 _llm_service: Optional[LLMService] = None
 
 
 def get_llm_service(config: Optional[LLMConfig] = None) -> LLMService:
     """
-    Get or create global LLM service instance.
+    获取或创建全局LLM服务单例
+
+    使用单例模式确保整个应用共享同一个LLM服务实例。
 
     Args:
-        config: Optional LLM configuration
+        config: 可选的LLM配置
 
     Returns:
-        LLMService instance
+        LLMService单例实例
     """
     global _llm_service
 
@@ -419,7 +473,7 @@ def get_llm_service(config: Optional[LLMConfig] = None) -> LLMService:
 
 
 def reset_llm_service():
-    """Reset global LLM service instance."""
+    """重置全局LLM服务单例"""
     global _llm_service
     _llm_service = None
-    logger.info("LLM service reset")
+    logger.info("LLM服务已重置")

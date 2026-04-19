@@ -1,7 +1,9 @@
 """
-LLM-driven decision engine for ABM simulation.
-Implements decision-making with cost-benefit analysis and three-tier validation.
-Aligned with technical spec section 4.2.4.
+LLM驱动的决策引擎模块
+LLM-driven Decision Engine Module
+
+实现基于大语言模型的智能体决策，包含成本收益分析和三层验证机制。
+完全对齐技术规范第4.2.4节。
 """
 
 import asyncio
@@ -25,7 +27,7 @@ from .agent_base import ActionStageEnum, PowerLevelEnum, LeaderTypeEnum
 
 @dataclass
 class AgentInfo:
-    """Agent information for decision making."""
+    """智能体决策信息类"""
     agent_id: int
     agent_name: str
     region: str
@@ -39,7 +41,7 @@ class AgentInfo:
 
 @dataclass
 class InfoPool:
-    """Information pool for agent decision making."""
+    """智能体决策信息池类"""
     all_agent_info: List[Dict[str, Any]] = field(default_factory=list)
     history_action_records: List[Dict[str, Any]] = field(default_factory=list)
     history_power_data: List[Dict[str, Any]] = field(default_factory=list)
@@ -48,7 +50,7 @@ class InfoPool:
 
 @dataclass
 class DecisionResult:
-    """Decision result from LLM."""
+    """LLM决策结果类"""
     success: bool
     decision: Optional[Dict[str, Any]] = None
     validation_errors: List[str] = field(default_factory=list)
@@ -61,13 +63,13 @@ class DecisionResult:
 
 class DecisionEngine:
     """
-    LLM-driven decision engine for leader collectives.
+    领导集体LLM驱动决策引擎
 
-    Implements:
-    - LLM-driven decision simulation
-    - Decision prompt engineering with 20 standard behaviors
-    - Cost-benefit analysis for strategy selection
-    - Three-tier decision validation
+    实现功能：
+    - LLM驱动的决策模拟
+    - 包含20种标准行为的决策提示工程
+    - 策略选择的成本收益分析
+    - 三层决策验证机制
     """
 
     def __init__(

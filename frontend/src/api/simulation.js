@@ -1,7 +1,14 @@
+/**
+ * 仿真管理API模块
+ * 提供项目管理、智能体管理和仿真控制相关的API接口函数
+ */
+
 import request from './index'
 
 /**
- * Get all projects
+ * 获取所有项目列表
+ * @param {string} statusFilter - 状态筛选条件
+ * @returns {Promise} 返回项目列表的响应数据
  */
 export function getProjects(statusFilter) {
   return request({
@@ -12,7 +19,9 @@ export function getProjects(statusFilter) {
 }
 
 /**
- * Create project
+ * 创建新项目
+ * @param {Object} data - 项目数据
+ * @returns {Promise} 返回创建项目的响应数据
  */
 export function createProject(data) {
   return request({
@@ -23,7 +32,9 @@ export function createProject(data) {
 }
 
 /**
- * Get project detail
+ * 获取项目详细信息
+ * @param {number} projectId - 项目ID
+ * @returns {Promise} 返回项目详细信息的响应数据
  */
 export function getProject(projectId) {
   return request({
@@ -33,7 +44,10 @@ export function getProject(projectId) {
 }
 
 /**
- * Update project
+ * 更新项目信息
+ * @param {number} projectId - 项目ID
+ * @param {Object} data - 项目数据
+ * @returns {Promise} 返回更新后的项目响应数据
  */
 export function updateProject(projectId, data) {
   return request({
@@ -44,7 +58,9 @@ export function updateProject(projectId, data) {
 }
 
 /**
- * Delete project
+ * 删除项目
+ * @param {number} projectId - 项目ID
+ * @returns {Promise} 返回删除项目的响应数据
  */
 export function deleteProject(projectId) {
   return request({
@@ -54,7 +70,10 @@ export function deleteProject(projectId) {
 }
 
 /**
- * Add agent to project
+ * 向项目添加智能体
+ * @param {number} projectId - 项目ID
+ * @param {Object} data - 智能体数据
+ * @returns {Promise} 返回添加智能体的响应数据
  */
 export function addAgent(projectId, data) {
   return request({
@@ -65,7 +84,10 @@ export function addAgent(projectId, data) {
 }
 
 /**
- * Get project agents
+ * 获取项目中的智能体列表
+ * @param {number} projectId - 项目ID
+ * @param {Object} filters - 查询筛选条件
+ * @returns {Promise} 返回智能体列表的响应数据
  */
 export function getAgents(projectId, filters) {
   return request({
@@ -76,7 +98,10 @@ export function getAgents(projectId, filters) {
 }
 
 /**
- * Get agent detail
+ * 获取智能体详细信息
+ * @param {number} projectId - 项目ID
+ * @param {number} agentId - 智能体ID
+ * @returns {Promise} 返回智能体详细信息的响应数据
  */
 export function getAgent(projectId, agentId) {
   return request({
@@ -86,7 +111,11 @@ export function getAgent(projectId, agentId) {
 }
 
 /**
- * Update agent
+ * 更新智能体信息
+ * @param {number} projectId - 项目ID
+ * @param {number} agentId - 智能体ID
+ * @param {Object} data - 智能体数据
+ * @returns {Promise} 返回更新后的智能体响应数据
  */
 export function updateAgent(projectId, agentId, data) {
   return request({
@@ -97,7 +126,10 @@ export function updateAgent(projectId, agentId, data) {
 }
 
 /**
- * Delete agent
+ * 删除智能体
+ * @param {number} projectId - 项目ID
+ * @param {number} agentId - 智能体ID
+ * @returns {Promise} 返回删除智能体的响应数据
  */
 export function deleteAgent(projectId, agentId) {
   return request({
@@ -107,7 +139,9 @@ export function deleteAgent(projectId, agentId) {
 }
 
 /**
- * Start simulation
+ * 启动仿真
+ * @param {number} projectId - 项目ID
+ * @returns {Promise} 返回启动仿真的响应数据
  */
 export function startSimulation(projectId) {
   return request({
@@ -117,7 +151,9 @@ export function startSimulation(projectId) {
 }
 
 /**
- * Step simulation
+ * 单步执行仿真
+ * @param {number} projectId - 项目ID
+ * @returns {Promise} 返回单步执行的响应数据
  */
 export function stepSimulation(projectId) {
   return request({
@@ -127,7 +163,9 @@ export function stepSimulation(projectId) {
 }
 
 /**
- * Pause simulation
+ * 暂停仿真
+ * @param {number} projectId - 项目ID
+ * @returns {Promise} 返回暂停仿真的响应数据
  */
 export function pauseSimulation(projectId) {
   return request({
@@ -137,7 +175,9 @@ export function pauseSimulation(projectId) {
 }
 
 /**
- * Resume simulation
+ * 恢复仿真
+ * @param {number} projectId - 项目ID
+ * @returns {Promise} 返回恢复仿真的响应数据
  */
 export function resumeSimulation(projectId) {
   return request({
@@ -147,7 +187,9 @@ export function resumeSimulation(projectId) {
 }
 
 /**
- * Stop simulation
+ * 停止仿真
+ * @param {number} projectId - 项目ID
+ * @returns {Promise} 返回停止仿真的响应数据
  */
 export function stopSimulation(projectId) {
   return request({
@@ -157,11 +199,26 @@ export function stopSimulation(projectId) {
 }
 
 /**
- * Reset simulation
+ * 重置仿真
+ * @param {number} projectId - 项目ID
+ * @returns {Promise} 返回重置仿真的响应数据
  */
 export function resetSimulation(projectId) {
   return request({
     url: `/simulation/${projectId}/reset`,
     method: 'post'
+  })
+}
+
+/**
+ * 获取轮次详细信息
+ * @param {number} projectId - 项目ID
+ * @param {number} roundNum - 轮次编号
+ * @returns {Promise} 返回轮次详细信息的响应数据
+ */
+export function getRoundDetail(projectId, roundNum) {
+  return request({
+    url: `/simulation/${projectId}/round/${roundNum}`,
+    method: 'get'
   })
 }

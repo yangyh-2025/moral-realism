@@ -1,5 +1,7 @@
 """
-SimulationProject model - 仿真项目主表
+仿真项目模型 - SimulationProject
+仿真项目是系统的核心实体，代表一次完整的仿真实验。
+包含项目配置、运行状态、场景来源等信息，并关联所有相关的仿真数据。
 """
 
 from datetime import datetime
@@ -20,6 +22,10 @@ from ..models import Base
 
 
 class ProjectStatus(str, PyEnum):
+    """仿真项目状态枚举
+
+    定义仿真项目可能处于的不同状态。
+    """
     NOT_STARTED = "未启动"
     RUNNING = "运行中"
     PAUSED = "暂停"
@@ -30,7 +36,14 @@ class ProjectStatus(str, PyEnum):
 class SimulationProject(Base):
     """
     仿真项目主表
+
     移除用户关联字段，固定学术阈值，新增场景来源字段，适配预置场景一键启动能力。
+
+    属性说明：
+    - 基础信息：项目名称、描述、场景来源
+    - 仿真配置：总轮数、当前轮次、运行状态
+    - 学术阈值：尊重主权阈值、领导权阈值（均固定为60%）
+    - 关联关系：智能体、轮次、行为记录、追随关系、国力历史、目标评估
     """
 
     __tablename__ = "simulation_project"

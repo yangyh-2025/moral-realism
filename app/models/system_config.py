@@ -1,5 +1,7 @@
 """
-SystemConfig model - 系统配置表
+系统配置模型 - SystemConfig
+存储系统的全局配置信息，包括LLM模型配置、API密钥、仿真参数、日志设置等。
+这些配置项影响系统的运行行为和性能。
 """
 
 from datetime import datetime
@@ -13,8 +15,15 @@ from ..models import Base
 class SystemConfig(Base):
     """
     系统配置表
-    移除用户相关配置，核心配置项：LLM模型名称、API密钥、调用超时时间、最大重试次数、仿真并发数、日志级别、默认场景ID等。
-   。
+
+    存储系统的全局配置信息，核心配置项包括：
+    - LLM模型配置：模型名称、API密钥、API基础URL
+    - 调用参数：超时时间、最大重试次数
+    - 仿真参数：并发数
+    - 日志设置：日志级别
+    - 场景设置：默认场景ID
+
+    这些配置项影响系统的运行行为和性能。
     """
 
     __tablename__ = "system_config"

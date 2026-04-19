@@ -1,5 +1,6 @@
 """
-Database configuration and initialization for ABM simulation system.
+数据库配置与初始化模块
+ABM仿真系统的数据库配置、连接管理和数据初始化。
 """
 
 import json
@@ -15,27 +16,42 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-# Base directory
+# 项目根目录
 BASE_DIR = Path(__file__).parent.parent.parent
+# 数据存储目录
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
-# Database URL - using SQLite with async support
-# Convert path to forward slashes for URL compatibility
+# 数据库 URL - 使用异步 SQLite 驱动
+# 将路径中的反斜杠转换为正斜杠以确保 URL 兼容性
 db_path = str(DATA_DIR / "abm_simulation.db").replace("\\", "/")
 DATABASE_URL = f"sqlite+aiosqlite:///{db_path}"
 
 class DatabaseConfig:
-    """Database configuration class"""
+    """
+    数据库配置管理类
+
+    负责数据库引擎的创建、会话工厂管理和连接池管理。
+    """
 
     def __init__(self, db_url: str = DATABASE_URL):
+        """
+        初始化数据库配置
+
+        Args:
+            db_url: 数据库连接字符串，默认使用 SQLite 数据库
+        """
         self.db_url = db_url
         self._engine: AsyncEngine | None = None
         self._async_session_factory: async_sessionmaker | None = None
 
     @property
     def engine(self) -> AsyncEngine:
-        """Get or create database engine"""
+        """
+        获取或创建数据库引擎
+
+        使用懒加载方式创建异步数据库引擎。
+        """
         if self._engine is None:
             self._engine = create_async_engine(
                 self.db_url,
@@ -47,7 +63,11 @@ class DatabaseConfig:
 
     @property
     def async_session_factory(self) -> async_sessionmaker[AsyncSession]:
-        """Get or create async session factory"""
+        """
+        获取或创建异步会话工厂
+
+        用于创建数据库会话实例。
+        """
         if self._async_session_factory is None:
             self._async_session_factory = async_sessionmaker(
                 bind=self.engine,
@@ -57,7 +77,11 @@ class DatabaseConfig:
         return self._async_session_factory
 
     async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
-        """Get async database session"""
+        """
+        获取异步数据库会话
+
+        使用上下文管理器模式提供会话，自动处理提交和回滚。
+        """
         async with self.async_session_factory() as session:
             try:
                 yield session
@@ -67,18 +91,27 @@ class DatabaseConfig:
                 raise
 
     async def close(self) -> None:
-        """Close database connections"""
+        """
+        关闭数据库连接
+
+        清理资源，关闭引擎和会话工厂。
+        """
         if self._engine is not None:
             await self._engine.dispose()
             self._engine = None
             self._async_session_factory = None
 
-# Global database instance
+
+# 全局数据库实例
 db_config = DatabaseConfig()
 
 
 async def init_database() -> None:
-    """Initialize database tables"""
+    """
+    初始化数据库表结构
+
+    创建所有模型对应的数据库表。
+    """
     from app.models import Base
 
     async with db_config.engine.begin() as conn:
@@ -86,7 +119,11 @@ async def init_database() -> None:
 
 
 async def init_default_data() -> None:
-    """Initialize default data: action configs, preset scenes, system config"""
+    """
+    初始化默认数据
+
+    初始化系统的默认数据：行为配置、预置场景、系统配置。
+    """
     from app.models import (
         ActionConfig,
         PresetScene,
@@ -94,21 +131,21 @@ async def init_default_data() -> None:
     )
 
     async for session in db_config.get_session():
-        # Initialize action configs if empty
+        # 初始化行为配置数据（如果表为空）
         action_count = await session.execute(
             text("SELECT COUNT(*) FROM action_config")
         )
         if action_count.scalar() == 0:
             await _init_action_configs(session)
 
-        # Initialize preset scenes if empty
+        # 初始化预置场景数据（如果表为空）
         scene_count = await session.execute(
             text("SELECT COUNT(*) FROM preset_scene")
         )
         if scene_count.scalar() == 0:
             await _init_preset_scenes(session)
 
-        # Initialize system config if empty
+        # 初始化系统配置数据（如果表为空）
         config_count = await session.execute(
             text("SELECT COUNT(*) FROM system_config")
         )
@@ -118,12 +155,17 @@ async def init_default_data() -> None:
 
 async def _init_action_configs(session: AsyncSession) -> None:
     """
-    Initialize 20 standard interaction actions from academic model
-    使用学术文档中的完整描述，移除限制字段
+    初始化20项标准互动行为配置
+
+    使用学术模型中的完整行为描述，包含外交、经济、军事和信息四大类行为。
+    这些行为配置在系统初始化时自动加载，全程不可修改。
+
+    Args:
+        session: 数据库会话
     """
     from app.models import ActionConfig
 
-    # 学术文档中的完整20项行为描述
+    # 学术文档中定义的完整20项互动行为描述
     actions = [
         {
             "action_name": "发表公开声明",
@@ -347,21 +389,37 @@ async def _init_action_configs(session: AsyncSession) -> None:
         }
     ]
 
+    # 批量添加所有行为配置到数据库
     for action_data in actions:
         action = ActionConfig(**action_data)
         session.add(action)
 
 
 async def _init_preset_scenes(session: AsyncSession) -> None:
-    """Initialize default preset scenes"""
-    # Will be implemented with 3 classic academic scenes
+    """
+    初始化预置仿真场景
+
+    暂未实现，计划添加3个经典学术场景供一键启动。
+
+    Args:
+        session: 数据库会话
+    """
+    # 待实现：添加3个经典学术场景
     pass
 
 
 async def _init_system_config(session: AsyncSession) -> None:
-    """Initialize default system configuration"""
+    """
+    初始化系统配置
+
+    设置 LLM 模型、API 配置、仿真并发数等系统默认参数。
+
+    Args:
+        session: 数据库会话
+    """
     from app.models import SystemConfig
 
+    # 默认系统配置项
     configs = [
         {
             "config_key": "llm_model_name",

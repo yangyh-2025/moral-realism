@@ -1,5 +1,7 @@
 """
-FollowerRelation model - 智能体追随关系表
+智能体追随关系模型 - FollowerRelation
+记录智能体之间的追随关系，用于研究国际秩序中的领导-追随模式。
+每个智能体在每轮仿真中可以有一个领导者或无领导者。
 """
 
 from datetime import datetime
@@ -20,7 +22,12 @@ if TYPE_CHECKING:
 class FollowerRelation(Base):
     """
     智能体追随关系表
+
     移除用户关联字段，完全对齐学术模型的领导权判定规则。
+
+    属性说明：
+    - 项目/轮次关联：所属项目和具体轮次
+    - 追随关系：追随者智能体ID和领导者智能体ID（可为空）
     """
 
     __tablename__ = "follower_relation"

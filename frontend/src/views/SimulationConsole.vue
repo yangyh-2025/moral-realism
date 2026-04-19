@@ -1,12 +1,39 @@
+<!--
+ * @文件名称: SimulationConsole.vue
+ * @文件描述: 仿真控制台组件 - 提供仿真过程的实时控制和监控
+ *
+ * 功能说明:
+ * - 仿真控制：启动、暂停、继续、终止、单步执行、重置
+ * - 状态监控：显示项目状态、当前轮次、总行为数、主权尊重率等
+ * - 日志记录：实时显示仿真过程中的所有日志信息
+ * - 轮次详情：显示当前轮次的行为统计、追随关系、决策详情
+ * - 自动轮询：实时更新仿真状态和数据
+ *
+ * 组件结构:
+ * - 三列布局：
+ *   - 左侧控制面板：仿真控制按钮 + 状态显示
+ *   - 中间日志面板：实时显示仿真日志
+ *   - 右侧详情面板：显示当前轮次的详细信息
+ *
+ * 依赖:
+ * - Vue 3 Composition API
+ * - Element Plus 组件库
+ * - Vue Router 用于页面跳转
+ * - App Store 用于状态管理
+ * - simulation API 用于仿真控制和轮次详情
+-->
+
 <template>
   <div class="console-container">
     <el-row :gutter="20">
+      <!-- 左侧控制面板 -->
       <el-col :span="6">
         <el-card class="control-panel">
           <template #header>
             <h3>仿真控制</h3>
           </template>
 
+          <!-- 仿真控制按钮组 -->
           <div class="control-buttons">
             <el-button
               type="primary"
@@ -50,6 +77,7 @@
             </el-button>
           </div>
 
+          <!-- 仿真状态显示 -->
           <el-divider>仿真状态</el-divider>
 
           <el-descriptions :column="1" border size="small">
@@ -72,6 +100,7 @@
         </el-card>
       </el-col>
 
+      <!-- 中间日志面板 -->
       <el-col :span="12">
         <el-card class="log-panel">
           <template #header>
@@ -81,6 +110,7 @@
             </div>
           </template>
 
+          <!-- 日志内容显示区 -->
           <div class="log-container" ref="logContainer">
             <div
               v-for="(log, index) in logs"
@@ -94,12 +124,14 @@
         </el-card>
       </el-col>
 
+      <!-- 右侧详情面板 -->
       <el-col :span="6">
         <el-card class="info-panel">
           <template #header>
             <h3>本轮详情</h3>
           </template>
 
+          <!-- 当前轮次信息显示 -->
           <div v-if="currentRoundInfo">
             <el-descriptions :column="1" border size="small">
               <el-descriptions-item label="轮次">
@@ -116,8 +148,33 @@
                   {{ currentRoundInfo.hasLeader ? '是' : '否' }}
                 </el-tag>
               </el-descriptions-item>
+              <el-descriptions-item label="领导追随比" v-if="currentRoundInfo.leaderFollowerRatio !== undefined">
+                {{ (currentRoundInfo.leaderFollowerRatio * 100).toFixed(1) }}%
+              </el-descriptions-item>
+              <el-descriptions-item label="秩序类型" v-if="currentRoundInfo.orderType">
+                <el-tag :type="getOrderType(currentRoundInfo.orderType)">{{ currentRoundInfo.orderType }}</el-tag>
+              </el-descriptions-item>
             </el-descriptions>
 
+            <!-- 追随关系 -->
+            <el-divider>追随关系</el-divider>
+
+            <div v-if="currentRoundInfo.followerRelations && currentRoundInfo.followerRelations.length > 0" class="follower-relations">
+              <div
+                v-for="(relation, index) in currentRoundInfo.followerRelations"
+                :key="index"
+                class="follower-item"
+              >
+                <span class="follower-name">{{ relation.follower_agent_name }}</span>
+                <span class="arrow">→</span>
+                <span :class="['leader-name', relation.leader_agent_id ? 'has-leader' : 'neutral']">
+                  {{ relation.leader_agent_name || '中立' }}
+                </span>
+              </div>
+            </div>
+            <div v-else class="no-data">暂无追随关系数据</div>
+
+            <!-- 最近行为 -->
             <el-divider>最近行为</el-divider>
 
             <div class="recent-actions">
@@ -128,8 +185,27 @@
                 size="small"
                 style="margin: 4px;"
               >
-                {{ action.actionName }}
+                {{ action.sourceAgent }} → {{ action.actionName }}
               </el-tag>
+            </div>
+
+            <!-- 决策详情 -->
+            <el-divider>决策详情</el-divider>
+
+            <div class="decision-details">
+              <div
+                v-for="(action, index) in currentRoundInfo.recentActions"
+                :key="index"
+                class="decision-item"
+              >
+                <span class="agent-name">{{ action.sourceAgent }}</span>
+                <span class="arrow">→</span>
+                <span :class="['action-name', action.respectSov ? 'respect-sov' : 'violate-sov']">
+                  {{ action.actionName }}
+                </span>
+                <span class="arrow">→</span>
+                <span class="target-name">{{ action.targetAgent }}</span>
+              </div>
             </div>
           </div>
           <div v-else class="no-data">
@@ -142,13 +218,30 @@
 </template>
 
 <script setup>
+/**
+ * 仿真控制台组件脚本
+ *
+ * 主要功能:
+ * - 管理仿真状态和控制操作
+ * - 处理仿真控制事件
+ * - 轮询和更新仿真状态
+ * - 管理日志显示和轮次详情
+ * - 初始化和清理资源
+ */
+
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { io } from 'socket.io-client'
+import { useAppStore } from '../store'
+import * as simulationApi from '../api/simulation'
 
+// 获取路由和路由跳转实例
 const route = useRoute()
+const router = useRouter()
+// 获取应用状态管理
+const appStore = useAppStore()
 
+// 仿真状态和控制变量
 const isRunning = ref(false)
 const loading = ref(false)
 const status = ref('未启动')
@@ -158,40 +251,159 @@ const totalActions = ref(0)
 const respectSovRatio = ref(0)
 const orderType = ref('未判定')
 
+// 日志相关变量
 const logs = ref([])
 const logContainer = ref(null)
-const socket = ref(null)
 
+// 当前轮次信息
 const currentRoundInfo = ref(null)
+const projectId = ref(null)
+const lastRound = ref(0)
 
-onMounted(() => {
+// 轮询定时器
+let pollTimer = null
+
+/**
+ * 组件挂载时初始化
+ */
+onMounted(async () => {
+  // 从 URL 获取项目 ID
+  const queryProjectId = route.query.projectId
+  if (queryProjectId) {
+    projectId.value = parseInt(queryProjectId)
+    appStore.setProjectId(projectId.value)
+    await refreshProjectStatus()
+  } else {
+    // 尝试从本地存储获取项目 ID
+    const storedProjectId = appStore.loadProjectId()
+    if (storedProjectId) {
+      projectId.value = storedProjectId
+      await refreshProjectStatus()
+    } else {
+      // 无项目 ID，跳转到配置页面
+      ElMessage.error('未找到项目 ID，请先创建项目')
+      router.push({ name: 'SimulationConfig' })
+      return
+    }
+  }
+  addLog('info', `仿真控制台已初始化，项目 ID: ${projectId.value}`)
   initializeSocket()
-  addLog('info', '仿真控制台已初始化')
-  if (route.query.projectId) {
-    addLog('info', `已加载项目 ID: ${route.query.projectId}`)
-  }
 })
 
+/**
+ * 组件卸载时清理
+ */
 onUnmounted(() => {
-  if (socket.value) {
-    socket.value.disconnect()
-  }
+  stopPolling()
 })
 
+/**
+ * 初始化 WebSocket 连接（预留功能）
+ */
 function initializeSocket() {
-  // TODO: Initialize Socket.IO connection
-  // socket.value = io('http://localhost:8000')
-  // socket.value.on('simulation_update', handleSimulationUpdate)
-  // socket.value.on('simulation_complete', handleSimulationComplete)
-  // socket.value.on('simulation_error', handleSimulationError)
+  // WebSocket 未实现，使用轮询替代
+  // try {
+  //   socket = io('http://localhost:8000')
+  //   socket.on('connect', () => {
+  //     addLog('info', 'WebSocket 已连接')
+  //   })
+  //   socket.on('disconnect', () => {
+  //     addLog('warning', 'WebSocket 已断开')
+  //   })
+  //   socket.on('simulation_update', handleSimulationUpdate)
+  //   socket.on('simulation_complete', handleSimulationComplete)
+  //   socket.on('simulation_error', handleSimulationError)
+  // } catch (error) {
+  //   console.error('WebSocket 初始化失败:', error)
+  // }
 }
 
+/**
+ * 刷新项目状态
+ * 轮询时调用，获取项目当前状态和轮次信息
+ */
+async function refreshProjectStatus() {
+  if (!projectId.value) return
+
+  try {
+    const response = await simulationApi.getProject(projectId.value)
+    const project = response.data
+
+    console.log('==== Poll refreshProjectStatus ====')
+    console.log('Project status data:', project)
+
+    status.value = project.status || '未启动'
+    const newRound = project.current_round || 0
+    totalRounds.value = project.total_rounds || 50
+
+    console.log(`Last round: ${lastRound.value}, New round: ${newRound}`)
+
+    // 当轮次增加时，获取最新完成的轮次的详情
+    if (newRound > lastRound.value) {
+      const startRound = lastRound.value + 1
+      const endRound = newRound
+
+      console.log(`==== ROUNDS CHANGED: fetching from ${startRound} to ${endRound} ====`)
+
+      if (endRound >= startRound) {
+        for (let round = startRound; round <= endRound; round++) {
+          await getRoundDetail(round)
+        }
+      }
+      lastRound.value = newRound
+    }
+    currentRound.value = newRound
+
+    const isRunningNow = status.value === '运行中'
+    if (isRunningNow !== isRunning.value) {
+      isRunning.value = isRunningNow
+    }
+
+    // 确保只在运行时才轮询
+    if (!isRunningNow && pollTimer) {
+      stopPolling()
+    } else if (isRunningNow && !pollTimer) {
+      startPolling()
+    }
+  } catch (error) {
+    console.error('获取项目状态失败:', error)
+  }
+}
+
+/**
+ * 开始轮询
+ */
+function startPolling() {
+  if (pollTimer) return
+  pollTimer = setInterval(refreshProjectStatus, 1000)
+}
+
+/**
+ * 停止轮询
+ */
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+/**
+ * 添加日志条目
+ * @param {string} type - 日志类型（info, success, warning, error）
+ * @param {string} message - 日志消息
+ */
 function addLog(type, message) {
   const now = new Date()
   const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
   logs.value.push({ type, message, time })
 
-  // Auto-scroll to bottom
+  // 限制日志数量，防止内存泄漏
+  if (logs.value.length > 500) {
+    logs.value = logs.value.slice(-500)
+  }
+
+  // 自动滚动到底部
   nextTick(() => {
     if (logContainer.value) {
       logContainer.value.scrollTop = logContainer.value.scrollHeight
@@ -199,10 +411,18 @@ function addLog(type, message) {
   })
 }
 
+/**
+ * 清空日志
+ */
 function clearLogs() {
   logs.value = []
 }
 
+/**
+ * 根据状态返回对应的标签类型
+ * @param {string} status - 状态文本
+ * @returns {string} Element Plus 标签类型
+ */
 function getStatusType(status) {
   const typeMap = {
     '未启动': 'info',
@@ -214,6 +434,11 @@ function getStatusType(status) {
   return typeMap[status] || 'info'
 }
 
+/**
+ * 根据秩序类型返回对应的标签类型
+ * @param {string} order - 秩序类型
+ * @returns {string} Element Plus 标签类型
+ */
 function getOrderType(order) {
   const typeMap = {
     '规范接纳型秩序': 'success',
@@ -224,89 +449,263 @@ function getOrderType(order) {
   return typeMap[order] || 'info'
 }
 
+// 用于存储正在获取的轮次，避免重复请求
+const fetchingRounds = new Set()
+
+/**
+ * 获取指定轮次的详情
+ * @param {number} roundNum - 轮次编号
+ * @param {number} retryCount - 重试次数
+ */
+async function getRoundDetail(roundNum, retryCount = 0) {
+  if (!projectId.value) return
+
+  // 防止重复请求
+  if (fetchingRounds.has(roundNum)) {
+    console.log(`Round ${roundNum} is already being fetched, skipping`)
+    return
+  }
+
+  fetchingRounds.add(roundNum)
+  console.log(`Fetching round detail for round ${roundNum} (retry ${retryCount})`)
+
+  try {
+    const response = await simulationApi.getRoundDetail(projectId.value, roundNum)
+    const roundData = response.data
+
+    console.log(`Round ${roundNum} data:`, roundData)
+
+    // 检查数据是否完整（行为数是否为0且不是重试）
+    if (roundData.total_actions === 0 && retryCount < 5) {
+      // 数据可能还没准备好，延迟重试
+      console.log(`Round ${roundNum} has no data yet, retrying in 500ms...`)
+      fetchingRounds.delete(roundNum)
+      setTimeout(() => getRoundDetail(roundNum, retryCount + 1), 500)
+      return
+    }
+
+    // 获取最近10条行为记录
+    const actions = roundData.actions || []
+    const recentActions = actions.slice(-10).map(action => ({
+      actionName: action.action_name,
+      respectSov: action.respect_sov,
+      sourceAgent: action.source_agent_name,
+      targetAgent: action.target_agent_name,
+      detail: action.decision_detail
+    }))
+
+    // 处理追随者关系
+    const followerRelations = roundData.follower_relations || []
+
+    // 更新当前轮次信息
+    currentRoundInfo.value = {
+      roundNum: roundData.round_num,
+      actionCount: roundData.total_actions,
+      respectSovActions: roundData.respect_sov_actions,
+      hasLeader: roundData.has_leader,
+      recentActions: recentActions,
+      followerRelations: followerRelations,
+      leaderAgentId: roundData.leader_agent_id,
+      leaderFollowerRatio: roundData.leader_follower_ratio,
+      orderType: roundData.order_type
+    }
+
+    // 添加日志
+    addLog('info', `第 ${roundNum} 轮完成: ${roundData.total_actions} 个行为, ${roundData.respect_sov_actions} 个尊重主权`)
+
+    // 如果有追随者关系，添加日志
+    if (followerRelations.length > 0) {
+      const leaders = followerRelations.filter(r => r.leader_agent_id).map(r => r.leader_agent_name)
+      const neutrals = followerRelations.filter(r => !r.leader_agent_id).map(r => r.follower_agent_name)
+      if (leaders.length > 0) {
+        addLog('success', `追随关系: ${leaders.length} 个追随者追随 ${leaders[0]}`)
+      }
+      if (neutrals.length > 0) {
+        addLog('info', `中立国家: ${neutrals.join(', ')}`)
+      }
+    }
+
+    // 更新总行为数
+    totalActions.value = roundData.total_actions
+    if (roundData.total_actions > 0) {
+      respectSovRatio.value = (roundData.respect_sov_actions / roundData.total_actions) * 100
+    }
+  } catch (error) {
+    console.error('获取轮次详情失败:', error)
+    // 错误时也重试
+    if (retryCount < 3) {
+      console.log(`Retrying round ${roundNum} in 500ms...`)
+      fetchingRounds.delete(roundNum)
+      setTimeout(() => getRoundDetail(roundNum, retryCount + 1), 500)
+      return
+    }
+  } finally {
+    fetchingRounds.delete(roundNum)
+  }
+}
+
+/**
+ * 启动仿真
+ */
 async function startSimulation() {
+  console.log('startSimulation called, projectId:', projectId.value)
+  console.log('Current status:', status.value)
+  console.log('isRunning:', isRunning.value)
+
+  if (!projectId.value) {
+    ElMessage.error('未找到项目 ID')
+    return
+  }
+
+  // 先检查当前状态
+  if (status.value === '已完成' || status.value === '已终止') {
+    ElMessage.warning('仿真已完成或已终止，请先点击"重置"按钮后再启动')
+    return
+  }
+
+  // 检查错误状态
+  if (status.value === '错误') {
+    ElMessage.warning('仿真处于错误状态，请先点击"重置"按钮后再启动')
+    return
+  }
+
   loading.value = true
   try {
-    // TODO: Call API to start simulation
-    addLog('info', '仿真已启动')
-    isRunning.value = true
-    status.value = '运行中'
+    addLog('info', `正在启动仿真，项目 ID: ${projectId.value}`)
+    const response = await simulationApi.startSimulation(projectId.value)
+
+    console.log('Start simulation response:', response)
+
+    // 检查后端返回的实际状态
+    if (response.data && response.data.status && response.data.status !== '运行中') {
+      const errorMsg = response.data.message || '启动仿真失败'
+      ElMessage.error(errorMsg)
+      addLog('error', errorMsg)
+      return
+    }
+
+    addLog('success', '仿真已启动')
+    lastRound.value = 0
+    await refreshProjectStatus()
+    startPolling()
   } catch (error) {
-    addLog('error', '启动仿真失败')
-    console.error(error)
+    console.error('Start simulation: error:', error)
+    const errorMsg = error.response?.data?.detail || error.message || '未知错误'
+    addLog('error', `启动仿真失败: ${errorMsg}`)
+    ElMessage.error(`启动仿真失败: ${errorMsg}`)
   } finally {
     loading.value = false
   }
 }
 
+/**
+ * 暂停仿真
+ */
 async function pauseSimulation() {
+  if (!projectId.value) {
+    ElMessage.error('未找到项目 ID')
+    return
+  }
+
   try {
-    // TODO: Call API to pause simulation
+    await simulationApi.pauseSimulation(projectId.value)
     addLog('warning', '仿真已暂停')
-    isRunning.value = false
-    status.value = '暂停'
+    await refreshProjectStatus()
+    stopPolling()
   } catch (error) {
-    addLog('error', '暂停仿真失败')
+    addLog('error', `暂停仿真失败: ${error.message || error}`)
     console.error(error)
   }
 }
 
+/**
+ * 继续仿真
+ */
 async function resumeSimulation() {
+  if (!projectId.value) {
+    ElMessage.error('未找到项目 ID')
+    return
+  }
+
   try {
-    // TODO: Call API to resume simulation
-    addLog('info', '仿真已继续')
-    isRunning.value = true
-    status.value = '运行中'
+    await simulationApi.resumeSimulation(projectId.value)
+    addLog('success', '仿真已继续')
+    await refreshProjectStatus()
+    startPolling()
   } catch (error) {
-    addLog('error', '继续仿真失败')
+    addLog('error', `继续仿真失败: ${error.message || error}`)
     console.error(error)
   }
 }
 
+/**
+ * 终止仿真
+ */
 async function stopSimulation() {
+  if (!projectId.value) {
+    ElMessage.error('未找到项目 ID')
+    return
+  }
+
   try {
-    // TODO: Call API to stop simulation
+    await simulationApi.stopSimulation(projectId.value)
     addLog('warning', '仿真已终止')
-    isRunning.value = false
-    status.value = '已终止'
+    await refreshProjectStatus()
+    stopPolling()
   } catch (error) {
-    addLog('error', '终止仿真失败')
+    addLog('error', `终止仿真失败: ${error.message || error}`)
     console.error(error)
   }
 }
 
+/**
+ * 单步执行
+ */
 async function stepSimulation() {
+  if (!projectId.value) {
+    ElMessage.error('未找到项目 ID')
+    return
+  }
+
   loading.value = true
   try {
-    // TODO: Call API to execute single step
+    await simulationApi.stepSimulation(projectId.value)
     addLog('info', `第 ${currentRound.value + 1} 轮执行完成`)
-    currentRound.value++
-    status.value = '运行中'
+    await refreshProjectStatus()
   } catch (error) {
-    addLog('error', '单步执行失败')
+    addLog('error', `单步执行失败: ${error.message || error}`)
     console.error(error)
   } finally {
     loading.value = false
   }
 }
 
+/**
+ * 重置仿真
+ */
 async function resetSimulation() {
+  if (!projectId.value) {
+    ElMessage.error('未找到项目 ID')
+    return
+  }
+
   try {
-    // TODO: Call API to reset simulation
+    await simulationApi.resetSimulation(projectId.value)
     addLog('warning', '仿真已重置')
-    isRunning.value = false
-    status.value = '未启动'
-    currentRound.value = 0
-    totalActions.value = 0
-    respectSovRatio.value = 0
-    orderType.value = '未判定'
+    lastRound.value = 0
     currentRoundInfo.value = null
+    await refreshProjectStatus()
+    stopPolling()
   } catch (error) {
-    addLog('error', '重置仿真失败')
+    addLog('error', `重置仿真失败: ${error.message || error}`)
     console.error(error)
   }
 }
 
+/**
+ * 处理仿真更新事件（预留）
+ * @param {Object} data - 更新数据
+ */
 function handleSimulationUpdate(data) {
   // Handle real-time simulation updates
   addLog('info', `轮次 ${data.round} 更新`)
@@ -314,12 +713,20 @@ function handleSimulationUpdate(data) {
   status.value = '运行中'
 }
 
+/**
+ * 处理仿真完成事件（预留）
+ * @param {Object} data - 完成数据
+ */
 function handleSimulationComplete(data) {
   addLog('success', '仿真完成')
   isRunning.value = false
   status.value = '已完成'
 }
 
+/**
+ * 处理仿真错误事件（预留）
+ * @param {Object} data - 错误数据
+ */
 function handleSimulationError(data) {
   addLog('error', `仿真错误: ${data.message}`)
   isRunning.value = false
@@ -327,22 +734,26 @@ function handleSimulationError(data) {
 </script>
 
 <style scoped>
+/* 控制台容器 - 最大宽度限制，居中显示 */
 .console-container {
   max-width: 1600px;
   margin: 0 auto;
 }
 
+/* 小标题样式 */
 .console-container h3 {
   margin: 0;
   color: #409eff;
 }
 
+/* 控制按钮布局 */
 .control-buttons {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 
+/* 日志容器样式 */
 .log-container {
   height: 400px;
   overflow-y: auto;
@@ -351,6 +762,7 @@ function handleSimulationError(data) {
   border-radius: 4px;
 }
 
+/* 日志条目样式 */
 .log-item {
   padding: 4px 8px;
   margin-bottom: 4px;
@@ -359,6 +771,7 @@ function handleSimulationError(data) {
   border-radius: 2px;
 }
 
+/* 不同类型日志的背景色 */
 .log-info {
   background: #e1f3d8;
   color: #303133;
@@ -379,21 +792,109 @@ function handleSimulationError(data) {
   color: #303133;
 }
 
+/* 日志时间样式 */
 .log-time {
   margin-right: 10px;
   color: #909399;
 }
 
+/* 面板头部布局 */
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+/* 最近行为样式 */
 .recent-actions {
   margin-top: 10px;
 }
 
+/* 追随关系容器 */
+.follower-relations {
+  margin-top: 10px;
+}
+
+/* 追随关系条目 */
+.follower-item {
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  background: #f5f7fa;
+  border-radius: 4px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 追随关系文本样式 */
+.follower-name,
+.leader-name {
+  font-weight: bold;
+  color: #303133;
+}
+
+/* 有领导者的文本样式 */
+.has-leader {
+  color: #409eff;
+}
+
+/* 中立状态文本样式 */
+.neutral {
+  color: #909399;
+  font-style: italic;
+}
+
+/* 决策详情容器 */
+.decision-details {
+  margin-top: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* 决策详情条目 */
+.decision-item {
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  background: #f5f7fa;
+  border-radius: 4px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 参与者名称样式 */
+.agent-name,
+.target-name {
+  font-weight: bold;
+  color: #303133;
+}
+
+/* 箭头样式 */
+.arrow {
+  color: #909399;
+}
+
+/* 行为名称样式 */
+.action-name {
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+/* 尊重主权的行为 */
+.respect-sov {
+  background: #c8e6c9;
+  color: #303133;
+}
+
+/* 违反主权的行为 */
+.violate-sov {
+  background: #ffcccc;
+  color: #303133;
+}
+
+/* 无数据提示 */
 .no-data {
   text-align: center;
   color: #909399;

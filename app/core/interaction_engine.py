@@ -1,10 +1,10 @@
 """
+互动执行引擎模块
 Interaction Execution Engine Module
 
-This module implements interaction execution logic for ABM simulation,
-following academic model's interaction mechanism with two-phase execution.
-Removed all permission constraints (allowed_initiator_level, allowed_responder_level, forbidden_leader_type)
-to align with academic document - all agents can initiate all permitted action types.
+实现ABM仿真中的互动执行逻辑，遵循学术模型的两阶段执行机制。
+移除了所有权限约束（允许发起方层级、允许响应方层级、禁止的领导类型）
+以完全对齐学术文档 - 所有智能体均可发起所有允许的行为类型。
 """
 
 import asyncio
@@ -26,7 +26,7 @@ class ActionStage:
 
 
 # Import enums from agent_base to avoid duplication
-from .agent_base import PowerLevelEnum, LeaderTypeEnum
+from .agent_base import PowerLevelEnum as PowerLevel, LeaderTypeEnum as LeaderType
 
 
 @dataclass
@@ -138,7 +138,7 @@ class InteractionEngine:
         Args:
             agents: List of agents
         """
-        self._agents = {agent.agent_id: agent.agent_id for agent in agents}
+        self._agents = {agent.agent_id: agent for agent in agents}
         logger.info(f"Loaded {len(agents)} agents")
 
     def set_round(self, round_num: int) -> None:
@@ -307,12 +307,11 @@ class InteractionEngine:
                         records.append(record)
 
                 except Exception as e:
-                    logger.error(f"Error processing action for agent {agent.agent_name}: {e}")
+                    logger.exception(f"Error processing action for agent {agent.agent_name}: {e}")
                     continue
 
         except Exception as e:
-            logger.error(f"Error in initiative phase for agent {agent.agent_name}: {e}")
-            continue
+            logger.exception(f"Error in initiative phase for agent {agent.agent_name}: {e}")
 
         return records
 
@@ -394,12 +393,11 @@ class InteractionEngine:
                         records.append(record)
 
                 except Exception as e:
-                    logger.error(f"Error processing response for agent {agent.agent_name}: {e}")
+                    logger.exception(f"Error processing response for agent {agent.agent_name}: {e}")
                     continue
 
         except Exception as e:
-            logger.error(f"Error in response phase for agent {agent.agent_name}: {e}")
-            continue
+            logger.exception(f"Error in response phase for agent {agent.agent_name}: {e}")
 
         return records
 

@@ -1,6 +1,9 @@
 """
-Decision validation module for LLM-driven decision engine.
-Implements three-tier decision validation as per technical spec section 4.2.4.
+决策验证模块
+Decision Validation Module
+
+为LLM驱动的决策引擎实现三层决策验证机制。
+完全对齐技术规范第4.2.4节。
 """
 
 from typing import Dict, Any, List, Tuple

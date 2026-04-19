@@ -1,14 +1,15 @@
 """
+国力更新模块
 Power Update Module
 
-This module implements dynamic power updates following the Klein equation:
+实现基于克莱因方程的动态国力更新：
 Pp = (C + E + M) × (S + W)
 
-Constraints:
-- Per-action power change ≤10 points (hard constraint)
-- Round-based power aggregation: sum all initiator + target changes
-- Automatic power level recalculation after updates
-- Power history recording
+约束条件：
+- 单次行为国力变化 ≤10分（硬约束）
+- 轮次级国力聚合：求和所有发起方和目标方的变化
+- 更新后自动重新计算实力层级
+- 国力历史记录
 """
 
 import logging
@@ -17,8 +18,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import uuid
 
-# Import enums from agent_base to maintain consistency
-from .agent_base import PowerLevelEnumEnum
+# Import PowerLevelEnum from klein_equation
+from .klein_equation import PowerLevelEnum
+from .interaction_engine import ActionRecord, Agent
 
 # Configure logging
 logger = logging.getLogger(__name__)

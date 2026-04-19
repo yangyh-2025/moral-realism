@@ -1,3 +1,8 @@
+/**
+ * 路由配置模块
+ * 定义应用的所有路由规则和导航配置
+ */
+
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import SimulationConfig from '../views/SimulationConfig.vue'
@@ -7,6 +12,10 @@ import AcademicStatistics from '../views/AcademicStatistics.vue'
 import BehaviorSet from '../views/BehaviorSet.vue'
 import SystemConfig from '../views/SystemConfig.vue'
 
+/**
+ * 路由配置数组
+ * 定义每个路径对应的组件和页面标题
+ */
 const routes = [
   {
     path: '/',
@@ -52,8 +61,12 @@ const routes = [
   }
 ]
 
+/**
+ * 创建路由实例
+ * 使用HTML5 History模式，路由基于环境变量配置的基础URL
+ */
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
 

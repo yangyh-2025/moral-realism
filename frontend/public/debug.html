@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>前端诊断工具</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+    h1 { color: #409eff; }
+    .success { color: green; }
+'    .error { color: red; }
+    .warning { color: orange; }
+    button { padding: 10px 20px; margin: 10px 0; cursor: pointer; }
+    #output { margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px; }
+    .log { padding: 5px 0; border-bottom: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <h1>前端诊断工具</h1>
+
+  <div>
+    <button onclick="testFrontend()">1. 测试前端静态文件</button>
+    <button onclick="testBackend()">2. 测试后端API</button>
+    <button onclick="testVueApp()">3. 测试Vue应用加载</button>
+    <button onclick="clearOutput()">清空输出</button>
+  </div>
+
+  <div id="output"></div>
+
+  <script>
+    const output = document.getElementById('output');
+
+    function log(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = 'log';
+      const timestamp = new Date().toLocaleTimeString();
+      div.innerHTML = `<strong>[${timestamp}]</strong> <span class="${type}">${message}</span>`;
+      output.appendChild(div);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function clearOutput() {
+      output.innerHTML = '';
+    }
+
+    async function testFrontend() {
+      log('开始测试前端静态文件...', 'info');
+
+      try {
+        const response = await fetch('/src/main.js');
+        if (response.ok) {
+          const content = await response.text();
+          log(`前端main.js加载成功！大小: ${content.length} 字节`, 'success');
+          log('内容预览: ' + content.substring(0, 200) + '...', 'info');
+        } else {
+          log(`前端main.js加载失败！状态码: ${response.status}`, 'error');
+        }
+      } catch (error) {
+        log(`前端测试失败: ${error.message}`, 'error');
+      }
+    }
+
+    async function testBackend() {
+      log('开始测试后端API...', 'info');
+
+      try {
+        const response = await fetch('/api/v1/preset-scene/list');
+        if (response.ok) {
+          const data = await response.json();
+          log(`后端API连接成功！找到 ${data.length} 个预设场景`, 'success');
+          log('场景名称: ' + data.map(s => s.scene_name).join(', '), 'info');
+        } else {
+          log(`后端API连接失败！状态码: ${response.status}`, 'error');
+        }
+      } catch (error) {
+        log(`后端API测试失败: ${error.message}`, 'error');
+      }
+    }
+
+    async function testVueApp() {
+      log('开始测试Vue应用加载...', 'info');
+
+      try {
+        // 检查Vue依赖
+        const response = await fetch('/node_modules/.vite/deps/vue.js');
+        if (response.ok) {
+          log('Vue依赖加载成功', 'success');
+        } else {
+          log('Vue依赖加载失败', 'error');
+        }
+
+        // 检查Element Plus
+        const response2 = await fetch('/node_modules/element-plus/dist/index.css');
+        if (response2.ok) {
+          log('Element Plus样式加载成功', 'success');
+        } else {
+          log('Element Plus样式加载失败', 'error');
+        }
+
+        // 检查路由
+        const response3 = await fetch('/src/router/index.js');
+        if (response3.ok) {
+          log('路由配置加载成功', 'success');
+        } else {
+          log('路由配置加载失败', 'error');
+        }
+
+        // 检查App组件
+        const response4 = await fetch('/src/App.vue');
+        if (response4.ok) {
+          log('App组件加载成功', 'success');
+        } else {
+'          log('App组件加载失败', 'error');
+        }
+
+        log('所有核心组件检查完成', 'info');
+      } catch (error) {
+        log(`Vue应用测试失败: ${error.message}`, 'error');
+      }
+    }
+
+    // 自动运行测试
+    setTimeout(() => {
+      log('诊断工具已启动，请点击按钮进行测试', 'info');
+      log('提示: content-script-start.js错误是浏览器扩展报错，不影响应用', 'warning');
+    }, 500);
+  </script>
+</body>
+</html>

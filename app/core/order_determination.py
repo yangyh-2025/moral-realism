@@ -1,15 +1,16 @@
 """
+国际秩序判定模块
 Order Determination Module
 
-This module implements international order determination based on two dimensions:
-- Dimension 1: Sovereign respect ratio ≥60% (respect_sov actions / total actions)
-- Dimension 2: System leader existence (leader follower ratio ≥60%)
+基于两个维度实现国际秩序判定：
+- 维度1：主权尊重比例 ≥60%（尊重主权行为 / 总行为数）
+- 维度2：体系领导者存在（领导者追随比例 ≥60%）
 
-Four-quadrant order type determination:
-- Respect + Leader = Normative Acceptance (规范接纳型)
-- Respect + No Leader = Non-Intervention (不干涉型)
-- No Respect + Leader = Big Stick Coercion (大棒威慑型)
-- No Respect + No Leader = Terror Balance (恐怖平衡型)
+四象限秩序类型判定：
+- 尊重主权 + 有领导者 = 规范接纳型
+- 尊重主权 + 无领导者 = 不干涉型
+- 不尊重主权 + 有领导者 = 大棒威慑型
+- 不尊重主权 + 无领导者 = 恐怖平衡型
 """
 
 import logging
@@ -19,8 +20,10 @@ from enum import Enum
 from datetime import datetime
 import uuid
 
-# Import enums from agent_base to maintain consistency
-from .agent_base import PowerLevelEnumEnum
+# Import PowerLevelEnum from klein_equation
+from .klein_equation import PowerLevelEnum
+from .interaction_engine import ActionRecord
+from .interaction_engine import Agent
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -485,8 +488,7 @@ def create_sample_action_records(
             action_name="Sample Action",
             respect_sov=is_respect,
             initiator_power_change=0,
-            target_power_change=0,
-            is_valid=True
+            target_power_change=0
         )
         records.append(record)
 

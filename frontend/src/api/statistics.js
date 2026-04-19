@@ -1,7 +1,15 @@
+/**
+ * 统计数据API模块
+ * 提供仿真结果统计相关的API接口函数
+ */
+
 import request from './index'
 
 /**
- * Get power history
+ * 获取权力历史数据
+ * @param {number} projectId - 项目ID
+ * @param {Object} params - 查询参数
+ * @returns {Promise} 返回权力历史数据的响应
  */
 export function getPowerHistory(projectId, params) {
   return request({
@@ -12,7 +20,10 @@ export function getPowerHistory(projectId, params) {
 }
 
 /**
- * Get power growth rate
+ * 获取权力增长率数据
+ * @param {number} projectId - 项目ID
+ * @param {Object} params - 查询参数
+ * @returns {Promise} 返回权力增长率数据的响应
  */
 export function getPowerGrowthRate(projectId, params) {
   return request({
@@ -23,7 +34,10 @@ export function getPowerGrowthRate(projectId, params) {
 }
 
 /**
- * Get action preference
+ * 获取行为偏好数据
+ * @param {number} projectId - 项目ID
+ * @param {Object} params - 查询参数
+ * @returns {Promise} 返回行为偏好数据的响应
  */
 export function getActionPreference(projectId, params) {
   return request({
@@ -34,7 +48,9 @@ export function getActionPreference(projectId, params) {
 }
 
 /**
- * Get order evolution
+ * 获取秩序演化数据
+ * @param {number} projectId - 项目ID
+ * @returns {Promise} 返回秩序演化数据的响应
  */
 export function getOrderEvolution(projectId) {
   return request({
@@ -44,7 +60,10 @@ export function getOrderEvolution(projectId) {
 }
 
 /**
- * Get round detail
+ * 获取轮次详细数据
+ * @param {number} projectId - 项目ID
+ * @param {number} roundNum - 轮次编号
+ * @returns {Promise} 返回轮次详细数据的响应
  */
 export function getRoundDetail(projectId, roundNum) {
   return request({
@@ -55,7 +74,10 @@ export function getRoundDetail(projectId, roundNum) {
 }
 
 /**
- * Get goal evaluations
+ * 获取目标评估数据
+ * @param {number} projectId - 项目ID
+ * @param {Object} params - 查询参数
+ * @returns {Promise} 返回目标评估数据的响应
  */
 export function getGoalEvaluations(projectId, params) {
   return request({
@@ -66,7 +88,10 @@ export function getGoalEvaluations(projectId, params) {
 }
 
 /**
- * Get goal evaluation trend for specific agent
+ * 获取特定智能体的目标评估趋势
+ * @param {number} projectId - 项目ID
+ * @param {number} agentId - 智能体ID
+ * @returns {Promise} 返回目标评估趋势数据的响应
  */
 export function getGoalEvaluationTrend(projectId, agentId) {
   return request({

@@ -9,6 +9,8 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
 
+from loguru import logger
+
 from .agent_base import AgentBase, RegionEnum, LeaderTypeEnum
 from .klein_equation import PowerLevelEnum
 from .action_manager import ActionConfig, get_all_actions, initialize_actions
@@ -113,7 +115,7 @@ class SimulationEnvironment:
             return True
 
         except Exception as e:
-            print(f"预置场景初始化失败: {str(e)}")
+            logger.error(f"预置场景初始化失败: {str(e)}", exc_info=True)
             return False
 
     def initialize_custom(
@@ -147,7 +149,7 @@ class SimulationEnvironment:
             return True
 
         except Exception as e:
-            print(f"自定义场景初始化失败: {str(e)}")
+            logger.error(f"自定义场景初始化失败: {str(e)}", exc_info=True)
             return False
 
     def add_agent(self, agent: AgentBase) -> bool:
@@ -187,7 +189,7 @@ class SimulationEnvironment:
             return True
 
         except Exception as e:
-            print(f"添加智能体失败: {str(e)}")
+            logger.error(f"添加智能体失败: {str(e)}", exc_info=True)
             return False
 
     def remove_agent(self, agent_id: int) -> bool:
@@ -212,7 +214,7 @@ class SimulationEnvironment:
             return True
 
         except Exception as e:
-            print(f"移除智能体失败: {str(e)}")
+            logger.error(f"移除智能体失败: {str(e)}", exc_info=True)
             return False
 
     def get_agent(self, agent_id: int) -> Optional[AgentBase]:
@@ -251,7 +253,7 @@ class SimulationEnvironment:
         """
         return {
             agent_id: agent
-            for agent_id, agent in self.info_pool["["].items()
+            for agent_id, agent in self.info_pool["agents"].items()
             if agent.power_level == power_level
         }
 
@@ -494,7 +496,7 @@ class SimulationEnvironment:
             return True
 
         except Exception as e:
-            print(f"启动仿真失败: {str(e)}")
+            logger.error(f"启动仿真失败: {str(e)}", exc_info=True)
             return False
 
     def pause_simulation(self) -> bool:
@@ -513,7 +515,7 @@ class SimulationEnvironment:
             return True
 
         except Exception as e:
-            print(f"暂停仿真失败: {str(e)}")
+            logger.error(f"暂停仿真失败: {str(e)}", exc_info=True)
             return False
 
     def resume_simulation(self) -> bool:
@@ -532,7 +534,7 @@ class SimulationEnvironment:
             return True
 
         except Exception as e:
-            print(f"继续仿真失败: {str(e)}")
+            logger.error(f"继续仿真失败: {str(e)}", exc_info=True)
             return False
 
     def stop_simulation(self) -> bool:
@@ -551,7 +553,7 @@ class SimulationEnvironment:
             return True
 
         except Exception as e:
-            print(f"终止仿真失败: {str(e)}")
+            logger.error(f"终止仿真失败: {str(e)}", exc_info=True)
             return False
 
     def complete_simulation(self) -> bool:
@@ -570,7 +572,7 @@ class SimulationEnvironment:
             return True
 
         except Exception as e:
-            print(f"完成仿真失败: {str(e)}")
+            logger.error(f"完成仿真失败: {str(e)}", exc_info=True)
             return False
 
     def reset_simulation(self) -> bool:
@@ -612,7 +614,7 @@ class SimulationEnvironment:
             return True
 
         except Exception as e:
-            print(f"重置仿真失败: {str(e)}")
+            logger.error(f"重置仿真失败: {str(e)}", exc_info=True)
             return False
 
     def advance_round(self) -> bool:
@@ -634,7 +636,7 @@ class SimulationEnvironment:
             return True
 
         except Exception as e:
-            print(f"前进轮次失败: {str(e)}")
+            logger.error(f"前进轮次失败: {str(e)}", exc_info=True)
             return False
 
     def get_environment_info(self) -> Dict[str, Any]:

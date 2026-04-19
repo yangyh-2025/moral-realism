@@ -1,5 +1,7 @@
 """
-AgentPowerHistory model - 智能体国力历史表
+智能体国力历史模型 - AgentPowerHistory
+用于记录智能体在每轮仿真中的国力变化过程，包括起始国力、结束国力、
+变化值和变化率。这些数据对于分析仿真过程中的国力动态至关重要。
 """
 
 from datetime import datetime
@@ -19,7 +21,12 @@ if TYPE_CHECKING:
 class AgentPowerHistory(Base):
     """
     智能体国力历史表
+
     移除用户关联字段，完整记录每轮仿真后智能体的国力数据，满足学术观测要求。
+
+    属性说明：
+    - 项目/智能体/轮次关联：所属项目、智能体和具体轮次
+    - 国力数据：起始国力、结束国力、变化值、变化率
     """
 
     __tablename__ = "agent_power_history"

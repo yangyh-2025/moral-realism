@@ -54,7 +54,7 @@ def check_frontend():
 def check_npm():
     """Check if npm exists"""
     if not os.path.exists(NPM_CMD):
-        print('WARNING: npm not found at default path')
+        print('WARNING: npm not. found at default path')
         print('  You may need to install Node.js or update NPM_CMD path')
         return False
     return True
@@ -72,6 +72,18 @@ def open_browser():
     print(f'Opening browser at: {FRONTEND_URL}')
     print()
     webbrowser.open(FRONTEND_URL)
+
+
+def read_output(process, name, color_code='\033[0m'):
+    """实时读取并显示进程输出"""
+    try:
+        while True:
+            line = process.stdout.readline()
+            if not line:
+                break
+            print(f'{color_code}[{name}] {line.rstrip()}\033[0m')
+    except:
+        pass
 
 
 def start_servers():
@@ -121,9 +133,10 @@ def start_servers():
             backend_cmd,
             cwd=PROJECT_ROOT,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             text=True,
-            creationflags=subprocess.CREATE_NO_WINDOW
+            bufsize=1,
+            universal_newlines=True
         )
 
         print('Starting frontend server...')
@@ -131,15 +144,34 @@ def start_servers():
             frontend_cmd,
             cwd=FRONTEND_DIR,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             text=True,
-            creationflags=subprocess.CREATE_NO_WINDOW
+            bufsize=1,
+            universal_newlines=True
         )
 
         print()
         print('Backend server running on http://localhost:8000')
         print('Frontend server running on http://localhost:3000')
+        print('----------------------------------------------------------')
+        print('Server Output (Press Ctrl+C to stop):')
+        print('----------------------------------------------------------')
         print()
+
+        # 启动输出读取线程
+        backend_thread = threading.Thread(
+            target=read_output,
+            args=(backend_process, 'Backend', '\033[94m'),
+            daemon=True
+        )
+        frontend_thread = threading.Thread(
+            target=read_output,
+            args=(frontend_process, 'Frontend', '\033[92m'),
+            daemon=True
+        )
+
+        backend_thread.start()
+        frontend_thread.start()
 
         # Wait for either process to finish
         processes = [
@@ -153,11 +185,11 @@ def start_servers():
                 if process.poll() is not None:
                     print()
                     print('=' * 60)
-                    print(f'{name} server stopped unexpectedly')
+                    print(f'\033[91m{name} server stopped unexpectedly (exit code: {process.poll()})\033[0m')
                     print('=' * 60)
                     # Terminate other process
                     for other_name, other_process in processes:
-                        if other_process != process and other_process.poll() is None:
+                        if other_name != name and other_process.poll() is None:
                             print(f'Stopping {other_name} server...')
                             other_process.terminate()
                     return
@@ -190,8 +222,10 @@ def start_servers():
     except Exception as e:
         print()
         print('=' * 60)
-        print(f'Startup failed: {e}')
+        print(f'\033[91mStartup failed: {e}\033[0m')
         print('=' * 60)
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 
