@@ -42,10 +42,9 @@
         请先选择一个仿真项目以查看结果
       </el-alert>
 
-      <!-- 第一行：国际秩序演变和智能体国力变化 -->
+      <!-- 国际秩序演变图表 -->
       <el-row :gutter="20">
-        <!-- 左侧：国际秩序演变图表 -->
-        <el-col :span="8">
+        <el-col :span="24">
           <el-card class="chart-card">
             <template #header>
               <h3>国际秩序演变</h3>
@@ -53,9 +52,11 @@
             <div ref="orderChart" class="chart-container"></div>
           </el-card>
         </el-col>
+      </el-row>
 
-        <!-- 右侧：智能体国力变化图表 -->
-        <el-col :span="16">
+      <!-- 智能体国力变化图表 -->
+      <el-row :gutter="20" style="margin-top: 20px;">
+        <el-col :span="24">
           <el-card class="chart-card">
             <template #header>
               <h3>智能体国力变化</h3>
@@ -65,10 +66,9 @@
         </el-col>
       </el-row>
 
-      <!-- 第二行：行为类型分布、主权尊重率、领导国追随率 -->
+      <!-- 行为类型分布图 -->
       <el-row :gutter="20" style="margin-top: 20px;">
-        <!-- 行为类型分布图 -->
-        <el-col :span="8">
+        <el-col :span="24">
           <el-card class="chart-card">
             <template #header>
               <h3>行为类型分布</h3>
@@ -76,9 +76,11 @@
             <div ref="actionChart" class="chart-container"></div>
           </el-card>
         </el-col>
+      </el-row>
 
-        <!-- 主权尊重率趋势图 -->
-        <el-col :span="8">
+      <!-- 主权尊重率趋势图 -->
+      <el-row :gutter="20" style="margin-top: 20px;">
+        <el-col :span="24">
           <el-card class="chart-card">
             <template #header>
               <h3>主权尊重率趋势</h3>
@@ -86,9 +88,11 @@
             <div ref="sovereigntyChart" class="chart-container"></div>
           </el-card>
         </el-col>
+      </el-row>
 
-        <!-- 领导国追随率图 -->
-        <el-col :span="8">
+      <!-- 领导国追随率图 -->
+      <el-row :gutter="20" style="margin-top: 20px;">
+        <el-col :span="24">
           <el-card class="chart-card">
             <template #header>
               <h3>领导国追随率</h3>
@@ -180,9 +184,9 @@ function initializeCharts() {
   if (orderChart.value) {
     const chart = echarts.init(orderChart.value)
     chart.setOption({
-      title: { text: '国际秩序演变' },
+      grid: { top: 40, right: 40, bottom: 60, left: 80 },
       tooltip: { trigger: 'axis' },
-      legend: { data: ['秩序类型'] },
+      legend: { data: ['秩序类型'], top: 10 },
       xAxis: { type: 'category', name: '轮次' },
       yAxis: { type: 'category', name: '秩序类型' },
       series: [{
@@ -198,9 +202,9 @@ function initializeCharts() {
   if (powerChart.value) {
     const chart = echarts.init(powerChart.value)
     chart.setOption({
-      title: { text: '智能体国力变化' },
+      grid: { top: 40, right: 40, bottom: 80, left: 60 },
       tooltip: { trigger: 'axis' },
-      legend: { data: [] },
+      legend: { data: [], top: 10 },
       xAxis: { type: 'category', name: '轮次' },
       yAxis: { type: 'value', name: '国力' },
       series: []
@@ -212,13 +216,14 @@ function initializeCharts() {
   if (actionChart.value) {
     const chart = echarts.init(actionChart.value)
     chart.setOption({
-      title: { text: '行为类型分布' },
+      grid: { top: 10, right: 10, bottom: 80, left: 10 },
       tooltip: { trigger: 'item' },
-      legend: { orient: 'vertical', left: 'left' },
+      legend: { orient: 'horizontal', bottom: 10 },
       series: [{
         name: '行为分布',
         type: 'pie',
         radius: '50%',
+        center: ['50%', '45%'],
         data: []
       }]
     })
@@ -229,7 +234,7 @@ function initializeCharts() {
   if (sovereigntyChart.value) {
     const chart = echarts.init(sovereigntyChart.value)
     chart.setOption({
-      title: { text: '主权尊重率趋势' },
+      grid: { top: 40, right: 40, bottom: 40, left: 60 },
       tooltip: { trigger: 'axis' },
       xAxis: { type: 'category', name: '轮次' },
       yAxis: { type: 'value', name: '尊重率', min: 0, max: 1 },
@@ -247,7 +252,7 @@ function initializeCharts() {
   if (leaderChart.value) {
     const chart = echarts.init(leaderChart.value)
     chart.setOption({
-      title: { text: '领导国追随率' },
+      grid: { top: 40, right: 40, bottom: 40, left: 60 },
       tooltip: { trigger: 'axis' },
       xAxis: { type: 'category', name: '轮次' },
       yAxis: { type: 'value', name: '追随率', min: 0, max: 1 },
@@ -265,7 +270,7 @@ function initializeCharts() {
   if (relationChart.value) {
     const chart = echarts.init(relationChart.value)
     chart.setOption({
-      title: { text: '智能体关系图谱' },
+      grid: { top: 40, right: 40, bottom: 40, left: 40 },
       tooltip: {},
       series: [{
         type: 'graph',
@@ -443,7 +448,7 @@ function disposeCharts() {
 <style scoped>
 /* 结果容器 - 最大宽度限制，居中显示 */
 .results-container {
-  max-width: 1600px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -467,13 +472,13 @@ function disposeCharts() {
 
 /* 标准图表容器高度 */
 .chart-container {
-  height: 400px;
+  height: 600px;
   width: 100%;
 }
 
 /* 大型图表容器高度（用于关系图谱） */
 .chart-container-large {
-  height: 500px;
+  height: 700px;
   width: 100%;
 }
 </style>

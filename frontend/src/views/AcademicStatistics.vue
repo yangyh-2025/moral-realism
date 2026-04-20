@@ -315,7 +315,7 @@
  * - 清理资源和事件监听
  */
 
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as echarts from 'echarts'
 import { useAppStore } from '../store'
@@ -395,6 +395,15 @@ onUnmounted(() => {
 })
 
 /**
+ * 监听 Tab 切换，重新调整图表大小
+ */
+watch(activeTab, () => {
+  setTimeout(() => {
+    handleResize()
+  }, 100)
+})
+
+/**
  * 加载智能体列表
  */
 async function loadAgents() {
@@ -414,9 +423,9 @@ function initializeCharts() {
   if (powerStatsChart.value) {
     const chart = echarts.init(powerStatsChart.value)
     chart.setOption({
-      title: { text: '国力变化趋势' },
+      grid: { top: 40, right: 40, bottom: 80, left: 60 },
       tooltip: { trigger: 'axis' },
-      legend: { data: [] },
+      legend: { data: [], top: 10 },
       xAxis: { type: 'category', name: '轮次' },
       yAxis: { type: 'value', name: '国力' },
       series: []
@@ -428,12 +437,13 @@ function initializeCharts() {
   if (actionStatsChart.value) {
     const chart = echarts.init(actionStatsChart.value)
     chart.setOption({
-      title: { text: '行为偏好分布' },
+      grid: { top: 10, right: 10, bottom: 80, left: 10 },
       tooltip: { trigger: 'item' },
-      legend: { orient: 'vertical', left: 'left' },
+      legend: { orient: 'horizontal', bottom: 10 },
       series: [{
         type: 'pie',
         radius: '50%',
+        center: ['50%', '45%'],
         data: []
       }]
     })
@@ -444,9 +454,9 @@ function initializeCharts() {
   if (goalTrendChart.value) {
     const chart = echarts.init(goalTrendChart.value)
     chart.setOption({
-      title: { text: '目标达成度趋势' },
+      grid: { top: 40, right: 40, bottom: 80, left: 60 },
       tooltip: { trigger: 'axis' },
-      legend: { data: [] },
+      legend: { data: [], top: 10 },
       xAxis: { type: 'category' },
       yAxis: { type: 'value', min: 0, max: 100, name: '达成度(%)' },
       series: []
@@ -773,7 +783,7 @@ function disposeCharts() {
 <style scoped>
 /* 统计容器 - 最大宽度限制，居中显示 */
 .statistics-container {
-  max-width: 1600px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -790,7 +800,7 @@ function disposeCharts() {
 
 /* 图表容器 */
 .chart-container {
-  height: 400px;
+  height: 600px;
   width: 100%;
   margin-top: 20px;
 }
