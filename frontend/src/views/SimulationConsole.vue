@@ -352,6 +352,13 @@ async function refreshProjectStatus() {
       }
       lastRound.value = newRound
     }
+
+    // 检查当前轮次数据是否完整（处理重试失败的情况）
+    if (newRound > 0 && (!currentRoundInfo.value || currentRoundInfo.value.actionCount === 0)) {
+      console.log(`==== Current round ${newRound} data incomplete, re-fetching ====`)
+      await getRoundDetail(newRound)
+    }
+
     currentRound.value = newRound
 
     const isRunningNow = status.value === '运行中'
@@ -476,11 +483,19 @@ async function getRoundDetail(roundNum, retryCount = 0) {
     console.log(`Round ${roundNum} data:`, roundData)
 
     // 检查数据是否完整（行为数是否为0且不是重试）
-    if (roundData.total_actions === 0 && retryCount < 5) {
+    if (roundData.total_actions === 0 && retryCount < 30) {
       // 数据可能还没准备好，延迟重试
-      console.log(`Round ${roundNum} has no data yet, retrying in 500ms...`)
+      // LLM决策需要较长时间（约30秒），增加重试次数和延迟
+      const delay = retryCount < 10 ? 2000 : 5000
+      console.log(`Round ${roundNum} has no data yet, retrying in ${delay}ms (attempt ${retryCount + 1}/30)`)
       fetchingRounds.delete(roundNum)
-      setTimeout(() => getRoundDetail(roundNum, retryCount + 1), 500)
+      setTimeout(() => getRoundDetail(roundNum, retryCount + 1), delay)
+      return
+    }
+
+    // 如果重试耗尽但数据仍为空，不继续处理
+    if (roundData.total_actions === 0) {
+      console.log(`Round ${roundNum} data still empty after max retries, skipping`)
       return
     }
 

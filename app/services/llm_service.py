@@ -139,7 +139,10 @@ class LLMService:
     async def call_llm_async(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None
+        system_prompt: Optional[str] = None,
+        log_manager: Optional[Any] = None,
+        log_category: Optional[str] = None,
+        **log_context
     ) -> Dict[str, Any]:
         """
         异步LLM调用，带重试逻辑
@@ -149,6 +152,9 @@ class LLMService:
         Args:
             prompt: 用户提示词
             system_prompt: 可选的系统提示词
+            log_manager: 可选的日志管理器实例
+            log_category: 日志类别（用于分类记录LLM调用）
+            **log_context: 额外的日志上下文信息
 
         Returns:
             解析后的JSON响应字典
@@ -156,16 +162,34 @@ class LLMService:
         Raises:
             LLMError: 当所有重试都失败时抛出
         """
+        import time
+        start_time = time.time()
+
         # 循环尝试配置的最大重试次数
         for attempt in range(self.config.max_retries):
             try:
                 response = await self._single_llm_call(prompt, system_prompt)
+                latency_ms = (time.time() - start_time) * 1000
+
+                # 记录LLM调用日志
+                if log_manager and log_category:
+                    await log_manager.log_llm_call(
+                        category=log_category,
+                        full_prompt=prompt,
+                        full_system_prompt=system_prompt or "",
+                        full_response=response,
+                        latency_ms=latency_ms,
+                        retry_count=attempt,
+                        success=True,
+                        **log_context
+                    )
+
                 return response
             except Exception as e:
                 logger.warning(f"LLM调用第 {attempt + 1} 次尝试失败: {e}")
 
                 if attempt < self.config.max_retries - 1:
-                    # 使用指数退避算法计算延迟时间
+                    # 使用指数退避算法计算时延时间
                     delay = self.config.retry_delay * (2 ** attempt)
                     logger.info(f"将在 {delay} 秒后重试...")
                     await asyncio.sleep(delay)

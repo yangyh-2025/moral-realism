@@ -13,6 +13,7 @@ from app.config.database import db_config
 from app.models import SimulationProject, AgentConfig, ActionRecord, AgentPowerHistory, SimulationRound, FollowerRelation
 from app.services.project_service import project_service
 from app.services.agent_service import agent_service
+from app.services.simulation_log_manager import SimulationLogManager
 
 
 class SimulationService:
@@ -82,6 +83,14 @@ class SimulationService:
             )
             await session.commit()
 
+        # 初始化日志管理器
+        try:
+            log_manager = SimulationLogManager(project_id)
+            logger.info(f"项目 {project_id} 日志管理器初始化完成")
+        except Exception as e:
+            logger.error(f"日志管理器初始化失败: {e}", exc_info=True)
+            raise
+
         # 初始化仿真环境
         try:
             await self._initialize_simulation_environment(project_id, agents)
@@ -99,7 +108,7 @@ class SimulationService:
             raise
 
         # 启动后台任务自动执行仿真
-        task = asyncio.create_task(self._run_simulation_loop(project_id))
+        task = asyncio.create_task(self._run_simulation_loop(project_id, log_manager))
         self.running_simulations[project_id] = task
         logger.info(f"项目 {project_id} 后台任务已启动")
 
@@ -109,11 +118,15 @@ class SimulationService:
             "message": f"仿真已启动，共 {len(agents)} 个智能体"
         }
 
-    async def _run_simulation_loop(self, project_id: int) -> None:
+    async def _run_simulation_loop(self, project_id: int, log_manager: SimulationLogManager) -> None:
         """
         后台循环执行仿真轮次
 
         自动执行仿真轮次，直到完成所有轮次或项目状态改变。
+
+        Args:
+            project_id: 项目ID
+            log_manager: 日志管理器实例
         """
         logger.info(f"开始项目 {project_id} 的仿真循环")
 
@@ -132,7 +145,7 @@ class SimulationService:
 
                 # 执行一轮仿真
                 try:
-                    result = await self.step_simulation(project_id)
+                    result = await self.step_simulation(project_id, log_manager)
                     logger.info(f"第 {result.get('round')} 轮执行完成: {result.get('message')}")
                 except Exception as e:
                     logger.error(f"项目 {project_id} 仿真循环错误: {e}", exc_info=True)
@@ -164,7 +177,7 @@ class SimulationService:
                 del self.running_simulations[project_id]
             logger.info(f"项目 {project_id} 仿真循环结束")
 
-    async def step_simulation(self, project_id: int) -> dict:
+    async def step_simulation(self, project_id: int, log_manager: SimulationLogManager) -> dict:
         """
         单步执行一轮仿真
 
@@ -183,6 +196,7 @@ class SimulationService:
 
         Args:
             project_id: 项目ID
+            log_manager: 日志管理器实例
 
         Returns:
             执行结果字典
@@ -237,14 +251,14 @@ class SimulationService:
             # 2. 执行决策生成（主动阶段）
             logger.info(f"阶段 1: 生成第 {current_round} 轮主动决策")
             initiative_records = await self._generate_decisions(
-                project_id, agents, current_round, round_id, phase="initiative"
+                project_id, agents, current_round, round_id, phase="initiative", log_manager=log_manager
             )
             logger.info(f"生成了 {len(initiative_records)} 条主动决策记录")
 
             # 3. 执行决策生成（响应阶段）
             logger.info(f"阶段 2: 生成第 {current_round} 轮响应决策")
             response_records = await self._generate_decisions(
-                project_id, agents, current_round, round_id, phase="response"
+                project_id, agents, current_round, round_id, phase="response", log_manager=log_manager
             )
             logger.info(f"生成了 {len(response_records)} 条响应决策记录")
 
@@ -254,12 +268,12 @@ class SimulationService:
 
             # 4.5 保存国力历史
             logger.info(f"阶段 3.5: 保存第 {current_round} 轮国力历史")
-            await self._save_power_history(project_id, round_id, current_round, agents)
+            await self._save_power_history(project_id, round_id, current_round, agents, log_manager)
 
             # 5. 追随投票阶段
             logger.info(f"阶段 4: 生成第 {current_round} 轮追随决策")
             follower_decisions = await self._generate_follower_decisions(
-                project_id, agents, round_id, current_round
+                project_id, agents, round_id, current_round, log_manager
             )
             logger.info(f"生成了 {len(follower_decisions)} 条追随决策")
 
@@ -268,12 +282,13 @@ class SimulationService:
             order_result = await self._determine_order(
                 project_id, current_round,
                 initiative_records + response_records,
-                follower_decisions
+                follower_decisions,
+                log_manager
             )
             logger.info(f"秩序类型: {order_result.order_type.value}")
 
             # 7. 保存追随关系到数据库
-            await self._save_follower_relations(project_id, round_id, current_round, follower_decisions)
+            await self._save_follower_relations(project_id, round_id, current_round, follower_decisions, log_manager)
 
             # 8. 更新轮次记录统计信息
             logger.info(f"阶段 6: 更新第 {current_round} 轮记录")
@@ -284,7 +299,7 @@ class SimulationService:
             if current_round % self.EVALUATION_INTERVAL == 0 and current_round > 0:
                 try:
                     from app.services.goal_evaluation_service import get_goal_evaluation_service
-                    evaluation_service = get_goal_evaluation_service()
+                    evaluation_service = get_goal_evaluation_service(log_manager=log_manager)
 
                     await evaluation_service.evaluate_all_agents(project_id, current_round)
                     logger.info(f"第 {current_round} 轮战略目标评估完成")
@@ -375,13 +390,12 @@ class SimulationService:
             return round_record.round_id
 
     async def _generate_decisions(
-        self, project_id: int, agents: List[Dict], round_num: int, round_id: int, phase: str
+        self, project_id: int, agents: List[Dict], round_num: int, round_id: int, phase: str, log_manager=None
     ) -> List[Dict]:
         """
         生成决策
 
-        简化版本：随机选择行为和目标。
-        实际应该调用DecisionEngine（LLM驱动）。
+        使用DecisionEngine（LLM驱动）生成决策。
 
         Args:
             project_id: 项目ID
@@ -389,63 +403,178 @@ class SimulationService:
             round_num: 轮次号
             round_id: 轮次ID
             phase: 阶段（"initiative"或"response"）
+            log_manager: 日志管理器实例
 
         Returns:
             决策记录列表
         """
         from app.core.action_manager import get_all_actions
+        from app.core.decision_engine import get_decision_engine, AgentInfo, InfoPool, ActionStageEnum
+        from app.core.agent_base import AgentBase
 
         actions = get_all_actions()
         records = []
 
+        # 获取历史数据
+        history_action_records = await self._get_action_history(project_id, round_num)
+        history_power_data = await self._get_power_history(project_id, round_num)
+        last_round_order_info = await self._get_last_round_order(project_id, round_num)
+
         # 根据阶段筛选行为
         if phase == "initiative":
             phase_actions = [a for a in actions if a.is_initiative]
+            action_stage = ActionStageEnum.INITIATIVE
         else:
             phase_actions = [a for a in actions if a.is_response]
+            action_stage = ActionStageEnum.RESPONSE
 
         logger.info(f"阶段 {phase}: 有 {len(phase_actions)} 个行为可用")
+        logger.debug(f"phase_actions IDs: {[a.action_id for a in phase_actions]}")
+
+        # 构建InfoPool
+        all_agent_info = [
+            {
+                'agent_id': a.get('agent_id'),
+                'agent_name': a.get('agent_name'),
+                'region': a.get('region'),
+                'initial_total_power': a.get('initial_total_power'),
+                'current_total_power': a.get('current_total_power'),
+                'power_level': a.get('power_level'),
+                'leader_type': a.get('leader_type')
+            }
+            for a in agents
+        ]
+
+        info_pool = InfoPool(
+            all_agent_info=all_agent_info,
+            history_action_records=history_action_records,
+            history_power_data=history_power_data,
+            last_round_order_info=last_round_order_info,
+            round_num=round_num
+        )
+
+        # 获取决策引擎（带log_manager）
+        decision_engine = get_decision_engine(log_manager=log_manager)
 
         # 为每个智能体生成决策
         for agent in agents:
             agent_id = agent.get('agent_id')
             agent_name = agent.get('agent_name')
 
-            # 简化：随机选择一个行为和一个目标
-            if phase_actions and len(agents) > 1:
-                import random
+            # 构建AgentInfo
+            from app.core.agent_base import AgentBase
+            agent_base = AgentBase(**{
+                "agent_id": agent.get('agent_id'),
+                "agent_name": agent.get('agent_name'),
+                "region": agent.get('region'),
+                "c_score": agent.get('c_score'),
+                "e_score": agent.get('e_score'),
+                "m_score": agent.get('m_score'),
+                "s_score": agent.get('s_score'),
+                "w_score": agent.get('w_score'),
+                "initial_total_power": agent.get('initial_total_power'),
+                "current_total_power": agent.get('current_total_power'),
+                "power_level": agent.get('power_level'),
+                "leader_type": agent.get('leader_type'),
+            })
 
-                # 选择行为
-                action = random.choice(phase_actions)
+            agent_info = AgentInfo(
+                agent_id=agent_id,
+                agent_name=agent_name,
+                region=agent.get('region'),
+                initial_total_power=agent.get('initial_total_power'),
+                current_total_power=agent.get('current_total_power'),
+                power_level=agent.get('power_level'),
+                leader_type=agent.get('leader_type'),
+                national_interest=agent_base.national_interest,
+                allowed_actions=[{
+                    'action_id': a.action_id,
+                    'action_name': a.action_name,
+                    'action_en_name': a.action_en_name,
+                    'action_category': a.action_category,
+                    'action_desc': a.action_desc,
+                    'respect_sov': a.respect_sov,
+                    'initiator_power_change': a.initiator_power_change,
+                    'target_power_change': a.target_power_change,
+                    'is_initiative': a.is_initiative,
+                    'is_response': a.is_response
+                } for a in phase_actions]
+            )
 
-                # 选择目标（不能是自己）
-                other_agents = [a for a in agents if a.get('agent_id') != agent_id]
-                target = random.choice(other_agents) if other_agents else agents[0]
-                target_id = target.get('agent_id')
+            # Debug: log allowed actions
+            logger.debug(
+                f"[{agent_name}] allowed_actions count: {len(agent_info.allowed_actions)}, "
+                f"IDs: {[a['action_id'] for a in agent_info.allowed_actions[:10]]}..."
+            )
 
-                # 创建记录
-                record = {
-                    "project_id": project_id,
-                    "round_id": round_id,
-                    "round_num": round_num,
-                    "action_stage": phase,
-                    "source_agent_id": agent_id,
-                    "target_agent_id": target_id,
-                    "action_id": action.action_id,
-                    "action_name": action.action_name,
-                    "action_category": action.action_category,
-                    "respect_sov": action.respect_sov,
-                    "initiator_power_change": action.initiator_power_change,
-                    "target_power_change": action.target_power_change,
-                    "decision_detail": f"{agent_name} 对目标 {target_id} 执行 {action.action_name}"
-                }
+            # 调用决策引擎
+            try:
+                decision_result = await decision_engine.make_decision(
+                    agent_info=agent_info,
+                    info_pool=info_pool,
+                    action_stage=action_stage
+                )
 
-                records.append(record)
+                if decision_result.success and decision_result.decision:
+                    actions_list = decision_result.decision.get('actions', [])
+                    logger.info(
+                        f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) LLM决策成功: "
+                        f"{len(actions_list)} 个行为"
+                    )
 
-                logger.info(
-                    f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) 决策: "
-                    f"{action.action_name} ({action.action_category}) "
-                    f"-> 目标 ID:{target_id}, 尊重主权:{action.respect_sov}"
+                    # 转换为记录格式
+                    for action_data in actions_list:
+                        target_id = action_data.get('target_agent_id', 0)
+                        action_id = action_data.get('action_id')
+                        # Convert action_id to int for comparison
+                        try:
+                            action_id = int(action_id)
+                        except (ValueError, TypeError):
+                            logger.warning(f"行为ID {action_data.get('action_id')} 格式无效，跳过")
+                            continue
+
+                        # 查找行为配置
+                        action_config = next((a for a in phase_actions if a.action_id == action_id), None)
+                        if not action_config:
+                            logger.warning(
+                                f"未找到行为ID {action_id} 的配置，跳过。"
+                                f"phase_actions中有{len(phase_actions)}个行为，"
+                                f"IDs: {[a.action_id for a in phase_actions]}"
+                            )
+                            continue
+
+                        record = {
+                            "project_id": project_id,
+                            "round_id": round_id,
+                            "round_num": round_num,
+                            "action_stage": phase,
+                            "source_agent_id": agent_id,
+                            "target_agent_id": target_id,
+                            "action_id": action_id,
+                            "action_name": action_config.action_name,
+                            "action_category": action_config.action_category,
+                            "respect_sov": action_config.respect_sov,
+                            "initiator_power_change": action_config.initiator_power_change,
+                            "target_power_change": action_config.target_power_change,
+                            "decision_detail": action_data.get('cost_benefit_analysis', '')
+                        }
+
+                        records.append(record)
+
+                        logger.info(
+                            f"[第 {round_num} 轮] {agent_name} 决策: "
+                            f"{action_config.action_name} -> 目标 ID:{target_id}"
+                        )
+                else:
+                    logger.warning(
+                        f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) LLM决策失败: "
+                        f"{decision_result.validation_errors}"
+                    )
+
+            except Exception as e:
+                logger.error(
+                    f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) 决策异常: {e}",
+                    exc_info=True
                 )
 
         # 保存记录到数据库
@@ -456,7 +585,118 @@ class SimulationService:
                     session.add(db_record)
                 await session.commit()
 
+        # 记录到日志文件
+        if log_manager:
+            await log_manager.log_interaction(round_num, {
+                "project_id": project_id,
+                "phase": phase,
+                "interactions": records
+            })
+
         return records
+
+    async def _get_action_history(self, project_id: int, round_num: int) -> List[Dict]:
+        """
+        获取历史行为记录
+
+        Args:
+            project_id: 项目ID
+            round_num: 当前轮次
+
+        Returns:
+            历史行为记录列表
+        """
+        async for session in db_config.get_session():
+            result = await session.execute(
+                select(ActionRecord).where(
+                    ActionRecord.project_id == project_id,
+                    ActionRecord.round_num < round_num
+                )
+            )
+            records = result.scalars().all()
+
+            return [
+                {
+                    'round_num': r.round_num,
+                    'source_agent_id': r.source_agent_id,
+                    'target_agent_id': r.target_agent_id,
+                    'action_name': r.action_name,
+                    'action_category': r.action_category,
+                    'respect_sov': r.respect_sov
+                }
+                for r in records
+            ]
+
+    async def _get_power_history(self, project_id: int, round_num: int) -> List[Dict]:
+        """
+        获取历史国力数据
+
+        Args:
+            project_id: 项目ID
+            round_num: 当前轮次
+
+        Returns:
+            历史国力数据列表
+        """
+        async for session in db_config.get_session():
+            result = await session.execute(
+                select(AgentPowerHistory).where(
+                    AgentPowerHistory.project_id == project_id,
+                    AgentPowerHistory.round_num < round_num
+                )
+            )
+            records = result.scalars().all()
+
+            return [
+                {
+                    'round_num': r.round_num,
+                    'agent_id': r.agent_id,
+                    'round_start_power': r.round_start_power,
+                    'round_end_power': r.round_end_power,
+                    'round_change_value': r.round_change_value
+                }
+                for r in records
+            ]
+
+    async def _get_last_round_order(self, project_id: int, round_num: int) -> Dict:
+        """
+        获取上一轮的秩序信息
+
+        Args:
+            project_id: 项目ID
+            round_num: 当前轮次
+
+        Returns:
+            秩序信息字典
+        """
+        if round_num == 1:
+            return {
+                'order_type': '未确定',
+                'leader_agent_id': None,
+                'leader_follower_ratio': 0.0
+            }
+
+        async for session in db_config.get_session():
+            result = await session.execute(
+                select(SimulationRound).where(
+                    SimulationRound.project_id == project_id,
+                    SimulationRound.round_num == round_num - 1
+                )
+            )
+            round_record = result.scalar_one_or_none()
+
+            if round_record:
+                return {
+                    'order_type': round_record.order_type or '未确定',
+                    'leader_agent_id': round_record.leader_agent_id,
+                    'leader_follower_ratio': round_record.leader_follower_ratio or 0.0
+                }
+            else:
+                return {
+                    'order_type': '未确定',
+                    'leader_agent_id': None,
+                    'leader_follower_ratio': 0.0
+                }
 
     async def _update_power(
         self, project_id: int, agents: List[Dict], records: List[Dict]
@@ -507,7 +747,7 @@ class SimulationService:
                 await session.commit()
 
     async def _save_power_history(
-        self, project_id: int, round_id: int, round_num: int, agents: List[Dict]
+        self, project_id: int, round_id: int, round_num: int, agents: List[Dict], log_manager=None
     ) -> None:
         """
         保存国力历史到 AgentPowerHistory 表
@@ -517,6 +757,7 @@ class SimulationService:
             round_id: 轮次ID
             round_num: 轮次号
             agents: 智能体列表
+            log_manager: 日志管理器实例
         """
         async for session in db_config.get_session():
             # 先获取本轮开始时的国力（上一轮结束时的国力）
@@ -556,8 +797,27 @@ class SimulationService:
 
         logger.info(f"第 {round_num} 轮国力历史已保存，共 {len(agents)} 个智能体")
 
+        # 记录到日志文件
+        if log_manager:
+            power_changes = []
+            for agent in agents:
+                agent_id = agent.get('agent_id')
+                start_power = last_round_powers.get(agent_id, 0)
+                end_power = agent.get('current_total_power', 0)
+                change_value = end_power - start_power
+                change_rate = (change_value / start_power * 100) if start_power > 0 else 0.0
+                power_changes.append({
+                    "agent_id": agent_id,
+                    "agent_name": agent.get('agent_name'),
+                    "start_power": start_power,
+                    "end_power": end_power,
+                    "change_value": change_value,
+                    "change_rate": change_rate
+                })
+            await log_manager.log_power_change(round_num, {"power_changes": power_changes})
+
     async def _generate_follower_decisions(
-        self, project_id: int, agents: List[Dict], round_id: int, round_num: int
+        self, project_id: int, agents: List[Dict], round_id: int, round_num: int, log_manager=None
     ) -> Dict[int, Optional[int]]:
         """
         生成LLM驱动的追随投票决策
@@ -571,6 +831,7 @@ class SimulationService:
             agents: 所有智能体列表
             round_id: 轮次ID
             round_num: 轮次号
+            log_manager: 日志管理器实例
 
         Returns:
             追随关系字典 {follower_id: leader_id}
@@ -620,7 +881,15 @@ class SimulationService:
                 )
 
                 try:
-                    response = await llm_service.call_llm_async(prompt)
+                    response = await llm_service.call_llm_async(
+                        prompt,
+                        log_manager=log_manager,
+                        log_category="following",
+                        round_num=round_num,
+                        agent_id=agent.get('agent_id'),
+                        agent_name=agent.get('agent_name'),
+                        decision_type="leadership_participation"
+                    )
                     decision = response.get('decision', '不参与')
                     reason = response.get('reason', '')
 
@@ -663,7 +932,15 @@ class SimulationService:
             )
 
             try:
-                response = await llm_service.call_llm_async(prompt)
+                response = await llm_service.call_llm_async(
+                    prompt,
+                    log_manager=log_manager,
+                    log_category="following",
+                    round_num=round_num,
+                    agent_id=agent.get('agent_id'),
+                    agent_name=agent.get('agent_name'),
+                    decision_type="follower_vote"
+                )
                 follower_id = response.get('follower_agent_id')
                 follower_name = response.get('follower_agent_name', '中立')
                 reason = response.get('reason', '')
@@ -689,7 +966,8 @@ class SimulationService:
         project_id: int,
         round_id: int,
         round_num: int,
-        follower_decisions: Dict[int, Optional[int]]
+        follower_decisions: Dict[int, Optional[int]],
+        log_manager=None
     ) -> None:
         """
         保存追随关系到数据库
@@ -699,6 +977,7 @@ class SimulationService:
             round_id: 轮次ID
             round_num: 轮次号
             follower_decisions: 追随决策
+            log_manager: 日志管理器实例
         """
         async for session in db_config.get_session():
             for follower_id, leader_id in follower_decisions.items():
@@ -714,12 +993,20 @@ class SimulationService:
 
         logger.info(f"已保存 {len(follower_decisions)} 条追随关系")
 
+        # 记录到日志文件
+        if log_manager:
+            await log_manager.log_follower_relation(round_num, {
+                "project_id": project_id,
+                "follower_relations": list(follower_decisions.items())
+            })
+
     async def _determine_order(
         self,
         project_id: int,
         round_num: int,
         action_records: List[Dict],
-        follower_decisions: Dict[int, Optional[int]]
+        follower_decisions: Dict[int, Optional[int]],
+        log_manager=None
     ):
         """
         确定国际秩序
@@ -729,6 +1016,7 @@ class SimulationService:
             round_num: 轮次号
             action_records: 所有行为记录
             follower_decisions: 追随决策
+            log_manager: 日志管理器实例
 
         Returns:
             秩序判定结果
@@ -784,6 +1072,18 @@ class SimulationService:
             f"尊重主权率={result.respect_sov_ratio:.2%}, "
             f"有领导={result.has_leader}"
         )
+
+        # 记录秩序变更到日志文件
+        if log_manager:
+            await log_manager.log_order_change(round_num, {
+                "project_id": project_id,
+                "order_type": result.order_type.value,
+                "respect_sov_ratio": result.respect_sov_ratio,
+                "respect_sov_action_count": result.respect_sov_action_count,
+                "has_leader": result.has_leader,
+                "leader_agent_id": result.leader_agent_id,
+                "leader_follower_ratio": result.leader_follower_ratio
+            })
 
         return result
 

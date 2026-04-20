@@ -8,6 +8,8 @@ Decision Validation Module
 
 from typing import Dict, Any, List, Tuple
 
+from loguru import logger
+
 # Import enums from agent_base to avoid duplication
 from .agent_base import PowerLevelEnum, LeaderTypeEnum
 
@@ -48,6 +50,20 @@ class DecisionValidator:
         Returns:
             Tuple of (is_valid, error_message)
         """
+        # Convert action_id to int if it's a string (LLM sometimes returns strings)
+        try:
+            action_id = int(action_id)
+        except (ValueError, TypeError):
+            return False, f"行为ID {action_id} 格式无效，必须为整数"
+
+        # Debug logging
+        logger.debug(
+            f"validate_behavior_set: action_id={action_id}, action_name='{action_name}', "
+            f"behavior_id_map has {len(self.behavior_id_map)} items, "
+            f"behavior_name_map has {len(self.behavior_name_map)} items, "
+            f"allowed_actions has {len(allowed_actions)} items"
+        )
+
         # Check if action ID exists in standard set
         if action_id not in self.behavior_id_map:
             return False, f"行为ID {action_id} 不在20项标准行为集内"
@@ -62,7 +78,7 @@ class DecisionValidator:
             return False, f"行为ID {action_id} 与行为名称 '{action_name}' 不匹配"
 
         # Check if action is in allowed list for this agent
-        allowed_ids = {a['action_id'] for a in allowed_actions}
+        allowed_ids = {int(a['action_id']) if isinstance(a['action_id'], str) else a['action_id'] for a in allowed_actions}
         if action_id not in allowed_ids:
             return False, f"行为ID {action_id} 不在该智能体的允许行为列表内"
 
@@ -112,7 +128,10 @@ class DecisionValidator:
 
             # Validate target agent ID
             target_agent_id = action['target_agent_id']
-            if not isinstance(target_agent_id, int):
+            # Convert to int if it's a string
+            try:
+                target_agent_id = int(target_agent_id)
+            except (ValueError, TypeError):
                 return False, f"行为 {i+1} 的 target_agent_id 必须是整数"
 
             if target_agent_id not in all_agent_ids:
@@ -156,6 +175,11 @@ class DecisionValidator:
         # Validate leader type constraints
         for action in actions:
             action_id = action['action_id']
+            # Convert to int if it's a string
+            try:
+                action_id = int(action_id)
+            except (ValueError, TypeError):
+                return False, f"行为ID {action_id} 格式无效，必须为整数"
 
             if action_id not in self.behavior_id_map:
                 return False, f"行为ID {action_id} 未找到标准行为定义"
@@ -196,10 +220,17 @@ class DecisionValidator:
             if power_level in [PowerLevelEnum.MIDDLE_POWER.value, PowerLevelEnum.SMALL_STATE.value]:
                 # Medium and small powers can only initiate low-intensity, non-hostile actions
                 for action in actions:
-                    if action['action_id'] not in self.behavior_id_map:
+                    # Convert action_id to int for lookup
+                    action_id = action['action_id']
+                    try:
+                        action_id = int(action_id)
+                    except (ValueError, TypeError):
                         continue
 
-                    standard_action = self.behavior_id_map[action['action_id']]
+                    if action_id not in self.behavior_id_map:
+                        continue
+
+                    standard_action = self.behavior_id_map[action_id]
                     # Check if action is high-intensity or hostile
                     if not standard_action.get('respect_sov', True):
                         # This is a non-respecting-sovereignty action

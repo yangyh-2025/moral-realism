@@ -26,10 +26,16 @@ class GoalEvaluationService:
     包括国力增长贡献、行为有效性、领导类型一致性等。
     """
 
-    def __init__(self):
-        """初始化战略目标评估服务"""
+    def __init__(self, log_manager=None):
+        """
+        初始化战略目标评估服务
+
+        Args:
+            log_manager: 可选的日志管理器实例
+        """
         # 复用现有的LLM服务，与其他智能体共享相同的LLM API
         self.llm_service = get_llm_service()
+        self.log_manager = log_manager
 
     async def evaluate_agent_goal_achievement(
         self,
@@ -71,7 +77,15 @@ class GoalEvaluationService:
         try:
             evaluation_result = await self.llm_service.call_llm_async(
                 prompt=prompt,
-                system_prompt=self._get_evaluation_system_prompt()
+                system_prompt=self._get_evaluation_system_prompt(),
+                log_manager=self.log_manager,
+                log_category="goal_evaluation",
+                project_id=project_id,
+                agent_id=agent_id,
+                agent_name=agent_info.get("agent_name", f"Agent_{agent_id}") if agent_info else f"Agent_{agent_id}",
+                evaluation_round=evaluation_round,
+                start_round=start_round,
+                end_round=evaluation_round
             )
             logger.info(f"国家 {agent_id} 在第 {evaluation_round} 轮的评估完成")
         except Exception as e:
@@ -378,6 +392,23 @@ class GoalEvaluationService:
             session.add(evaluation)
             await session.commit()
 
+        # 记录到日志文件
+        if self.log_manager:
+            await self.log_manager.log_goal_evaluation({
+                "project_id": project_id,
+                "agent_id": agent_id,
+                "evaluation_round": evaluation_round,
+                "start_round": start_round,
+                "end_round": end_round,
+                "goal_achievement_score": evaluation_result.get("goal_achievement_score"),
+                "power_growth_contribution": evaluation_result.get("power_growth_contribution"),
+                "action_effectiveness": evaluation_result.get("action_effectiveness"),
+                "leadership_alignment": evaluation_result.get("leadership_alignment"),
+                "overall_assessment": evaluation_result.get("overall_assessment"),
+                "specific_achievements": evaluation_result.get("specific_achievements"),
+                "challenges": evaluation_result.get("challenges")
+            })
+
     async def evaluate_all_agents(self, project_id: int, evaluation_round: int) -> List[dict]:
         """
         评估项目中所有国家的战略目标达成度
@@ -416,18 +447,21 @@ class GoalEvaluationService:
 _goal_evaluation_service: Optional[GoalEvaluationService] = None
 
 
-def get_goal_evaluation_service() -> GoalEvaluationService:
+def get_goal_evaluation_service(log_manager=None) -> GoalEvaluationService:
     """
     获取或创建全局评估服务实例
 
     使用单例模式确保整个应用共享同一个评估服务实例。
+
+    Args:
+        log_manager: 可选的日志管理器实例
 
     Returns:
         GoalEvaluationService单例实例
     """
     global _goal_evaluation_service
 
-    if _goal_evaluation_service is None:
-        _goal_evaluation_service = GoalEvaluationService()
+    if _goal_evaluation_service is None or log_manager is not None:
+        _goal_evaluation_service = GoalEvaluationService(log_manager=log_manager)
 
     return _goal_evaluation_service

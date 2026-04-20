@@ -21,8 +21,9 @@ except ImportError:
     from app.core.decision_validation import DecisionValidator, ValidationError
     from app.services.llm_service import LLMService, LLMConfig, get_llm_service
 
-# Import enums from agent_base to avoid duplication
-from .agent_base import ActionStageEnum, PowerLevelEnum, LeaderTypeEnum
+# Import enums from agent_base and action_record to avoid duplication
+from .agent_base import PowerLevelEnum, LeaderTypeEnum
+from ..models.action_record import ActionStageEnum
 
 
 @dataclass
@@ -46,6 +47,7 @@ class InfoPool:
     history_action_records: List[Dict[str, Any]] = field(default_factory=list)
     history_power_data: List[Dict[str, Any]] = field(default_factory=list)
     last_round_order_info: Dict[str, Any] = field(default_factory=dict)
+    round_num: int = 1  # 当前轮次
 
 
 @dataclass
@@ -72,10 +74,14 @@ class DecisionEngine:
     - 三层决策验证机制
     """
 
+    # 类级别的 logger 引用
+    logger = logger
+
     def __init__(
         self,
         llm_service: Optional[LLMService] = None,
-        max_retries: int = 3
+        max_retries: int = 3,
+        log_manager: Optional[Any] = None
     ):
         """
         Initialize decision engine.
@@ -83,10 +89,18 @@ class DecisionEngine:
         Args:
             llm_service: LLM service instance
             max_retries: Maximum retries for failed validation
+            log_manager: Optional log manager instance for logging LLM calls
         """
         self.llm_service = llm_service or get_llm_service()
         self.max_retries = max_retries
         self.validator = DecisionValidator(STANDARD_BEHAVIORS)
+        self.log_manager = log_manager
+
+        # Debug: log validator initialization
+        logger.debug(
+            f"DecisionEngine initialized: validator.behavior_id_map has {len(self.validator.behavior_id_map)} items, "
+            f"keys: {sorted(self.validator.behavior_id_map.keys())}"
+        )
 
     async def make_decision(
         self,
@@ -106,9 +120,10 @@ class DecisionEngine:
             DecisionResult with decision and validation status
         """
         import time
+        from loguru import logger as _logger
         start_time = time.time()
 
-        logger.info(
+        _logger.info(
             f"Generating decision for {agent_info.agent_name} "
             f"(ID: {agent_info.agent_id}, Stage: {action_stage})"
         )
@@ -134,7 +149,15 @@ class DecisionEngine:
                 retry_time = time.time()
 
                 # Call LLM
-                llm_response = await self.llm_service.call_llm_async(prompt)
+                llm_response = await self.llm_service.call_llm_async(
+                    prompt,
+                    log_manager=self.log_manager,
+                    log_category="interaction",
+                    agent_id=agent_info.agent_id,
+                    agent_name=agent_info.agent_name,
+                    stage=str(action_stage),
+                    round_num=info_pool.round_num
+                )
                 result.llm_raw_response = str(llm_response)
                 result.llm_parse_time = time.time() - retry_time
                 result.retry_count = retry
@@ -153,16 +176,19 @@ class DecisionEngine:
                 if is_valid:
                     result.success = True
                     result.decision = llm_response
-                    logger.info(
+                    _logger.info(
                         f"Decision for {agent_info.agent_name} validated successfully "
                         f"(Retry {retry}/{self.max_retries})"
                     )
                     break
                 else:
                     result.validation_errors = errors
-                    logger.warning(
+                    # Debug: log more details
+                    _logger.warning(
                         f"Decision validation failed for {agent_info.agent_name}: {errors}. "
-                        f"Retry {retry}/{self.max_retries}"
+                        f"Retry {retry}/{self.max_retries}. "
+                        f"Allowed action IDs: {[a.get('action_id') for a in stage_allowed_actions[:5]]}...{len(stage_allowed_actions)} total. "
+                        f"LLM response action IDs: {[a.get('action_id') for a in llm_response.get('actions', [])]}"
                     )
 
                     # Update prompt with validation error for retry
@@ -170,7 +196,7 @@ class DecisionEngine:
                         prompt = self._build_retry_prompt(prompt, errors)
 
             except Exception as e:
-                logger.error(
+                _logger.error(
                     f"Decision generation failed for {agent_info.agent_name}: {e}"
                 )
                 result.validation_errors.append(f"LLM调用失败: {str(e)}")
@@ -183,7 +209,7 @@ class DecisionEngine:
         result.total_time = time.time() - start_time
 
         if not result.success:
-            logger.error(
+            _logger.error(
                 f"Failed to generate valid decision for {agent_info.agent_name} "
                 f"after {result.retry_count + 1} attempts"
             )
@@ -535,7 +561,8 @@ _decision_engine: Optional[DecisionEngine] = None
 
 def get_decision_engine(
     llm_service: Optional[LLMService] = None,
-    max_retries: int = 3
+    max_retries: int = 3,
+    log_manager: Optional[Any] = None
 ) -> DecisionEngine:
     """
     Get or create global decision engine instance.
@@ -543,6 +570,7 @@ def get_decision_engine(
     Args:
         llm_service: Optional LLM service
         max_retries: Maximum validation retries
+        log_manager: Optional log manager instance
 
     Returns:
         DecisionEngine instance
@@ -550,7 +578,11 @@ def get_decision_engine(
     global _decision_engine
 
     if _decision_engine is None:
-        _decision_engine = DecisionEngine(llm_service, max_retries)
+        _decision_engine = DecisionEngine(llm_service, max_retries, log_manager)
+    else:
+        # Update log_manager if provided
+        if log_manager is not None:
+            _decision_engine.log_manager = log_manager
 
     return _decision_engine
 
