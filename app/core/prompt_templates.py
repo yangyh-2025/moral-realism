@@ -66,7 +66,7 @@ class PromptTemplates:
 2. 必须包含每一项行为的成本收益分析，明确净收益计算逻辑，必须包含行为对应的国力变化影响；
 3. 必须为每一项行为指定明确的目标对象国（agent_id），目标国必须存在于当前体系内；
 4. 可选择1-5项行为，禁止选择无收益的行为，禁止选择列表外的行为；
-5. 必须填写action_id与action_name，且必须与允许行为列表完全一致。
+5. 必须填写action_id、action_name、action_category，且必须与允许行为列表完全一致。
 """
 
     # JSON output format template
@@ -167,13 +167,18 @@ class PromptTemplates:
             allowed_actions_table=action_table
         )
 
+        # Build JSON format example
+        import json
+        json_example = json.dumps(cls.JSON_OUTPUT_TEMPLATE, ensure_ascii=False, indent=2)
+        output_requirements = cls.OUTPUT_REQUIREMENTS_TEMPLATE + f"\n\n【JSON输出格式示例】\n{json_example}"
+
         # Combine all sections
         full_prompt = (
             system_role + "\n" +
             core_rules + "\n" +
             info_pool_section + "\n" +
             actions_list + "\n" +
-            cls.OUTPUT_REQUIREMENTS_TEMPLATE
+            output_requirements
         )
 
         return full_prompt.strip()
