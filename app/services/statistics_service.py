@@ -430,6 +430,89 @@ class StatisticsService:
                 for eval, agent_name in rows
             ]
 
+    async def get_agent_relations(
+        self,
+        project_id: int,
+        round_num: Optional[int] = None
+    ) -> dict:
+        """
+        获取智能体关系图谱数据
+
+        获取指定项目（和轮次）的智能体追随关系数据，用于前端渲染关系图谱。
+
+        Args:
+            project_id: 项目ID
+            round_num: 可选，指定轮次。如果为None，获取最新轮次的关系
+
+        Returns:
+            dict: 包含 nodes（节点）和 links（边）的数据
+        """
+        async for session in db_config.get_session():
+            # 确定目标轮次
+            target_round = round_num
+            if target_round is None:
+                # 获取最新轮次
+                round_result = await session.execute(
+                    select(SimulationRound).where(
+                        SimulationRound.project_id == project_id
+                    ).order_by(SimulationRound.round_num.desc()).limit(1)
+                )
+                latest_round = round_result.scalar_one_or_none()
+                if not latest_round:
+                    return {"nodes": [], "links": []}
+                target_round = latest_round.round_num
+
+            # 获取指定轮次的数据
+            round_result = await session.execute(
+                select(SimulationRound).where(
+                    SimulationRound.project_id == project_id,
+                    SimulationRound.round_num == target_round
+                )
+            )
+            round_data = round_result.scalar_one_or_none()
+            if not round_data:
+                return {"nodes": [], "links": []}
+
+            # 获取该轮次的所有智能体（节点）
+            agents_result = await session.execute(
+                select(AgentConfig).where(AgentConfig.project_id == project_id)
+            )
+            agents = agents_result.scalars().all()
+
+            # 获取追随关系（边）
+            relations_result = await session.execute(
+                select(FollowerRelation).where(
+                    FollowerRelation.round_id == round_data.round_id
+                )
+            )
+            relations = relations_result.scalars().all()
+
+            # 构建节点数据
+            nodes = []
+            for agent in agents:
+                nodes.append({
+                    "id": agent.agent_id,
+                    "name": agent.agent_name,
+                    "category": agent.leader_type or "无",
+                    "symbolSize": 20,
+                    "value": agent.initial_power
+                })
+
+            # 构建边数据（过滤掉 leader_agent_id 为 None 的关系）
+            links = []
+            for rel in relations:
+                if rel.leader_agent_id is not None:
+                    links.append({
+                        "source": rel.follower_agent_id,
+                        "target": rel.leader_agent_id
+                    })
+
+            return {
+                "nodes": nodes,
+                "links": links,
+                "round_num": target_round
+            }
+
 
 # 单例实例
 statistics_service = StatisticsService()

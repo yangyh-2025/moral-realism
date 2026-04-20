@@ -136,7 +136,8 @@ import { useAppStore } from '../store'
 import {
   getOrderEvolution,
   getPowerHistory,
-  getActionPreference
+  getActionPreference,
+  getAgentRelations
 } from '../api/statistics'
 
 // 获取应用状态管理
@@ -315,6 +316,10 @@ async function loadSimulationData() {
     const actionData = await getActionPreference(projectId.value)
     updateActionChart(actionData.data)
 
+    // 加载智能体关系图谱数据
+    const relationData = await getAgentRelations(projectId.value)
+    updateRelationChart(relationData.data)
+
     ElMessage.success('仿真结果数据加载成功')
   } catch (error) {
     ElMessage.error('数据加载失败: ' + (error.message || error))
@@ -425,6 +430,69 @@ function updateActionChart(data) {
         name: item.action_name,
         value: item.count
       }))
+    }]
+  })
+}
+
+/**
+ * 更新智能体关系图谱
+ * @param {Object} data - 关系图谱数据，包含 nodes 和 links
+ */
+function updateRelationChart(data) {
+  const chart = charts.find(c => c.getDom() === relationChart.value)
+  if (!chart || !data) return
+
+  // 构建分类映射，用于节点颜色区分
+  const categories = [...new Set(data.nodes?.map(n => n.category) || [])]
+
+  chart.setOption({
+    legend: {
+      data: categories,
+      orient: 'horizontal',
+      top: 10
+    },
+    series: [{
+      type: 'graph',
+      layout: 'force',
+      categories: categories.map(cat => ({ name: cat })),
+      symbolSize: 50,
+      label: {
+        show: true,
+        position: 'right',
+        formatter: '{b}'
+      },
+      edgeSymbol: ['circle', 'arrow'],
+      edgeSymbolSize: [4, 10],
+      edgeLabel: {
+        fontSize: 20
+      },
+      data: data.nodes?.map(node => ({
+        id: node.id,
+        name: node.name,
+        value: node.value,
+        category: node.category,
+        symbolSize: node.symbolSize
+      })) || [],
+      links: data.links?.map(link => ({
+        source: link.source,
+        target: link.target
+      })) || [],
+      roam: true,
+      lineStyle: {
+        color: 'source',
+        curveness: 0.3
+      },
+      emphasis: {
+        focus: 'adjacency',
+        lineStyle: {
+          width: 10
+        }
+      },
+      force: {
+        repulsion: 300,
+        edgeLength: 150,
+        gravity: 0.1
+      }
     }]
   })
 }

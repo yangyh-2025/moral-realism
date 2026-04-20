@@ -83,6 +83,28 @@ class GoalEvaluationResponse(BaseModel):
     challenges: Optional[str] = None
 
 
+class AgentRelationNode(BaseModel):
+    """智能体关系图谱节点模型"""
+    id: int
+    name: str
+    category: str
+    symbolSize: int
+    value: float
+
+
+class AgentRelationLink(BaseModel):
+    """智能体关系图谱边模型"""
+    source: int
+    target: int
+
+
+class AgentRelationsResponse(BaseModel):
+    """智能体关系图谱响应模型"""
+    nodes: List[AgentRelationNode]
+    links: List[AgentRelationLink]
+    round_num: int
+
+
 @router.get("/{project_id}/stats/power-history", response_model=List[PowerHistoryResponse])
 async def get_power_history(project_id: int, agent_id: Optional[int] = None, start_round: Optional[int] = None, end_round: Optional[int] = None):
     """
@@ -251,5 +273,29 @@ async def get_goal_evaluation_trend(project_id: int, agent_id: int):
     data = await statistics_service.get_goal_evaluation_trend(
         project_id=project_id,
         agent_id=agent_id
+    )
+    return data
+
+
+
+
+
+@router.get("/{project_id}/stats/agent-relations", response_model=AgentRelationsResponse)
+async def get_agent_relations(project_id: int, round_num: Optional[int] = None):
+    """
+    获取智能体关系图谱数据
+
+    获取项目中智能体的追随关系数据，用于前端渲染关系图谱。
+
+    Args:
+        project_id: 项目ID
+        round_num: 可选，指定轮次。如果为None，返回最新轮次的关系
+
+    Returns:
+        AgentRelationsResponse: 关系图谱数据（节点和边）
+    """
+    data = await statistics_service.get_agent_relations(
+        project_id=project_id,
+        round_num=round_num
     )
     return data

@@ -99,3 +99,17 @@ export function getGoalEvaluationTrend(projectId, agentId) {
     method: 'get'
   })
 }
+
+/**
+ * 获取智能体关系图谱数据
+ * @param {number} projectId - 项目ID
+ * @param {number} roundNum - 可选，指定轮次
+ * @returns {Promise} 返回关系图谱数据的响应
+ */
+export function getAgentRelations(projectId, roundNum) {
+  return request({
+    url: `/simulation/${projectId}/stats/agent-relations`,
+    method: 'get',
+    params: { round_num: roundNum }
+  })
+}
