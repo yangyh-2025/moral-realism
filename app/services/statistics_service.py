@@ -495,7 +495,7 @@ class StatisticsService:
                     "name": agent.agent_name,
                     "category": agent.leader_type or "无",
                     "symbolSize": 20,
-                    "value": agent.initial_power
+                    "value": agent.initial_total_power
                 })
 
             # 构建边数据（过滤掉 leader_agent_id 为 None 的关系）

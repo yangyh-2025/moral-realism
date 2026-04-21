@@ -508,7 +508,7 @@ function updatePowerStatsChart(data) {
   })
 
   // 获取所有轮次并排序
-  const rounds = [...new Set(data.map(item => item.round_num))].sort()
+  const rounds = [...new Set(data.map(item => item.round_num))].sort((a, b) => a - b)
   // 为每个智能体创建一个系列
   const series = Object.keys(agentGroups).map(agentName => ({
     name: agentName,
@@ -525,7 +525,11 @@ function updatePowerStatsChart(data) {
   if (chart) {
     chart.setOption({
       legend: { data: Object.keys(agentGroups) },
-      xAxis: { data: rounds },
+      xAxis: {
+        type: 'category',
+        data: rounds,
+        name: '轮次'
+      },
       series: series
     })
   }
