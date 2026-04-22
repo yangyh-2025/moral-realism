@@ -347,7 +347,7 @@ class SimulationService:
         """
         初始化仿真环境
 
-        记录初始国力信息，可扩展更多初始化逻辑。
+        记录初始国力信息，初始化战略关系。
 
         Args:
             project_id: 项目ID
@@ -360,8 +360,10 @@ class SimulationService:
 
             logger.info(f"正在初始化智能体 {agent_name} (ID: {agent_id})，初始国力: {initial_power}")
 
-            # 这里可以扩展更多初始化逻辑
-            # 例如：初始化环境对象、加载行为配置等
+        async for (session, _) in db_config.get_session():
+            from ..services.strategic_relationship_service import StrategicRelationshipService
+            relationship_service = StrategicRelationshipService(session)
+            await relationship_service.initialize_relationships(project_id)
 
     async def _create_round_record(self, project_id: int, round_num: int) -> int:
         """
@@ -415,6 +417,11 @@ class SimulationService:
         actions = get_all_actions()
         records = []
 
+        async for (session, _) in db_config.get_session():
+            from ..services.strategic_relationship_service import StrategicRelationshipService
+            relationship_service = StrategicRelationshipService(session)
+            strategic_relationships = await relationship_service.get_all_agents_relationships(project_id)
+
         # 获取历史数据
         history_action_records = await self._get_action_history(project_id, round_num)
         history_power_data = await self._get_power_history(project_id, round_num)
@@ -440,7 +447,8 @@ class SimulationService:
                 'initial_total_power': a.get('initial_total_power'),
                 'current_total_power': a.get('current_total_power'),
                 'power_level': a.get('power_level'),
-                'leader_type': a.get('leader_type')
+                'leader_type': a.get('leader_type'),
+                'strategic_relationships': strategic_relationships.get(a.get('agent_id'), {})
             }
             for a in agents
         ]
@@ -487,6 +495,7 @@ class SimulationService:
                 power_level=agent.get('power_level'),
                 leader_type=agent.get('leader_type'),
                 national_interest=agent_base.national_interest,
+                strategic_relationships=strategic_relationships.get(agent_id, {}),
                 allowed_actions=[{
                     'action_id': a.action_id,
                     'action_name': a.action_name,

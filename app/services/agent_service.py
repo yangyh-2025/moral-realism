@@ -330,9 +330,9 @@ class AgentService:
         Returns:
             更新后的国力信息字典，或None（如果不存在）
         """
-        # 验证国力变动范围（单次行为变动绝对值不超过10分）
-        if abs(power_change) > 10:
-            raise ValueError("单次行为国力变动绝对值不能超过10分")
+        # 验证国力变动范围（单次行为变动绝对值不超过1分）
+        if abs(power_change) > 1:
+            raise ValueError("单次行为国力变动绝对值不能超过1分")
 
         async for session in db_config.get_session():
             result = await session.execute(

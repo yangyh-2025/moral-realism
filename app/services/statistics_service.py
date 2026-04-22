@@ -459,7 +459,7 @@ class StatisticsService:
                 )
                 latest_round = round_result.scalar_one_or_none()
                 if not latest_round:
-                    return {"nodes": [], "links": []}
+                    return {"nodes": [], "links": [], "round_num": 0}
                 target_round = latest_round.round_num
 
             # 获取指定轮次的数据
@@ -471,7 +471,7 @@ class StatisticsService:
             )
             round_data = round_result.scalar_one_or_none()
             if not round_data:
-                return {"nodes": [], "links": []}
+                return {"nodes": [], "links": [], "round_num": target_round}
 
             # 获取该轮次的所有智能体（节点）
             agents_result = await session.execute(
@@ -502,16 +502,21 @@ class StatisticsService:
             links = []
             for rel in relations:
                 if rel.leader_agent_id is not None:
-                    links.append({
-                        "source": rel.follower_agent_id,
-                        "target": rel.leader_agent_id
-                    })
+                    # 过滤掉自环（追随者就是自己），只保留真正的追随关系
+                    if rel.follower_agent_id != rel.leader_agent_id:
+                        links.append({
+                            "source": rel.follower_agent_id,
+                            "target": rel.leader_agent_id
+                        })
 
-            return {
+            result = {
                 "nodes": nodes,
                 "links": links,
                 "round_num": target_round
             }
+            print(f"关系图谱数据 - 轮次 {target_round}: 节点数 {len(nodes)}, 连线数 {len(links)}")
+            print(f"连线数据: {links}")
+            return result
 
 
 # 单例实例

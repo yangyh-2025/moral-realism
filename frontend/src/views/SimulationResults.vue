@@ -107,8 +107,21 @@
         <el-col :span="24">
           <el-card class="chart-card">
             <template #header>
-              <h3>智能体关系图谱</h3>
+              <h3>智能体关系图谱 <span v-if="totalRounds > 0">(第 {{ currentRound }} 轮)</span></h3>
             </template>
+            <!-- 轮次进度条 -->
+            <div v-if="totalRounds > 0" class="round-slider-container">
+              <el-slider
+                v-model="currentRound"
+                :min="1"
+                :max="totalRounds"
+                :step="1"
+                show-stops
+                show-input
+                :marks="generateRoundMarks()"
+                @change="handleRoundChange"
+              />
+            </div>
             <div ref="relationChart" class="chart-container-large"></div>
           </el-card>
         </el-col>
@@ -153,6 +166,10 @@ const relationChart = ref(null)
 
 // 当前项目ID
 const projectId = ref(store.loadProjectId())
+
+// 轮次相关状态
+const totalRounds = ref(0)
+const currentRound = ref(0)
 
 // 图表实例数组，用于统一管理
 let charts = []
@@ -316,9 +333,11 @@ async function loadSimulationData() {
     const actionData = await getActionPreference(projectId.value)
     updateActionChart(actionData.data)
 
-    // 加载智能体关系图谱数据
-    const relationData = await getAgentRelations(projectId.value)
-    updateRelationChart(relationData.data)
+    // 加载智能体关系图谱数据（最新轮次）
+    if (currentRound.value > 0) {
+      const relationData = await getAgentRelations(projectId.value, currentRound.value)
+      updateRelationChart(relationData.data)
+    }
 
     ElMessage.success('仿真结果数据加载成功')
   } catch (error) {
@@ -334,6 +353,11 @@ async function loadSimulationData() {
 function updateOrderChart(data) {
   const chart = charts.find(c => c.getDom() === orderChart.value)
   if (!chart || !data || data.length === 0) return
+
+  // 设置总轮次和当前轮次
+  const maxRound = Math.max(...data.map(item => item.round_num))
+  totalRounds.value = maxRound
+  currentRound.value = maxRound
 
   const rounds = data.map(item => item.round_num)
   const sovRatios = data.map(item => item.respect_sov_ratio)
@@ -446,8 +470,31 @@ function updateRelationChart(data) {
   const chart = charts.find(c => c.getDom() === relationChart.value)
   if (!chart || !data) return
 
+  // 调试输出
+  console.log('关系图谱数据:', data)
+  console.log('节点数量:', data.nodes?.length)
+  console.log('连线数量:', data.links?.length)
+  console.log('连线数据:', data.links)
+
   // 构建分类映射，用于节点颜色区分
   const categories = [...new Set(data.nodes?.map(n => n.category) || [])]
+
+  // 确保 nodes 的 id 为字符串类型，links 的 source/target 也为字符串类型
+  const formattedNodes = (data.nodes || []).map(node => ({
+    id: String(node.id),
+    name: node.name,
+    value: node.value,
+    category: node.category,
+    symbolSize: node.symbolSize
+  }))
+
+  const formattedLinks = (data.links || []).map(link => ({
+    source: String(link.source),
+    target: String(link.target)
+  }))
+
+  console.log('格式化后的节点:', formattedNodes)
+  console.log('格式化后的连线:', formattedLinks)
 
   chart.setOption({
     legend: {
@@ -467,25 +514,21 @@ function updateRelationChart(data) {
       },
       edgeSymbol: ['circle', 'arrow'],
       edgeSymbolSize: [4, 10],
+      smooth: true,
       edgeLabel: {
-        fontSize: 20
+        show: true,
+        formatter: '{c}',
+        fontSize: 12
       },
-      data: data.nodes?.map(node => ({
-        id: node.id,
-        name: node.name,
-        value: node.value,
-        category: node.category,
-        symbolSize: node.symbolSize
-      })) || [],
-      links: data.links?.map(link => ({
-        source: link.source,
-        target: link.target
-      })) || [],
-      roam: true,
       lineStyle: {
         color: 'source',
-        curveness: 0.3
+        curveness: 0.3,
+        width: 2,
+        opacity: 0.8
       },
+      data: formattedNodes,
+      links: formattedLinks,
+      roam: true,
       emphasis: {
         focus: 'adjacency',
         lineStyle: {
@@ -499,6 +542,38 @@ function updateRelationChart(data) {
       }
     }]
   })
+}
+
+/**
+ * 处理轮次变化
+ * @param {number} round - 选中的轮次
+ */
+async function handleRoundChange(round) {
+  if (!projectId.value) return
+
+  try {
+    const relationData = await getAgentRelations(projectId.value, round)
+    console.log('轮次', round, '关系数据:', relationData)
+    updateRelationChart(relationData.data)
+  } catch (error) {
+    ElMessage.error('加载轮次数据失败: ' + (error.message || error))
+  }
+}
+
+/**
+ * 生成轮次标记
+ * @returns {Object} 轮次标记对象
+ */
+function generateRoundMarks() {
+  const marks = {}
+  const step = Math.max(1, Math.floor(totalRounds.value / 10))
+  for (let i = 1; i <= totalRounds.value; i += step) {
+    marks[i] = i.toString()
+  }
+  if (totalRounds.value > 0) {
+    marks[totalRounds.value] = totalRounds.value.toString()
+  }
+  return marks
 }
 
 /**
@@ -552,5 +627,11 @@ function disposeCharts() {
 .chart-container-large {
   height: 700px;
   width: 100%;
+}
+
+/* 轮次滑块容器 */
+.round-slider-container {
+  margin: 20px 0;
+  padding: 0 20px;
 }
 </style>

@@ -72,7 +72,7 @@ class PowerUpdateEngine:
 
     def __init__(
         self,
-        max_action_change: int = 10,
+        max_action_change: float = 1.0,
         enable_logging: bool = True
     ):
         """

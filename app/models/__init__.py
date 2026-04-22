@@ -20,6 +20,7 @@ from .agent_power_history import AgentPowerHistory
 from .preset_scene import PresetScene
 from .system_config import SystemConfig
 from .strategic_goal_evaluation import StrategicGoalEvaluation
+from .strategic_relationship import StrategicRelationship
 
 __all__ = [
     "Base",
@@ -33,4 +34,5 @@ __all__ = [
     "PresetScene",
     "SystemConfig",
     "StrategicGoalEvaluation",
+    "StrategicRelationship",
 ]

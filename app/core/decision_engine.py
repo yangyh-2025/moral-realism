@@ -38,6 +38,7 @@ class AgentInfo:
     leader_type: Optional[str] = None
     national_interest: List[str] = field(default_factory=list)
     allowed_actions: List[Dict[str, Any]] = field(default_factory=list)
+    strategic_relationships: Dict[int, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -437,11 +438,23 @@ class DecisionEngine:
                 f"区域:{agent.get('region', 'N/A')} | "
                 f"综合国力:{agent.get('current_total_power', 0):.1f} | "
                 f"实力层级:{agent.get('power_level', 'N/A')} | "
-                f"领导类型:{agent.get('leader_type', 'N/A')}"
+                f"领导类型:{agent.get('leader_type', 'N/A')} | "
+                f"战略关系:{self._format_relationships_for_prompt(agent.get('strategic_relationships', {}))}"
             )
             lines.append(line)
 
         return "\n".join(lines)
+
+    def _format_relationships_for_prompt(self, relationships: Dict[int, str]) -> str:
+        """Format strategic relationships for prompt."""
+        if not relationships:
+            return "无"
+
+        items = []
+        for target_id, rel_type in sorted(relationships.items()):
+            items.append(f"{target_id}:{rel_type}")
+
+        return ", ".join(items[:10])
 
     def _format_history_for_prompt(
         self,

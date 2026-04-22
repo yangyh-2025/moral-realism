@@ -38,8 +38,8 @@ class ActionConfig:
     action_category: str
     action_desc: str
     respect_sov: bool
-    initiator_power_change: int
-    target_power_change: int
+    initiator_power_change: float
+    target_power_change: float
     is_initiative: bool
     is_response: bool
 
@@ -75,8 +75,8 @@ class ActionRecord:
     action_category: str = ""
     action_name: str = ""
     respect_sov: bool = False
-    initiator_power_change: int = 0
-    target_power_change: int = 0
+    initiator_power_change: float = 0.0
+    target_power_change: float = 0.0
     decision_detail: Optional[str] = None
     created_at: datetime = field(default_factory=datetime.now)
     is_valid: bool = True
