@@ -107,9 +107,13 @@ export function getGoalEvaluationTrend(projectId, agentId) {
  * @returns {Promise} 返回关系图谱数据的响应
  */
 export function getAgentRelations(projectId, roundNum) {
+  console.log('请求关系数据 - projectId:', projectId, 'roundNum:', roundNum)
   return request({
     url: `/simulation/${projectId}/stats/agent-relations`,
     method: 'get',
     params: { round_num: roundNum }
+  }).then(res => {
+    console.log('关系数据响应:', res)
+    return res
   })
 }

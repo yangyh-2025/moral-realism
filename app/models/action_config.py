@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..models import Base
@@ -52,8 +52,8 @@ class ActionConfig(Base):
     action_category: Mapped[str] = mapped_column(String(50), nullable=False)
     action_desc: Mapped[str] = mapped_column(String(1000), nullable=False)
     respect_sov: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    initiator_power_change: Mapped[int] = mapped_column(Integer, nullable=False)
-    target_power_change: Mapped[int] = mapped_column(Integer, nullable=False)
+    initiator_power_change: Mapped[float] = mapped_column(Float, nullable=False)
+    target_power_change: Mapped[float] = mapped_column(Float, nullable=False)
     is_initiative: Mapped[bool] = mapped_column(Boolean, nullable=False)
     is_response: Mapped[bool] = mapped_column(Boolean, nullable=False)
 

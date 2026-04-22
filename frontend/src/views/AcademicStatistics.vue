@@ -241,7 +241,6 @@
               <el-table-column prop="goal_achievement_score" label="目标达成度(%)" width="130" :formatter="(row, column, cellValue) => cellValue ? cellValue.toFixed(2) : 'N/A'" />
               <el-table-column prop="power_growth_contribution" label="国力贡献度(%)" width="130" :formatter="(row, column, cellValue) => cellValue ? cellValue.toFixed(2) : 'N/A'" />
               <el-table-column prop="action_effectiveness" label="行为有效性(%)" width="130" :formatter="(row, column, cellValue) => cellValue ? cellValue.toFixed(2) : 'N/A'" />
-              <el-table-column prop="leadership_alignment" label="领导一致性(%)" width="130" :formatter="(row, column, cellValue) => cellValue ? cellValue.toFixed(2) : 'N/A'" />
               <el-table-column prop="overall_assessment" label="综合评估" show-overflow-tooltip />
             </el-table>
           </div>

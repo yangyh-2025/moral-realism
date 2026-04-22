@@ -43,9 +43,9 @@ class StrategicGoalEvaluation(Base):
 
     # 评估结果 (0-100)
     goal_achievement_score: Mapped[float] = mapped_column(Float, nullable=False)  # 综合目标达成度
-    power_growth_contribution: Mapped[float] = mapped_column(Float, nullable=True)  # 国力增长贡献度
-    action_effectiveness: Mapped[float] = mapped_column(Float, nullable=True)  # 行为有效性
-    leadership_alignment: Mapped[float] = mapped_column(Float, nullable=True)  # 领导类型一致性
+    power_growth_contribution: Mapped[float] = mapped_column(Float, nullable=True)  # 国力贡献度（数据驱动Min-Max标准化）
+    action_effectiveness: Mapped[float] = mapped_column(Float, nullable=True)  # 行为有效性（LLM评分）
+    leadership_alignment: Mapped[float] = mapped_column(Float, nullable=True)  # 领导类型一致性（已废弃）
 
     # 评估说明
     overall_assessment: Mapped[str] = mapped_column(String(1000), nullable=True)  # 综合评估说明
