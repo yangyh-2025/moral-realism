@@ -27,8 +27,8 @@ class ActionConfig(BaseModel):
     action_category: str = Field(description="行为分类")
     action_desc: str = Field(description="行为介绍（学术文档完整描述）")
     respect_sov: bool = Field(description="是否尊重主权")
-    initiator_power_change: int = Field(description="发起国国力变化值")
-    target_power_change: int = Field(description="目标国国力变化值")
+    initiator_power_change: float = Field(description="发起国国力变化值")
+    target_power_change: float = Field(description="目标国国力变化值")
     is_initiative: bool = Field(description="是否为发起类行为")
     is_response: bool = Field(description="是否为响应类行为")
 

@@ -135,8 +135,8 @@ class DecisionEngine:
             action_stage
         )
 
-        # Build prompt
-        prompt = self._build_decision_prompt(
+        # Build system and user prompts
+        system_prompt, user_prompt = self._build_prompts_for_llm(
             agent_info,
             stage_allowed_actions,
             info_pool
@@ -149,9 +149,10 @@ class DecisionEngine:
             try:
                 retry_time = time.time()
 
-                # Call LLM
+                # Call LLM with separated system and user prompts
                 llm_response = await self.llm_service.call_llm_async(
-                    prompt,
+                    user_prompt,
+                    system_prompt=system_prompt,
                     log_manager=self.log_manager,
                     log_category="interaction",
                     agent_id=agent_info.agent_id,
@@ -192,9 +193,9 @@ class DecisionEngine:
                         f"LLM response action IDs: {[a.get('action_id') for a in llm_response.get('actions', [])]}"
                     )
 
-                    # Update prompt with validation error for retry
+                    # Update user prompt with validation error for retry
                     if retry < self.max_retries:
-                        prompt = self._build_retry_prompt(prompt, errors)
+                        user_prompt = self._build_retry_prompt(user_prompt, errors)
 
             except Exception as e:
                 _logger.error(
@@ -291,14 +292,14 @@ class DecisionEngine:
         else:
             return []
 
-    def _build_decision_prompt(
+    def _build_prompts_for_llm(
         self,
         agent_info: AgentInfo,
         allowed_actions: List[Dict[str, Any]],
         info_pool: InfoPool
-    ) -> str:
+    ) -> tuple[str, str]:
         """
-        Build decision prompt using templates.
+        Build system and user prompts for LLM.
 
         Args:
             agent_info: Agent information
@@ -306,7 +307,7 @@ class DecisionEngine:
             info_pool: Information pool
 
         Returns:
-            Complete decision prompt
+            Tuple of (system_prompt, user_prompt)
         """
         # Convert agent info to dict for template
         agent_dict = {
@@ -331,15 +332,54 @@ class DecisionEngine:
             'last_round_order_info': str(info_pool.last_round_order_info)
         }
 
-        # Build full prompt
-        prompt = PromptTemplates.build_full_decision_prompt(
+        # Debug: 验证战略关系是否在info_pool中
+        logger.debug(f"InfoPool中的agent_info示例: {info_pool.all_agent_info[0] if info_pool.all_agent_info else 'empty'}")
+        if info_pool.all_agent_info:
+            for agent in info_pool.all_agent_info[:3]:  # 只打印前3个
+                logger.debug(f"  Agent {agent.get('agent_id')} 战略关系: {agent.get('strategic_relationships', {})}")
+
+        # Build system prompt (role, rules, output requirements)
+        system_prompt = PromptTemplates.build_system_prompt(
             agent_dict,
-            allowed_actions,
-            info_pool_dict,
             agent_info.leader_type or "未定义"
         )
 
-        return prompt
+        # Build user prompt (task, context, data)
+        user_prompt = PromptTemplates.build_user_prompt(
+            agent_dict,
+            allowed_actions,
+            info_pool_dict
+        )
+
+        return system_prompt, user_prompt
+
+    def _build_decision_prompt(
+        self,
+        agent_info: AgentInfo,
+        allowed_actions: List[Dict[str, Any]],
+        info_pool: InfoPool
+    ) -> str:
+        """
+        Build decision prompt using templates.
+
+        This method combines system and user prompts for backward compatibility
+        (e.g., for retry scenarios).
+
+        Args:
+            agent_info: Agent information
+            allowed_actions: Allowed actions for this stage
+            info_pool: Information pool
+
+        Returns:
+            Complete decision prompt
+        """
+        system_prompt, user_prompt = self._build_prompts_for_llm(
+            agent_info,
+            allowed_actions,
+            info_pool
+        )
+
+        return system_prompt + "\n\n" + user_prompt
 
     def _build_retry_prompt(
         self,
@@ -447,14 +487,18 @@ class DecisionEngine:
 
     def _format_relationships_for_prompt(self, relationships: Dict[int, str]) -> str:
         """Format strategic relationships for prompt."""
+        logger.debug(f"格式化战略关系输入: {relationships}")
         if not relationships:
+            logger.debug("战略关系为空，返回'无'")
             return "无"
 
         items = []
         for target_id, rel_type in sorted(relationships.items()):
             items.append(f"{target_id}:{rel_type}")
 
-        return ", ".join(items[:10])
+        result = ", ".join(items[:10])
+        logger.debug(f"格式化战略关系输出: {result}")
+        return result
 
     def _format_history_for_prompt(
         self,

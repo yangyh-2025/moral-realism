@@ -33,7 +33,6 @@
             <h3>仿真控制</h3>
           </template>
 
-          <!-- 仿真控制按钮组 -->
           <div class="control-buttons">
             <el-button
               type="primary"
@@ -174,6 +173,38 @@
             </div>
             <div v-else class="no-data">暂无追随关系数据</div>
 
+            <!-- 战略关系 -->
+            <el-divider>战略关系</el-divider>
+
+            <div v-if="currentStrategicRelations && Object.keys(currentStrategicRelations).length > 0" class="strategic-relations">
+              <div v-for="(sourceRelations, sourceId) in currentStrategicRelations" :key="sourceId" class="strategic-item">
+                <div class="strategic-source">智能体 {{ sourceId }}</div>
+                <div class="strategic-targets">
+                  <el-tag
+                    v-for="(relType, targetId) in sourceRelations"
+                    :key="targetId"
+                    :type="getStrategicRelationType(relType)"
+                    size="small"
+                    style="margin: 2px;"
+                  >
+                    {{ targetId }}: {{ relType }}
+                  </el-tag>
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-data">暂无战略关系数据</div>
+
+            <!-- LLM Prompt详情按钮 -->
+            <el-button
+              v-if="currentRoundInfo"
+              type="primary"
+              size="small"
+              @click="showPromptDetailModal(null)"
+              style="margin-top: 10px;"
+            >
+              查看本轮LLM Prompt
+            </el-button>
+
             <!-- 最近行为 -->
             <el-divider>最近行为</el-divider>
 
@@ -215,6 +246,95 @@
       </el-col>
     </el-row>
   </div>
+
+  <!-- Prompt详情对话框 -->
+    <el-dialog
+      v-model="showPromptDetail"
+      title="LLM Prompt详情"
+      width="80%"
+    >
+      <div v-if="selectedPrompt">
+        <el-tabs>
+          <el-tab-pane label="System Prompt">
+            <el-input
+              type="textarea"
+              :rows="20"
+              :model-value="selectedPrompt.full_system_prompt"
+              readonly
+            />
+          </el-tab-pane>
+          <el-tab-pane label="User Prompt">
+            <el-input
+              type="textarea"
+              :rows="20"
+              :model-value="selectedPrompt.full_prompt"
+              readonly
+            />
+          </el-tab-pane>
+          <el-tab-pane label="LLM响应">
+            <el-input
+              type="textarea"
+              :rows="10"
+              :model-value="JSON.stringify(selectedPrompt.full_response, null, 2)"
+              readonly
+            />
+          </el-tab-pane>
+        </el-tabs>
+        <el-descriptions style="margin-top: 10px;" :column="2" border size="small">
+          <el-descriptions-item label="智能体">
+            {{ selectedPrompt.agent_name }} (ID: {{ selectedPrompt.agent_id }})
+          </el-descriptions-item>
+          <el-descriptions-item label="阶段">
+            {{ selectedPrompt.stage }}
+          </el-descriptions-item>
+          <el-descriptions-item label="延迟">
+            {{ selectedPrompt.latency_ms }} ms
+          </el-descriptions-item>
+          <el-descriptions-item label="时间戳">
+            {{ selectedPrompt.timestamp }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <div v-else-if="llmPrompts.length > 0">
+        <el-collapse>
+          <el-collapse-item
+            v-for="(prompt, index) in llmPrompts"
+            :key="index"
+            :title="`${prompt.agent_name} (${prompt.stage})`"
+          >
+            <el-tabs>
+              <el-tab-pane label="System Prompt">
+                <el-input
+                  type="textarea"
+                  :rows="15"
+                  :model-value="prompt.full_system_prompt"
+                  readonly
+                />
+              </el-tab-pane>
+              <el-tab-pane label="User Prompt">
+                <el-input
+                  type="textarea"
+                  :rows="15"
+                  :model-value="prompt.full_prompt"
+                  readonly
+                />
+              </el-tab-pane>
+              <el-tab-pane label="LLM响应">
+                <el-input
+                  type="textarea"
+                  :rows="15"
+                  :model-value="JSON.stringify(prompt.full_response, null, 2)"
+                  readonly
+                />
+              </el-tab-pane>
+            </el-tabs>
+          </el-collapse-item>
+        </el-collapse>
+      </div>
+      <div v-else>
+        <el-empty description="暂无LLM Prompt数据" />
+      </div>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -234,6 +354,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAppStore } from '../store'
 import * as simulationApi from '../api/simulation'
+import * as relationshipApi from '../api/strategicRelationship'
 
 // 获取路由和路由跳转实例
 const route = useRoute()
@@ -259,6 +380,14 @@ const logContainer = ref(null)
 const currentRoundInfo = ref(null)
 const projectId = ref(null)
 const lastRound = ref(0)
+
+// 当前战略关系数据
+const currentStrategicRelations = ref(null)
+
+// LLM Prompt详情
+const showPromptDetail = ref(false)
+const selectedPrompt = ref(null)
+const llmPrompts = ref([])  // 存储每轮的LLM prompt
 
 // 轮询定时器
 let pollTimer = null
@@ -372,6 +501,9 @@ async function refreshProjectStatus() {
     } else if (isRunningNow && !pollTimer) {
       startPolling()
     }
+
+    // 加载战略关系数据
+    await loadStrategicRelations()
   } catch (error) {
     console.error('获取项目状态失败:', error)
   }
@@ -454,6 +586,55 @@ function getOrderType(order) {
     '恐怖平衡型秩序': 'danger'
   }
   return typeMap[order] || 'info'
+}
+
+/**
+ * 获取战略关系类型对应的标签类型
+ * @param {string} relationshipType - 关系类型
+ * @returns {string} Element Plus 标签类型
+ */
+function getStrategicRelationType(relationshipType) {
+  return relationshipApi.getRelationTagType(relationshipType)
+}
+
+/**
+ * 加载战略关系数据
+ */
+async function loadStrategicRelations() {
+  if (!projectId.value) return
+
+  try {
+    const response = await relationshipApi.getStrategicRelationships(projectId.value)
+    currentStrategicRelations.value = response.data || {}
+    console.log('Loaded strategic relations:', currentStrategicRelations.value)
+  } catch (error) {
+    // 如果项目刚创建还没有战略关系，使用空对象而不是报错
+    currentStrategicRelations.value = {}
+    console.log('No strategic relations loaded (project may be new)', error)
+  }
+}
+
+/**
+ * 加载LLM调用日志
+ */
+async function loadLLMPrompts(roundNum) {
+  if (!projectId.value) return
+
+  try {
+    const response = await simulationApi.getLLMPrompts(projectId.value, roundNum)
+    llmPrompts.value = response.data || []
+    console.log(`Loaded ${llmPrompts.value.length} LLM prompts for round ${roundNum}`)
+  } catch (error) {
+    console.error('加载LLM提示词失败:', error)
+  }
+}
+
+/**
+ * 显示prompt详情
+ */
+function showPromptDetailModal(prompt) {
+  selectedPrompt.value = prompt
+  showPromptDetail.value = true
 }
 
 // 用于存储正在获取的轮次，避免重复请求
@@ -545,6 +726,9 @@ async function getRoundDetail(roundNum, retryCount = 0) {
     if (roundData.total_actions > 0) {
       respectSovRatio.value = (roundData.respect_sov_actions / roundData.total_actions) * 100
     }
+
+    // 加载LLM prompts
+    await loadLLMPrompts(roundNum)
   } catch (error) {
     console.error('获取轮次详情失败:', error)
     // 错误时也重试
@@ -914,5 +1098,27 @@ function handleSimulationError(data) {
   text-align: center;
   color: #909399;
   padding: 40px 0;
+}
+
+/* 战略关系容器 */
+.strategic-relations {
+  margin-top: 10px;
+}
+
+/* 战略关系条目 */
+.strategic-item {
+  margin-bottom: 10px;
+}
+
+/* 战略关系源 */
+.strategic-source {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #303133;
+}
+
+/* 战略关系目标列表 */
+.strategic-targets {
+  padding-left: 15px;
 }
 </style>

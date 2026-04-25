@@ -37,7 +37,19 @@ class StrategicRelationship(Base):
 
     约束规则：
     - source_agent_id < target_agent_id，避免重复存储
-    - 只存储大国/超级大国之间的关系
+    - 存储大国/超级大国与中小国家之间的战略关系
+
+    允许的配对组合：
+    - 超级大国 × 大国
+    - 超级大国 × 中等强国
+    - 超级大国 × 小国
+    - 大国 × 中等强国
+    - 大国 × 小国
+
+    不建立关系的组合：
+    - 中等强国 × 中等强国
+    - 中等强国 × 小国
+    - 小国 × 小国
     """
     __tablename__ = "strategic_relationship"
 
@@ -49,6 +61,9 @@ class StrategicRelationship(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
+
+    # Relationships
+    project = relationship("SimulationProject", back_populates="strategic_relationships")
 
     def __repr__(self) -> str:
         return f"<StrategicRelationship(source={self.source_agent_id}, target={self.target_agent_id}, type={self.relationship_type})>"

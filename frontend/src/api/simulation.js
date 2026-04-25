@@ -222,3 +222,16 @@ export function getRoundDetail(projectId, roundNum) {
     method: 'get'
   })
 }
+
+/**
+ * 获取指定轮次的LLM调用日志
+ * @param {number} projectId - 项目ID
+ * @param {number} roundNum - 轮次编号
+ * @returns {Promise} 返回LLM调用日志的响应数据
+ */
+export function getLLMPrompts(projectId, roundNum) {
+  return request({
+    url: `/simulation/project/${projectId}/round/${roundNum}/llm-prompts`,
+    method: 'get'
+  })
+}

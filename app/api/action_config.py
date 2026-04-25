@@ -24,8 +24,8 @@ class ActionConfigResponse(BaseModel):
     action_category: str
     action_desc: str
     respect_sov: bool
-    initiator_power_change: int
-    target_power_change: int
+    initiator_power_change: float
+    target_power_change: float
     is_initiative: bool
     is_response: bool
 

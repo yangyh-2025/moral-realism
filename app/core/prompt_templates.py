@@ -6,14 +6,17 @@ Prompt Templates Module for LLM Decision Engine
 完全对齐学术模型表1。
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 class PromptTemplates:
     """Centralized prompt template management for LLM decision engine."""
 
+    # ============ System Prompt Templates ============
+    # These templates define the role, rules, and output format requirements
+
     # System role template
     SYSTEM_ROLE_TEMPLATE = """
-你是{agent_name}的国家领导集体，所属区域为{region}。
+你是{agent_name}的国家领导集体集体，所属区域为{region}。
 基于克莱因综合国力方程，该国初始综合国力得分为{initial_total_power}，当前当前综合国力得分为{current_total_power}，实力层级为{power_level}。
 """
 
@@ -32,13 +35,29 @@ class PromptTemplates:
    - 在成本收益分析中必须显式说明地理位置和战略关系对决策的影响。
 """
 
-    # Leader type rules mapping
-    LEADER_TYPE_RULES = {
-        "王道型": "国家利益优先，坚守国际道义；公平正义、言行一致、维护战略信誉、避免双重标准、不滥用强制手段；禁止执行所有不尊重主权的高烈度对抗行为，仅可执行尊重主权的合作类、外交类行为，不得偏离国家客观利益",
-        "霸权型": "自身国家利益绝对优先，兼顾道义工具性；双重标准执行国际规范、通过规则构建获取超额利益、以自身利益为核心适用规则；禁止执行极端暴力与强制类行为，可执行双重标准的外交、经济类对抗行为，不得偏离国家客观利益",
-        "强权型": "本国利益最大化，完全忽视道义；以军事/强制手段为核心工具、无视国际规范、不重视战略信誉、不惜破坏现有秩序；仅禁止非常规大规模暴力行为，优先选择高烈度强制行为实现利益，不得偏离国家客观利益",
-        "昏庸型": "个人利益优先，可牺牲国家利益；决策以决策者个人利益为核心，可制定损害国家利益的政策，无固定策略偏好；唯一可主动偏离国家客观利益的类型，无行为禁止约束，可执行20项行为集中的所有行为"
-    }
+    # Output requirements template (for system prompt)
+    OUTPUT_REQUIREMENTS_TEMPLATE = """
+【输出要求】
+1. 必须输出结构化JSON格式，禁止额外文本、禁止解释说明、禁止markdown格式；
+2. 必须包含每一项行为的成本收益分析，明确净收益计算逻辑，必须包含行为对应的国力变化影响；
+3. 必须为每一项行为指定明确的目标对象国（agent_id），目标国必须存在于当前体系内；
+4. 可选择1-5项行为，禁止选择无收益的行为，禁止选择列表外的行为；
+5. 必须填写action_id、action_name、action_category，且必须与允许行为列表完全一致。
+6. 每一项行为的成本收益分析必须包含以下维度：
+   - 行为对应的国力变化影响（成本和收益）
+   - 地理位置因素：目标国是否在同一区域、地缘政治影响评估
+   - 战略关系因素：与目标国的战略关系类型及其对行为选择的影响
+   - 综合净收益：基于国力变化、地理位置和战略关系的整体评估
+"""
+
+    # System prompt template (combines role, rules, and output requirements)
+    SYSTEM_PROMPT_TEMPLATE = """{system_role}{core_rules}
+
+{output_requirements}
+"""
+
+    # ============ User Prompt Templates ============
+    # These templates provide the task context and data
 
     # Information pool template
     INFO_POOL_TEMPLATE = """
@@ -63,20 +82,27 @@ class PromptTemplates:
 - target_power_change：你执行该行为后，目标国家国力变化值
 """
 
-    # Output requirements template
-    OUTPUT_REQUIREMENTS_TEMPLATE = """
-【输出要求】
-1. 必须输出结构化JSON格式，禁止额外文本、禁止解释说明、禁止markdown格式；
-2. 必须包含每一项行为的成本收益分析，明确净收益计算逻辑，必须包含行为对应的国力变化影响；
-3. 必须为每一项行为指定明确的目标对象国（agent_id），目标国必须存在于当前体系内；
-4. 可选择1-5项行为，禁止选择无收益的行为，禁止选择列表外的行为；
-5. 必须填写action_id、action_name、action_category，且必须与允许行为列表完全一致。
-6. 每一项行为的成本收益分析必须包含以下维度：
-   - 行为对应的国力变化影响（成本和收益）
-   - 地理位置因素：目标国是否在同一区域、地缘政治影响评估
-   - 战略关系因素：与目标国的战略关系类型及其对行为选择的影响
-   - 综合净收益：基于国力变化、地理位置和战略关系的整体评估
+    # User prompt template (task description + context + data)
+    USER_PROMPT_TEMPLATE = """
+【任务描述】
+你需要在当前国际政治环境下，作为{agent_name}的国家领导集体，基于上述核心规则和全量信息池，做出符合国家利益的最优决策。
+
+请从下方允许执行的行为列表中选择1-5项行为，并为每项行为提供详细的成本收益分析。
+
+{info_pool}{actions_list}
+
+【JSON输出格式示例】
+{json_example}
 """
+
+    # Leader type rules mapping
+    LEADER_TYPE_RULES = {
+        "王道型": "国家利益优先，坚守国际道义；公平正义、言行一致、维护战略信誉、避免双重标准、不滥用强制手段；禁止执行所有不尊重主权的高烈度对抗行为，仅可执行尊重主权的合作类、外交类行为，不得偏离国家客观利益",
+        "霸权型": "自身国家利益绝对优先，兼顾道义工具性；双重标准执行国际规范、通过规则构建获取超额利益、以自身利益为核心适用规则；禁止执行极端暴力与强制类行为，可执行双重标准的外交、经济类对抗行为，不得偏离国家客观利益",
+        "强权型": "本国利益最大化，完全忽视道义；以军事/强制手段为核心工具、无视国际规范、不重视战略信誉、不惜破坏现有秩序；仅禁止非常规大规模暴力行为，优先选择高烈度强制行为实现利益，不得偏离国家客观利益",
+        "昏庸型": "个人利益优先，可牺牲国家利益；决策以决策者个人利益为核心，可制定损害国家利益的政策，无固定策略偏好；唯一可主动偏离国家客观利益的类型，无行为禁止约束，可执行20项行为集中的所有行为"
+    }
+
 
     # JSON output format template
     JSON_OUTPUT_TEMPLATE = {
@@ -122,24 +148,22 @@ class PromptTemplates:
         return "\n".join(table_lines)
 
     @classmethod
-    def build_full_decision_prompt(
+    def build_system_prompt(
         cls,
         agent_info: Dict[str, Any],
-        allowed_actions: List[Dict[str, Any]],
-        info_pool: Dict[str, Any],
         leader_type: str
     ) -> str:
         """
-        Build complete decision prompt with all sections.
+        Build system prompt for decision making.
+
+        System prompt defines role, rules, and output format requirements.
 
         Args:
             agent_info: Agent information including name, region, power, etc.
-            allowed_actions: List of allowed action configurations
-            info_pool: Information pool with all agents, history, etc.
             leader_type: Leader type of agent
 
         Returns:
-            Complete decision prompt string
+            System prompt string
         """
         # Build system role section
         system_role = cls.SYSTEM_ROLE_TEMPLATE.format(
@@ -161,6 +185,35 @@ class PromptTemplates:
             leader_type_rules=leader_type_rules
         )
 
+        # Build system prompt
+        system_prompt = cls.SYSTEM_PROMPT_TEMPLATE.format(
+            system_role=system_role,
+            core_rules=core_rules,
+            output_requirements=cls.OUTPUT_REQUIREMENTS_TEMPLATE
+        )
+
+        return system_prompt.strip()
+
+    @classmethod
+    def build_user_prompt(
+        cls,
+        agent_info: Dict[str, Any],
+        allowed_actions: List[Dict[str, Any]],
+        info_pool: Dict[str, Any]
+    ) -> str:
+        """
+        Build user prompt for decision making.
+
+        User prompt provides task context, information pool, and action list.
+
+        Args:
+            agent_info: Agent information including name, region, power, etc.
+            allowed_actions: List of allowed action configurations
+            info_pool: Information pool with all agents, history, etc.
+
+        Returns:
+            User prompt string
+        """
         # Build info pool section
         info_pool_section = cls.INFO_POOL_TEMPLATE.format(
             all_agent_info=info_pool.get('all_agent_info', '无数据'),
@@ -179,18 +232,108 @@ class PromptTemplates:
         # Build JSON format example
         import json
         json_example = json.dumps(cls.JSON_OUTPUT_TEMPLATE, ensure_ascii=False, indent=2)
-        output_requirements = cls.OUTPUT_REQUIREMENTS_TEMPLATE + f"\n\n【JSON输出格式示例】\n{json_example}"
 
-        # Combine all sections
-        full_prompt = (
-            system_role + "\n" +
-            core_rules + "\n" +
-            info_pool_section + "\n" +
-            actions_list + "\n" +
-            output_requirements
+        # Build user prompt
+        user_prompt = cls.USER_PROMPT_TEMPLATE.format(
+            agent_name=agent_info.get('agent_name', ''),
+            info_pool=info_pool_section,
+            actions_list=actions_list,
+            json_example=json_example
         )
 
-        return full_prompt.strip()
+        return user_prompt.strip()
+
+    @classmethod
+    def build_follower_system_prompt(
+        cls,
+        agent_name: str,
+        current_total_power: float,
+        power_level: str
+    ) -> str:
+        """
+        构建追随决策的系统提示词
+
+        Args:
+            agent_name: 智能体名称
+            current_total_power: 当前国力
+            power_level: 实力层级
+
+        Returns:
+            系统提示词字符串
+        """
+        return cls.FOLLOWER_SYSTEM_PROMPT_TEMPLATE.format(
+            agent_name=agent_name,
+            current_total_power=current_total_power,
+            power_level=power_level
+        ).strip()
+
+    @classmethod
+    def build_follower_user_prompt(
+        cls,
+        info_pool: Dict[str, Any],
+        decision_type: str,  # 'participation' 或 'vote'
+        leader_candidates_info: Optional[str] = None
+    ) -> str:
+        """
+        构建追随决策的用户提示词
+
+        Args:
+            info_pool: 格式化后的信息池字典
+            decision_type: 决策类型
+            leader_candidates_info: 参选者信息（仅投票决策需要）
+
+        Returns:
+            用户提示词字符串
+        """
+        if decision_type == 'participation':
+            additional_context = cls.LEADERSHIP_PARTICIPATION_CONTEXT
+            decision_requirement = "请决定是否参与本轮国际领导竞争。"
+            output_format = cls.LEADERSHIP_PARTICIPATION_OUTPUT
+        elif decision_type == 'vote':
+            additional_context = cls.FOLLOWER_VOTE_CONTEXT.format(
+                leader_candidates_info=leader_candidates_info or "无参选者"
+            )
+            decision_requirement = "请选择一个国家作为追随对象，或选择中立。"
+            output_format = cls.FOLLOWER_VOTE_OUTPUT
+        else:
+            raise ValueError(f"未知的决策类型: {decision_type}")
+
+        return cls.FOLLOWER_USER_PROMPT_TEMPLATE.format(
+            all_agent_info=info_pool.get('all_agent_info', '无数据'),
+            history_action_records=info_pool.get('history_action_records', '无数据'),
+            history_power_data=info_pool.get('history_power_data', '无数据'),
+            last_round_order_info=info_pool.get('last_round_order_info', '无数据'),
+            additional_context=additional_context,
+            decision_requirement=decision_requirement,
+            output_format=output_format
+        ).strip()
+
+    @classmethod
+    def build_full_decision_prompt(
+        cls,
+        agent_info: Dict[str, Any],
+        allowed_actions: List[Dict[str, Any]],
+        info_pool: Dict[str, Any],
+        leader_type: str
+    ) -> str:
+        """
+        Build complete decision prompt with all sections.
+
+        This method combines system and user prompts for backward compatibility.
+
+        Args:
+            agent_info: Agent information including name, region, power, etc.
+            allowed_actions: List of allowed action configurations
+            info_pool: Information pool with all agents, history, etc.
+            leader_type: Leader type of agent
+
+        Returns:
+            Complete decision prompt string
+        """
+        system_prompt = cls.build_system_prompt(agent_info, leader_type)
+        user_prompt = cls.build_user_prompt(agent_info, allowed_actions, info_pool)
+
+        return system_prompt + "\n\n" + user_prompt
 
     @classmethod
     def get_leader_type_rules(cls, leader_type: str) -> str:
@@ -280,6 +423,84 @@ class PromptTemplates:
 - 选择"中立"：如果你不想追随任何国家，在follower_agent_id字段填写null
 
 【输出要求】
+必须输出JSON格式：
+{{
+    "follower_agent_id": <国家ID或null>,
+    "follower_agent_name": <国家名称或"中立">,
+    "reason": "决策理由"
+}}
+"""
+
+
+# 追随决策的系统提示词模板（角色、规则、输出要求）
+    FOLLOWER_SYSTEM_PROMPT_TEMPLATE = """
+你是一个{agent_name}的国家领导集体，当前综合国力为{current_total_power}，实力层级为{power_level}。
+
+【角色设定】
+你需要代表国家做出追随相关的重要决策。
+
+【决策规则】
+1. 基于全量信息池中的所有信息做出理性决策
+2. 考虑战略关系对追随选择的影响
+3. 考虑历史互动模式对决策的指导作用
+4. 考虑国力变化趋势对战略选择的影响
+
+【输出要求】
+- 必须严格按照JSON格式输出
+- reason字段应简洁明了，说明决策的主要依据
+"""
+
+# 追随决策的用户提示词模板（任务、上下文、数据）
+    FOLLOWER_USER_PROMPT_TEMPLATE = """
+【任务】
+请根据以下信息做出决策：
+
+【全量信息池】
+1. 当前体系内所有国家信息（含战略关系）：
+{all_agent_info}
+
+2. 历史轮次互动行为记录：
+{history_action_records}
+
+3. 历史轮次各国国力变化数据：
+{history_power_data}
+
+4. 上一轮体系追随关系与国际秩序类型：
+{last_round_order_info}
+
+{additional_context}
+
+【决策要求】
+{decision_requirement}
+
+【输出格式】
+{output_format}
+"""
+
+# 领导竞争参与决策的额外上下文
+    LEADERSHIP_PARTICIPATION_CONTEXT = """
+【领导竞争参与决策】
+请决定是否参与本轮国际领导竞争：
+- 选择"参与"：如果希望参与国际领导竞争，争取成为体系领导者
+- 选择"不参与"：如果不想参与领导竞争，保持现状或仅作为追随者
+"""
+
+    LEADERSHIP_PARTICIPATION_OUTPUT = """
+必须输出JSON格式：{{"decision": "参与"或"不参与", "reason": "决策理由"}}
+"""
+
+# 追随投票决策的额外上下文
+    FOLLOWER_VOTE_CONTEXT = """
+【追随投票决策】
+本轮领导竞争参选者：
+{leader_candidates_info}
+
+请选择一个国家作为追随对象，或选择"中立"：
+- 选择某个参选者：如果你希望追随该国家，在follower_agent_id字段填写该国家ID
+- 选择"中立"：如果你不想追随任何国家，在follower_agent_id字段填写null
+"""
+
+    FOLLOWER_VOTE_OUTPUT = """
 必须输出JSON格式：
 {{
     "follower_agent_id": <国家ID或null>,
