@@ -58,6 +58,7 @@ class ActionRecord(Base):
     initiator_power_change: Mapped[float] = mapped_column(Float, nullable=False)
     target_power_change: Mapped[float] = mapped_column(Float, nullable=False)
     decision_detail: Mapped[str] = mapped_column(String(5000), nullable=True)
+    action_content: Mapped[str] = mapped_column(String(5000), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=func.now(), nullable=False

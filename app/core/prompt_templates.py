@@ -48,6 +48,11 @@ class PromptTemplates:
    - 地理位置因素：目标国是否在同一区域、地缘政治影响评估
    - 战略关系因素：与目标国的战略关系类型及其对行为选择的影响
    - 综合净收益：基于国力变化、地理位置和战略关系的整体评估
+7. 每一项行为必须同时生成该行为的具体执行内容（action_content字段）
+   - 具体内容应当符合行为类型的特征（如"发表公开声明"需要生成具体声明文本）
+   - 内容应体现发起国的领导类型偏好
+   - 内容应考虑与目标国的战略关系状态
+   - 内容长度50-200字，具体、明确、有现实感
 """
 
     # System prompt template (combines role, rules, and output requirements)
@@ -113,7 +118,8 @@ class PromptTemplates:
                 "action_category": "行为分类",
                 "action_name": "行为名称，必须与列表完全一致",
                 "target_agent_id": "目标国家ID",
-                "cost_benefit_analysis": "该行为的成本、预期收益、净收益分析详情，必须包含国力变化影响"
+                "cost_benefit_analysis": "该行为的成本、预期收益、净收益分析详情，必须包含国力变化影响",
+                "action_content": "该行为的具体执行内容，如声明文本、协议概要、援助规模等，50-200字"
             }
         ]
     }
@@ -378,7 +384,7 @@ class PromptTemplates:
 
         # Check each action structure
         for i, action in enumerate(actions):
-            required_fields = ['action_id', 'action_category', 'action_name', 'target_agent_id', 'cost_benefit_analysis']
+            required_fields = ['action_id', 'action_category', 'action_name', 'target_agent_id', 'cost_benefit_analysis', 'action_content']
             for field in required_fields:
                 if field not in action:
                     return False, f"行为{i+1}缺少必需字段: {field}"

@@ -323,20 +323,20 @@ async function loadSimulationData() {
   try {
     // 加载国际秩序演变数据
     const orderData = await getOrderEvolution(projectId.value)
-    updateOrderChart(orderData.data)
+    updateOrderChart(orderData)
 
     // 加载智能体国力历史数据
     const powerData = await getPowerHistory(projectId.value)
-    updatePowerChart(powerData.data)
+    updatePowerChart(powerData)
 
     // 加载行为偏好数据
     const actionData = await getActionPreference(projectId.value)
-    updateActionChart(actionData.data)
+    updateActionChart(actionData)
 
     // 加载智能体关系图谱数据（最新轮次）
     if (currentRound.value > 0) {
       const relationData = await getAgentRelations(projectId.value, currentRound.value)
-      updateRelationChart(relationData.data)
+      updateRelationChart(relationData)
     }
 
     ElMessage.success('仿真结果数据加载成功')
@@ -554,7 +554,7 @@ async function handleRoundChange(round) {
   try {
     const relationData = await getAgentRelations(projectId.value, round)
     console.log('轮次', round, '关系数据:', relationData)
-    updateRelationChart(relationData.data)
+    updateRelationChart(relationData)
   } catch (error) {
     ElMessage.error('加载轮次数据失败: ' + (error.message || error))
   }

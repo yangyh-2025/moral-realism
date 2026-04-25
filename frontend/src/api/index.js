@@ -45,7 +45,8 @@ request.interceptors.response.use(
       status: response.status,
       data: response.data
     })
-    return response
+    // 直接返回 data，方便前端使用
+    return response.data
   },
   error => {
     // 打印错误日志，便于排查问题

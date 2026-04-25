@@ -121,7 +121,7 @@ class DecisionValidator:
         for i, action in enumerate(actions):
             # Check required fields
             required_fields = ['action_id', 'action_category', 'action_name',
-                            'target_agent_id', 'cost_benefit_analysis']
+                            'target_agent_id', 'cost_benefit_analysis', 'action_content']
             for field in required_fields:
                 if field not in action:
                     return False, f"行为 {i+1} 缺少必需字段: {field}"
