@@ -508,11 +508,8 @@ class DecisionEngine:
         if not history:
             return "无历史互动行为记录"
 
-        # Show last 20 actions to avoid token limit
-        recent_history = history[-20:] if len(history) > 20 else history
-
         lines = []
-        for record in recent_history:
+        for record in history:
             line = (
                 f"轮次:{record.get('round_num', 'N/A')} | "
                 f"发起国:{record.get('source_agent_id', 'N/A')} | "
@@ -520,6 +517,9 @@ class DecisionEngine:
                 f"行为:{record.get('action_name', 'N/A')} | "
                 f"尊重主权:{record.get('respect_sov', 'N/A')}"
             )
+            content = record.get('action_content', '')
+            if content:
+                line += f" | 内容:{content}"
             lines.append(line)
 
         return "\n".join(lines)

@@ -570,7 +570,8 @@ class SimulationService:
                             "respect_sov": action_config.respect_sov,
                             "initiator_power_change": action_config.initiator_power_change,
                             "target_power_change": action_config.target_power_change,
-                            "decision_detail": action_data.get('cost_benefit_analysis', '')
+                            "decision_detail": action_data.get('cost_benefit_analysis', ''),
+                            "action_content": action_data.get('action_content', '')
                         }
 
                         records.append(record)
@@ -653,7 +654,8 @@ class SimulationService:
                     'respect_sov': r.respect_sov,
                     'initiator_power_change': r.initiator_power_change,
                     'target_power_change': r.target_power_change,
-                    'decision_detail': r.decision_detail
+                    'decision_detail': r.decision_detail,
+                    'action_content': r.action_content
                 }
                 for r in records
             ]

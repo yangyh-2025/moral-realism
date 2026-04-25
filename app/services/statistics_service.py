@@ -246,6 +246,7 @@ class StatisticsService:
                     "leader_follower_ratio": round_data.leader_follower_ratio
                 }
                 for round_data in rounds
+                if round_data.order_type != "未判定"
             ]
 
     async def get_round_detail(self, project_id: int, round_num: int) -> Optional[dict]:
