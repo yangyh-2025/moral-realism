@@ -238,6 +238,7 @@ def main():
     # Check main.py
     if not check_main_py():
         sys.exit(1)
+        
 
     # Check frontend
     if not check_frontend():

@@ -222,6 +222,105 @@
         添加智能体
       </el-button>
 
+      <!-- 战略关系配置分隔线 -->
+      <el-divider style="margin: 30px 0;">战略关系配置</el-divider>
+
+      <!-- 战略关系配置卡片 -->
+      <el-card v-if="agents.length > 1">
+        <template #header>
+          <div class="relation-header">
+            <h3>战略关系矩阵</h3>
+            <div class="relation-actions">
+              <el-button size="small" type="success" @click="initializeRelations" :loading="loadingRelations">
+                初始化关系
+              </el-button>
+              <el-button size="small" @click="saveRelations" :loading="loadingRelations">
+                保存配置
+              </el-button>
+            </div>
+          </div>
+        </template>
+
+        <el-alert type="info" :closable="false" style="margin-bottom: 20px;">
+          配置大国/超级大国与中小国家之间的双边战略关系。关系是对称的，设置一方会自动设置另一方。
+        </el-alert>
+
+        <!-- 关系矩阵表格 -->
+        <el-table :data="agents" border style="margin-top: 20px;" :max-height="600" size="small">
+          <!-- 第一列：智能体名称 -->
+          <el-table-column prop="agentName" label="智能体" width="150" fixed>
+            <template #default="{ row }">
+              <div>
+                <div>{{ row.agentName }}</div>
+                <el-tag size="small" :type="getPowerLevelType(row.powerLevel)">
+                  {{ row.powerLevel }}
+                </el-tag>
+              </div>
+            </template>
+          </el-table-column>
+
+          <!-- 动态列：每个智能体的关系选择器 -->
+          <el-table-column
+            v-for="targetAgent in agents"
+            :key="targetAgent.agentId"
+            :label="targetAgent.agentName"
+            min-width="120"
+            align="center"
+          >
+            <template #header>
+              <div>{{ targetAgent.agentName }}</div>
+              <el-tag size="small" :type="getPowerLevelType(targetAgent.powerLevel)">
+                {{ targetAgent.powerLevel }}
+              </el-tag>
+            </template>
+
+            <template #default="{ row }">
+              <!-- 跳过自身 -->
+              <span v-if="row.agentId === targetAgent.agentId" style="color: #909399;">-</span>
+
+              <!-- 只显示允许配对且 source_id < target_id 的单元格（可编辑） -->
+              <el-select
+                v-else-if="canSetRelation(row.agentId, targetAgent.agentId) && row.agentId < targetAgent.agentId"
+                :model-value="getRelation(row.agentId, targetAgent.agentId)"
+                @update:model-value="val => setRelation(row.agentId, targetAgent.agentId, val)"
+                placeholder="选择关系"
+                size="small"
+                style="width: 100px;"
+              >
+                <el-option
+                  v-for="rel in relationshipApi.RELATIONSHIP_TYPES"
+                  :key="rel.value"
+                  :label="rel.label"
+                  :value="rel.value"
+                />
+              </el-select>
+
+              <!-- 对称单元格显示值（只读） -->
+              <el-tag
+                v-else-if="canSetRelation(row.agentId, targetAgent.agentId)"
+                :type="getRelationType(getRelation(targetAgent.agentId, row.agentId))"
+                size="small"
+              >
+                {{ getRelation(targetAgent.agentId, row.agentId) }}
+              </el-tag>
+
+              <!-- 不允许配对的单元格 -->
+              <span v-else style="color: #909399;">N/A</span>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+
+      <!-- 无智能体提示 -->
+      <el-alert
+        v-else
+        type="warning"
+        :closable="false"
+        style="margin: 20px 0;"
+      >
+        至少需要配置两个智能体才能设置战略关系
+      </el-alert>
+
       <!-- 操作按钮区域分隔线 -->
       <el-divider style="margin: 30px 0;"></el-divider>
 
@@ -249,11 +348,12 @@
  * - 与后端API交互创建项目和智能体
  */
 
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAppStore } from '../store'
 import * as simulationApi from '../api/simulation'
+import * as relationshipApi from '../api/strategicRelationship'
 
 // 获取路由实例和应用状态管理
 const router = useRouter()
@@ -271,6 +371,26 @@ const config = ref({
 
 // 智能体列表
 const agents = ref([])
+
+// 大国/超级大国列表（用于战略关系配置）
+const majorPowers = computed(() => {
+  return agents.value
+    .filter(agent => ['超级大国', '大国'].includes(agent.powerLevel))
+    .map(agent => ({
+      agentId: agent.agentId,
+      agentName: agent.agentName,
+      powerLevel: agent.powerLevel
+    }))
+})
+
+// 战略关系矩阵数据
+const relationshipMatrix = ref({})
+
+// 战略关系操作加载状态
+const loadingRelations = ref(false)
+
+// 当前项目ID
+const currentProjectId = ref(null)
 
 /**
  * 组件挂载时加载已有配置
@@ -292,7 +412,8 @@ onMounted(async () => {
       }
 
       const agentsResponse = await simulationApi.getAgents(projectId)
-      agents.value = agentsResponse.data.map(agent => ({
+      agents.value = agentsResponse.data.map((agent, index) => ({
+        agentId: agent.agent_id,
         agentName: agent.agent_name,
         region: agent.region,
         cScore: agent.c_score,
@@ -304,6 +425,9 @@ onMounted(async () => {
         powerLevel: agent.power_level,
         leaderType: agent.leader_type
       }))
+
+      // 加载战略关系数据
+      await loadRelationships()
     } catch (error) {
       console.error('加载项目配置失败:', error)
       // 从本地存储加载配置
@@ -414,6 +538,165 @@ function getPowerLevelType(level) {
 }
 
 /**
+ * 加载战略关系数据
+ */
+async function loadRelationships() {
+  const projectId = appStore.loadProjectId()
+  if (!projectId) return
+
+  try {
+    const response = await relationshipApi.getStrategicRelationships(projectId)
+    relationshipMatrix.value = response.data || {}
+    console.log('Loaded relationships:', relationshipMatrix.value)
+  } catch (error) {
+    // 如果项目刚创建还没有战略关系，使用空对象而不是报错
+    relationshipMatrix.value = {}
+    console.log('No strategic relations loaded (project may be new)', error)
+  }
+}
+
+/**
+ * 获取两个智能体之间的关系
+ * @param {number} sourceId - 源智能体ID
+ * @param {number} targetId - 目标智能体ID
+ * @returns {string} 关系类型
+ */
+function getRelation(sourceId, targetId) {
+  const smallerId = Math.min(sourceId, targetId)
+  const largerId = Math.max(sourceId, targetId)
+
+  if (relationshipMatrix.value[smallerId] && relationshipMatrix.value[smallerId][largerId]) {
+    return relationshipMatrix.value[smallerId][largerId]
+  }
+  return '无外交关系'
+}
+
+/**
+ * 判断两个智能体是否可以建立战略关系
+ * 规则：高层级（超级大国/大国）与低层级（中等强国/小国）或高层级之间可以建立关系
+ * 不允许：中等强国×中等强国、中等强国×小国、小国×小国
+ * @param {number} sourceId - 源智能体ID
+ * @param {number} targetId - 目标智能体ID
+ * @returns {boolean} 是否可以建立关系
+ */
+function canSetRelation(sourceId, targetId) {
+  const sourceAgent = agents.value.find(a => a.agentId === sourceId)
+  const targetAgent = agents.value.find(a => a.agentId === targetId)
+
+  if (!sourceAgent || !targetAgent) return false
+
+  const highLevels = ['超级大国', '大国']
+  const lowLevels = ['中等强国', '小国']
+
+  const sourceIsHigh = highLevels.includes(sourceAgent.powerLevel)
+  const sourceIsLow = lowLevels.includes(sourceAgent.powerLevel)
+  const targetIsHigh = highLevels.includes(targetAgent.powerLevel)
+  const targetIsLow = lowLevels.includes(targetAgent.powerLevel)
+
+  // 高层级 × 低层级：允许
+  if ((sourceIsHigh && targetIsLow) || (targetIsHigh && sourceIsLow)) {
+    return true
+  }
+
+  // 高层级 × 高层级：允许
+  if (sourceIsHigh && targetIsHigh) {
+    return true
+  }
+
+  return false
+}
+
+/**
+ * 设置两个智能体之间的关系
+ * @param {number} sourceId - 源智能体ID
+ * @param {number} targetId - 目标智能体ID
+ * @param {string} type - 关系类型
+ */
+async function setRelation(sourceId, targetId, type) {
+  const projectId = appStore.loadProjectId()
+  if (!projectId) return
+
+  const smallerId = Math.min(sourceId, targetId)
+  const largerId = Math.max(sourceId, targetId)
+
+  if (!relationshipMatrix.value[smallerId]) {
+    relationshipMatrix.value[smallerId] = {}
+  }
+  relationshipMatrix.value[smallerId][largerId] = type
+
+  try {
+    await relationshipApi.setStrategicRelationship(projectId, sourceId, targetId, type)
+    ElMessage.success('关系设置成功')
+  } catch (error) {
+    ElMessage.error(`设置关系失败: ${error.message || error}`)
+  }
+}
+
+/**
+ * 获取关系类型对应的标签类型
+ * @param {string} relationshipType - 关系类型
+ * @returns {string} Element Plus 标签类型
+ */
+function getRelationType(relationshipType) {
+  return relationshipApi.getRelationTagType(relationshipType)
+}
+
+/**
+ * 初始化战略关系
+ */
+async function initializeRelations() {
+  const projectId = appStore.loadProjectId()
+  if (!projectId) {
+    ElMessage.warning('请先创建项目')
+    return
+  }
+
+  try {
+    loadingRelations.value = true
+    await relationshipApi.initializeStrategicRelationships(projectId)
+    await loadRelationships()
+    ElMessage.success('战略关系已初始化')
+  } catch (error) {
+    ElMessage.error(`初始化关系失败: ${error.message || error}`)
+    console.error('Initialize relationships error:', error)
+  } finally {
+    loadingRelations.value = false
+  }
+}
+
+/**
+ * 保存所有战略关系配置
+ */
+async function saveRelations() {
+  const projectId = appStore.loadProjectId()
+  if (!projectId) {
+    ElMessage.warning('请先创建项目')
+    return
+  }
+
+  try {
+    loadingRelations.value = true
+    // 遍历关系矩阵并保存
+    for (const [sourceId, targets] of Object.entries(relationshipMatrix.value)) {
+      for (const [targetId, type] of Object.entries(targets)) {
+        await relationshipApi.setStrategicRelationship(
+          projectId,
+          parseInt(sourceId),
+          parseInt(targetId),
+          type
+        )
+      }
+    }
+    ElMessage.success('战略关系配置已保存')
+  } catch (error) {
+    ElMessage.error(`保存关系失败: ${error.message || error}`)
+    console.error('Save relationships error:', error)
+  } finally {
+    loadingRelations.value = false
+  }
+}
+
+/**
  * 创建仿真项目
  * 验证输入后，先创建项目，再添加所有智能体，最后跳转到仿真控制台
  */
@@ -441,8 +724,10 @@ async function createProject() {
     const projectResponse = await simulationApi.createProject(projectData)
     const projectId = projectResponse.data.project_id
 
-    // 逐个添加智能体
-    for (const agent of agents.value) {
+    // 逐个添加智能体并建立ID映射
+    const idMapping = {} // 本地索引 -> 后端agent_id
+    for (let i = 0; i < agents.value.length; i++) {
+      const agent = agents.value[i]
       const agentData = {
         agent_name: agent.agentName,
         region: agent.region,
@@ -453,7 +738,32 @@ async function createProject() {
         w_score: agent.wScore,
         leader_type: agent.leaderType
       }
-      await simulationApi.addAgent(projectId, agentData)
+      const response = await simulationApi.addAgent(projectId, agentData)
+      // 建立本地索引到后端ID的映射
+      idMapping[i] = response.data.agent_id
+    }
+
+    // 初始化战略关系
+    await relationshipApi.initializeStrategicRelationships(projectId)
+
+    // 保存用户配置的战略关系（使用正确的后端ID）
+    for (const [sourceIndex, targets] of Object.entries(relationshipMatrix.value)) {
+      for (const [targetIndex, type] of Object.entries(targets)) {
+        try {
+          const backendSourceId = idMapping[parseInt(sourceIndex)]
+          const backendTargetId = idMapping[parseInt(targetIndex)]
+          if (backendSourceId !== undefined && backendTargetId !== undefined) {
+            await relationshipApi.setStrategicRelationship(
+              projectId,
+              backendSourceId,
+              backendTargetId,
+              type
+            )
+          }
+        } catch (error) {
+          console.error('保存战略关系失败:', error)
+        }
+      }
     }
 
     // 保存项目ID并清除临时配置
@@ -531,5 +841,22 @@ function resetConfig() {
   display: flex;
   gap: 10px;
   justify-content: center;
+}
+
+/* 关系配置头部 */
+.relation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.relation-header h3 {
+  margin: 0;
+  color: #409eff;
+}
+
+.relation-actions {
+  display: flex;
+  gap: 10px;
 }
 </style>

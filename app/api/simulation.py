@@ -82,8 +82,8 @@ class ActionRecordResponse(BaseModel):
     action_name: str
     action_category: str
     respect_sov: bool
-    initiator_power_change: int
-    target_power_change: int
+    initiator_power_change: float
+    target_power_change: float
     decision_detail: Optional[str]
 
 class FollowerRelationResponse(BaseModel):
@@ -568,3 +568,36 @@ async def get_round_detail(project_id: int, round_num: int):
             leader_follower_ratio=leader_follower_ratio,
             order_type=None
         )
+
+
+@router.get("/project/{project_id}/round/{round_num}/llm-prompts")
+async def get_llm_prompts(project_id: int, round_num: int):
+    """
+    获取指定轮次的LLM调用日志
+
+    Args:
+        project_id: 项目ID
+        round_num: 轮次编号
+
+    Returns:
+        List of LLM call logs
+    """
+    from pathlib import Path
+
+    log_file = Path(f"logs/{project_id}/llm_interaction.log")
+    if not log_file.exists():
+        return []
+
+    prompts = []
+    with open(log_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            try:
+                import json
+                log_entry = json.loads(line)
+                # 过滤出指定轮次的prompt
+                if log_entry.get('round_num') == round_num:
+                    prompts.append(log_entry)
+            except json.JSONDecodeError:
+                continue
+
+    return prompts

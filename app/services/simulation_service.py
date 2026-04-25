@@ -10,6 +10,7 @@ from sqlalchemy import select, update
 from loguru import logger
 
 from app.config.database import db_config
+from app.core.decision_engine import InfoPool
 from app.models import SimulationProject, AgentConfig, ActionRecord, AgentPowerHistory, SimulationRound, FollowerRelation
 from app.services.project_service import project_service
 from app.services.agent_service import agent_service
@@ -347,7 +348,8 @@ class SimulationService:
         """
         初始化仿真环境
 
-        记录初始国力信息，初始化战略关系。
+        记录初始国力信息。
+        注意：战略关系已在项目创建时由 scene_service 初始化。
 
         Args:
             project_id: 项目ID
@@ -359,11 +361,6 @@ class SimulationService:
             initial_power = agent.get('initial_total_power', 0)
 
             logger.info(f"正在初始化智能体 {agent_name} (ID: {agent_id})，初始国力: {initial_power}")
-
-        async for (session, _) in db_config.get_session():
-            from ..services.strategic_relationship_service import StrategicRelationshipService
-            relationship_service = StrategicRelationshipService(session)
-            await relationship_service.initialize_relationships(project_id)
 
     async def _create_round_record(self, project_id: int, round_num: int) -> int:
         """
@@ -417,13 +414,21 @@ class SimulationService:
         actions = get_all_actions()
         records = []
 
-        async for (session, _) in db_config.get_session():
+        async for session in db_config.get_session():
             from ..services.strategic_relationship_service import StrategicRelationshipService
             relationship_service = StrategicRelationshipService(session)
             strategic_relationships = await relationship_service.get_all_agents_relationships(project_id)
 
+            # Debug: 检查战略关系加载情况
+            logger.info(f"项目 {project_id} 加载的战略关系: {strategic_relationships}")
+            if strategic_relationships:
+                for agent_id, relations in strategic_relationships.items():
+                    logger.info(f"  智能体 {agent_id} 的关系: {relations}")
+            else:
+                logger.warning(f"项目 {project_id} 未加载到任何战略关系！")
+
         # 获取历史数据
-        history_action_records = await self._get_action_history(project_id, round_num)
+        history_action_records = await self._get_action_history(project_id, round_num, phase)
         history_power_data = await self._get_power_history(project_id, round_num)
         last_round_order_info = await self._get_last_round_order(project_id, round_num)
 
@@ -604,18 +609,20 @@ class SimulationService:
 
         return records
 
-    async def _get_action_history(self, project_id: int, round_num: int) -> List[Dict]:
+    async def _get_action_history(self, project_id: int, round_num: int, phase: str = None) -> List[Dict]:
         """
         获取历史行为记录
 
         Args:
             project_id: 项目ID
             round_num: 当前轮次
+            phase: 当前阶段（"initiative" 或 "response"）
 
         Returns:
             历史行为记录列表
         """
         async for session in db_config.get_session():
+            # 查询之前轮次的记录
             result = await session.execute(
                 select(ActionRecord).where(
                     ActionRecord.project_id == project_id,
@@ -624,6 +631,18 @@ class SimulationService:
             )
             records = result.scalars().all()
 
+            # 如果是响应阶段，还要包含当前轮次的主动阶段记录
+            if phase == "response":
+                result = await session.execute(
+                    select(ActionRecord).where(
+                        ActionRecord.project_id == project_id,
+                        ActionRecord.round_num == round_num,
+                        ActionRecord.action_stage == "initiative"
+                    )
+                )
+                initiative_records = result.scalars().all()
+                records = list(records) + list(initiative_records)
+
             return [
                 {
                     'round_num': r.round_num,
@@ -631,7 +650,10 @@ class SimulationService:
                     'target_agent_id': r.target_agent_id,
                     'action_name': r.action_name,
                     'action_category': r.action_category,
-                    'respect_sov': r.respect_sov
+                    'respect_sov': r.respect_sov,
+                    'initiator_power_change': r.initiator_power_change,
+                    'target_power_change': r.target_power_change,
+                    'decision_detail': r.decision_detail
                 }
                 for r in records
             ]
@@ -706,6 +728,59 @@ class SimulationService:
                     'leader_agent_id': None,
                     'leader_follower_ratio': 0.0
                 }
+
+    async def _build_complete_info_pool(
+        self,
+        project_id: int,
+        agents: List[Dict],
+        round_num: int
+    ) -> InfoPool:
+        """
+        构建完整的InfoPool，包含所有历史数据和战略关系
+
+        Args:
+            project_id: 项目ID
+            agents: 所有智能体列表
+            round_num: 当前轮次号
+
+        Returns:
+            完整的InfoPool对象
+        """
+
+        # 获取战略关系
+        async for session in db_config.get_session():
+            from ..services.strategic_relationship_service import StrategicRelationshipService
+            relationship_service = StrategicRelationshipService(session)
+            strategic_relationships = await relationship_service.get_all_agents_relationships(project_id)
+
+        # 获取历史数据
+        history_action_records = await self._get_action_history(project_id, round_num, "initiative")
+        history_power_data = await self._get_power_history(project_id, round_num)
+        last_round_order_info = await self._get_last_round_order(project_id, round_num)
+
+        # 构建完整的智能体信息（包含战略关系）
+        all_agent_info = [
+            {
+                'agent_id': a.get('agent_id'),
+                'agent_name': a.get('agent_name'),
+                'region': a.get('region'),
+                'initial_total_power': a.get('initial_total_power'),
+                'current_total_power': a.get('current_total_power'),
+                'power_level': a.get('power_level'),
+                'leader_type': a.get('leader_type'),
+                'strategic_relationships': strategic_relationships.get(a.get('agent_id'), {})
+            }
+            for a in agents
+        ]
+
+        # 返回完整的InfoPool
+        return InfoPool(
+            all_agent_info=all_agent_info,
+            history_action_records=history_action_records,
+            history_power_data=history_power_data,
+            last_round_order_info=last_round_order_info,
+            round_num=round_num
+        )
 
     async def _update_power(
         self, project_id: int, agents: List[Dict], records: List[Dict]
@@ -848,27 +923,21 @@ class SimulationService:
         from app.core.agent_base import PowerLevelEnum
         from app.services.llm_service import get_llm_service
         from app.core.prompt_templates import PromptTemplates
+        from app.core.decision_engine import get_decision_engine
 
         llm_service = get_llm_service()
+        decision_engine = get_decision_engine(log_manager=log_manager)
 
-        # 获取上一轮的秩序信息
-        last_order_type = "未判定"
-        last_leader_info = "无"
-        if round_num > 1:
-            try:
-                from app.services.statistics_service import statistics_service
-                last_round_info = await statistics_service.get_round_detail(project_id, round_num - 1)
-                if last_round_info:
-                    last_order_type = last_round_info.get('order_type', '未判定')
-                    last_leader_info = f"存在领导: {last_round_info.get('has_leader', 'false')}"
-            except Exception as e:
-                logger.warning(f"获取上轮信息失败: {e}")
+        # 构建完整的InfoPool（包含战略关系、历史数据等）
+        info_pool = await self._build_complete_info_pool(project_id, agents, round_num)
 
-        # 构建所有国家信息字符串
-        all_agent_info = "\n".join([
-            f"  ID:{a['agent_id']} 名称:{a['agent_name']} 国力:{a['current_total_power']:.2f} 层级:{a['power_level']}"
-            for a in agents
-        ])
+        # 格式化信息池为字符串
+        formatted_info_pool = {
+            'all_agent_info': decision_engine._format_agents_for_prompt(info_pool.all_agent_info),
+            'history_action_records': decision_engine._format_history_for_prompt(info_pool.history_action_records),
+            'history_power_data': decision_engine._format_power_data_for_prompt(info_pool.history_power_data),
+            'last_round_order_info': info_pool.last_round_order_info
+        }
 
         # 阶段1：领导竞争参与决策
         # 只让超级大国和大国决定是否参与
@@ -879,19 +948,23 @@ class SimulationService:
                 PowerLevelEnum.SUPERPOWER.value,
                 PowerLevelEnum.GREAT_POWER.value
             ]:
-                # LLM驱动的参与决策
-                prompt = PromptTemplates.LEADERSHIP_PARTICIPATION_TEMPLATE.format(
+                # 构建系统提示词
+                system_prompt = PromptTemplates.build_follower_system_prompt(
                     agent_name=agent.get('agent_name'),
                     current_total_power=agent.get('current_total_power', 0),
-                    power_level=agent.get('power_level'),
-                    all_agent_info=all_agent_info,
-                    last_order_type=last_order_type,
-                    last_leader_info=last_leader_info
+                    power_level=agent.get('power_level')
+                )
+
+                # 构建用户提示词
+                user_prompt = PromptTemplates.build_follower_user_prompt(
+                    info_pool=formatted_info_pool,
+                    decision_type='participation'
                 )
 
                 try:
                     response = await llm_service.call_llm_async(
-                        prompt,
+                        user_prompt,
+                        system_prompt=system_prompt,
                         log_manager=log_manager,
                         log_category="following",
                         round_num=round_num,
@@ -930,19 +1003,24 @@ class SimulationService:
         follower_decisions = {}
 
         for agent in agents:
-            # LLM驱动的追随决策
-            prompt = PromptTemplates.FOLLOWER_VOTE_TEMPLATE.format(
+            # 构建系统提示词
+            system_prompt = PromptTemplates.build_follower_system_prompt(
                 agent_name=agent.get('agent_name'),
                 current_total_power=agent.get('current_total_power', 0),
-                power_level=agent.get('power_level'),
-                all_agent_info=all_agent_info,
-                last_order_type=last_order_type,
+                power_level=agent.get('power_level')
+            )
+
+            # 构建用户提示词
+            user_prompt = PromptTemplates.build_follower_user_prompt(
+                info_pool=formatted_info_pool,
+                decision_type='vote',
                 leader_candidates_info=leader_candidates_info
             )
 
             try:
                 response = await llm_service.call_llm_async(
-                    prompt,
+                    user_prompt,
+                    system_prompt=system_prompt,
                     log_manager=log_manager,
                     log_category="following",
                     round_num=round_num,
@@ -1284,6 +1362,18 @@ class SimulationService:
 
             await session.commit()
 
+        # 清空追随关系（必须在删除轮次记录之前）
+        async for session in db_config.get_session():
+            result = await session.execute(
+                select(FollowerRelation).where(FollowerRelation.project_id == project_id)
+            )
+            relations = result.scalars().all()
+
+            for relation in relations:
+                await session.delete(relation)
+
+            await session.commit()
+
         # 清空轮次记录
         async for session in db_config.get_session():
             result = await session.execute(
@@ -1297,18 +1387,6 @@ class SimulationService:
             await session.commit()
 
         # 清空国力历史记录
-        async for session in db_config.get_session():
-            result = await session.execute(
-                select(AgentPowerHistory).where(AgentPowerHistory.project_id == project_id)
-            )
-            histories = result.scalars().all()
-
-            for history in histories:
-                await session.delete(history)
-
-            await session.commit()
-
-        # 清空追随关系
         async for session in db_config.get_session():
             result = await session.execute(
                 select(FollowerRelation).where(FollowerRelation.project_id == project_id)

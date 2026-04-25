@@ -4,13 +4,26 @@
 """
 
 from typing import Optional
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.database import db_config
+from ..config.database import db_config
 from ..services.strategic_relationship_service import StrategicRelationshipService
 
 router = APIRouter(prefix="/strategic-relationships", tags=["strategic-relationships"])
+
+
+class SetRelationshipRequest(BaseModel):
+    """设置战略关系请求"""
+    source_id: int
+    target_id: int
+    relationship_type: str
+
+
+class SetRelationshipResponse(BaseModel):
+    """设置战略关系响应"""
+    message: str
 
 
 @router.get("/project/{project_id}")
@@ -29,7 +42,7 @@ async def get_strategic_relationships(
         如果提供agent_id，返回该智能体的所有关系
         否则返回项目中所有智能体的关系映射
     """
-    async for (session, _) in db_config.get_session():
+    async for session in db_config.get_session():
         service = StrategicRelationshipService(session)
 
         if agent_id:
@@ -40,15 +53,25 @@ async def get_strategic_relationships(
             return all_relationships
 
 
-@router.post("/project/{project_id}")
+@router.post("/project/{project_id}", response_model=SetRelationshipResponse)
 async def set_strategic_relationship(
     project_id: int,
-    source_id: int,
-    target_id: int,
-    relationship_type: str
+    request: SetRelationshipRequest
 ):
     """
     设置两个智能体之间的战略关系
+
+    允许的配对规则：
+    - 起级大国 × 大国
+    - 起级大国 × 中等强国
+    - 起级大国 × 小国
+    - 大国 × 中等强国
+    - 大国 × 小国
+
+    不允许的配对：
+    - 中等强国 × 中等强国
+    - 中等强国 × 小国
+    - 小国 × 小国
 
     Args:
         project_id: 项目ID
@@ -59,16 +82,28 @@ async def set_strategic_relationship(
     Returns:
         操作结果
     """
-    async for (session, _) in db_config.get_session():
+    async for session in db_config.get_session():
         service = StrategicRelationshipService(session)
-        await service.set_relationship(project_id, source_id, target_id, relationship_type)
-        return {"message": "Relationship updated"}
+        await service.set_relationship(
+            project_id,
+            request.source_id,
+            request.target_id,
+            request.relationship_type
+        )
+        return SetRelationshipResponse(message="Relationship updated")
 
 
-@router.post("/project/{project_id}/initialize")
+@router.post("/project/{project_id}/initialize", response_model=SetRelationshipResponse)
 async def initialize_strategic_relationships(project_id: int):
     """
     初始化项目的战略关系
+
+    系统将自动为以下配对建立战略关系（默认值为"无外交关系"）：
+    - 起级大国 × 大国
+    - 起级大国 × 中等强国
+    - 起级大国x 小国
+    - 大国 × 中等强国
+    - 大国 × 小国
 
     Args:
         project_id: 项目ID
@@ -76,7 +111,7 @@ async def initialize_strategic_relationships(project_id: int):
     Returns:
         操作结果
     """
-    async for (session, _) in db_config.get_session():
+    async for session in db_config.get_session():
         service = StrategicRelationshipService(session)
         await service.initialize_relationships(project_id)
-        return {"message": "Relationships initialized"}
+        return SetRelationshipResponse(message="Relationships initialized")
