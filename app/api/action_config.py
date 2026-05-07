@@ -17,7 +17,7 @@ router = APIRouter(prefix="/action-config", tags=["action_config"])
 
 # 请求/响应模型
 class ActionConfigResponse(BaseModel):
-    """行为配置响应模型"""
+    """行为配置响应模型（CINC版）"""
     action_id: int
     action_name: str
     action_en_name: str
@@ -28,6 +28,8 @@ class ActionConfigResponse(BaseModel):
     target_power_change: float
     is_initiative: bool
     is_response: bool
+    primary_indicator: str = "pec"
+    secondary_indicator: str = "irst"
 
 
 def _convert_to_response(action) -> ActionConfigResponse:
@@ -50,7 +52,9 @@ def _convert_to_response(action) -> ActionConfigResponse:
         initiator_power_change=action.initiator_power_change,
         target_power_change=action.target_power_change,
         is_initiative=action.is_initiative,
-        is_response=action.is_response
+        is_response=action.is_response,
+        primary_indicator=getattr(action, 'primary_indicator', 'pec'),
+        secondary_indicator=getattr(action, 'secondary_indicator', 'irst')
     )
 
 

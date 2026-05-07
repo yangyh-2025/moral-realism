@@ -5,6 +5,7 @@
 
 from typing import List, Optional
 from pydantic import BaseModel, Field
+from loguru import logger
 
 from sqlalchemy import select
 from app.config.database import db_config
@@ -232,12 +233,16 @@ class AgentService:
             )
             agent = result.scalar_one()
 
-            # 验证领导类型配置（只有超级大国和大国可以配置领导类型）
+            # 注意：CINC层级是体系内相对排名，新增agent会引发排名重排，
+            # 因此add_agent阶段不对leader_type做硬校验。
+            # 如果当前层级不允许配置leader_type，则在持久化时清空该字段，
+            # 但保留agent本身（其他agent加入后排名可能变化）。
             if config.leader_type and agent.power_level not in ["超级大国", "大国"]:
-                # 回滚：删除刚创建的agent
-                await session.delete(agent)
-                await session.commit()
-                raise ValueError("仅超级大国与大国可配置领导集体类型")
+                logger.warning(
+                    f"智能体 {agent.agent_name} 当前层级为 {agent.power_level}，"
+                    f"非超级大国/大国，仍保留leader_type={config.leader_type}（"
+                    f"层级会随后续agent加入而动态调整）"
+                )
 
             return {
                 "agent_id": agent.agent_id,
@@ -425,9 +430,14 @@ class AgentService:
             )
             agent = result.scalar_one()
 
-            # 验证领导类型
+            # 注意：CINC层级是体系内相对排名，更新agent后排名可能变化，
+            # 因此update_agent阶段不对leader_type做硬校验，只警告。
             if config.leader_type and agent.power_level not in ["超级大国", "大国"]:
-                raise ValueError("仅超级大国与大国可配置领导集体类型")
+                logger.warning(
+                    f"智能体 {agent.agent_name} 当前层级为 {agent.power_level}，"
+                    f"非超级大国/大国，仍保留leader_type={config.leader_type}（"
+                    f"层级会随其他agent变化而动态调整）"
+                )
 
             return {
                 "agent_id": agent.agent_id,
@@ -473,9 +483,9 @@ class AgentService:
             await session.delete(agent)
             await session.commit()
 
-            # 删除后批量重算剩余agent的CINC
-            await self._recalculate_all_cincs(project_id)
-            return True
+        # 删除后重算项目内所有剩余agent的CINC和层级
+        await self._recalculate_all_cincs(project_id)
+        return True
 
     async def update_agent_power(self, agent_id: int, power_change: float) -> Optional[dict]:
         """
