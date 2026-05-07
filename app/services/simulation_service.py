@@ -1465,13 +1465,11 @@ class SimulationService:
 
             await session.commit()
 
-        # 重置战略关系为初始状态（无外交关系）
-        async for session in db_config.get_session():
-            from ..services.strategic_relationship_service import StrategicRelationshipService
-            sr_service = StrategicRelationshipService(session)
-            await sr_service.initialize_relationships(project_id, skip_existing=False)
-            await session.commit()
-        logger.info(f"项目 {project_id} 战略关系已重置")
+        # 注意：不重置战略关系 - 战略关系属于项目配置（用户/场景预设的初始关系），
+        # 不属于运行数据。重置仿真只应清除运行数据（轮次/行为/追随关系/国力历史/CINC变化），
+        # 保留项目的初始配置以便重新运行。
+        # 如果用户需要重置关系，可单独调用 /strategic-relationships/{project_id}/initialize
+        logger.info(f"项目 {project_id} 战略关系已保留（reset只清除运行数据）")
 
         # 更新项目状态
         async for session in db_config.get_session():
