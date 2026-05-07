@@ -482,10 +482,23 @@ class SimulationService:
         # 获取决策引擎（带log_manager）
         decision_engine = get_decision_engine(log_manager=log_manager)
 
-        # 为每个智能体生成决策
-        for agent in agents:
+        # 读取并发配置
+        try:
+            from app.services.system_service import get_system_config_service
+            sys_cfg_svc = get_system_config_service()
+            max_concurrent = int(await sys_cfg_svc.get_config_value("simulation_concurrency", 5) or 5)
+        except Exception:
+            max_concurrent = 5
+        max_concurrent = max(1, min(max_concurrent, 20))
+        logger.info(f"[第 {round_num} 轮] 决策并发度: {max_concurrent}")
+
+        semaphore = asyncio.Semaphore(max_concurrent)
+
+        async def _decide_one_agent(agent):
+            """并发安全的单agent决策；失败仅记录，不影响其他agent"""
             agent_id = agent.get('agent_id')
             agent_name = agent.get('agent_name')
+            local_records = []
 
             # 构建AgentBase（CINC版字段）
             from app.core.agent_base import AgentBase
@@ -529,82 +542,77 @@ class SimulationService:
                 } for a in phase_actions]
             )
 
-            # Debug: log allowed actions
-            logger.debug(
-                f"[{agent_name}] allowed_actions count: {len(agent_info.allowed_actions)}, "
-                f"IDs: {[a['action_id'] for a in agent_info.allowed_actions[:10]]}..."
-            )
-
-            # 调用决策引擎
-            try:
-                decision_result = await decision_engine.make_decision(
-                    agent_info=agent_info,
-                    info_pool=info_pool,
-                    action_stage=action_stage
-                )
-
-                if decision_result.success and decision_result.decision:
-                    actions_list = decision_result.decision.get('actions', [])
-                    logger.info(
-                        f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) LLM决策成功: "
-                        f"{len(actions_list)} 个行为"
+            async with semaphore:
+                try:
+                    decision_result = await decision_engine.make_decision(
+                        agent_info=agent_info,
+                        info_pool=info_pool,
+                        action_stage=action_stage
                     )
 
-                    # 转换为记录格式
-                    for action_data in actions_list:
-                        target_id = action_data.get('target_agent_id', 0)
-                        action_id = action_data.get('action_id')
-                        # Convert action_id to int for comparison
-                        try:
-                            action_id = int(action_id)
-                        except (ValueError, TypeError):
-                            logger.warning(f"行为ID {action_data.get('action_id')} 格式无效，跳过")
-                            continue
-
-                        # 查找行为配置
-                        action_config = next((a for a in phase_actions if a.action_id == action_id), None)
-                        if not action_config:
-                            logger.warning(
-                                f"未找到行为ID {action_id} 的配置，跳过。"
-                                f"phase_actions中有{len(phase_actions)}个行为，"
-                                f"IDs: {[a.action_id for a in phase_actions]}"
-                            )
-                            continue
-
-                        record = {
-                            "project_id": project_id,
-                            "round_id": round_id,
-                            "round_num": round_num,
-                            "action_stage": phase,
-                            "source_agent_id": agent_id,
-                            "target_agent_id": target_id,
-                            "action_id": action_id,
-                            "action_name": action_config.action_name,
-                            "action_category": action_config.action_category,
-                            "respect_sov": action_config.respect_sov,
-                            "initiator_power_change": action_config.initiator_power_change,
-                            "target_power_change": action_config.target_power_change,
-                            "decision_detail": action_data.get('cost_benefit_analysis', ''),
-                            "action_content": action_data.get('action_content', '')
-                        }
-
-                        records.append(record)
-
+                    if decision_result.success and decision_result.decision:
+                        actions_list = decision_result.decision.get('actions', [])
                         logger.info(
-                            f"[第 {round_num} 轮] {agent_name} 决策: "
-                            f"{action_config.action_name} -> 目标 ID:{target_id}"
+                            f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) LLM决策成功: "
+                            f"{len(actions_list)} 个行为"
                         )
-                else:
-                    logger.warning(
-                        f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) LLM决策失败: "
-                        f"{decision_result.validation_errors}"
+
+                        for action_data in actions_list:
+                            target_id = action_data.get('target_agent_id', 0)
+                            action_id = action_data.get('action_id')
+                            try:
+                                action_id = int(action_id)
+                            except (ValueError, TypeError):
+                                logger.warning(f"行为ID {action_data.get('action_id')} 格式无效，跳过")
+                                continue
+
+                            action_config = next((a for a in phase_actions if a.action_id == action_id), None)
+                            if not action_config:
+                                logger.warning(f"未找到行为ID {action_id} 的配置，跳过")
+                                continue
+
+                            record = {
+                                "project_id": project_id,
+                                "round_id": round_id,
+                                "round_num": round_num,
+                                "action_stage": phase,
+                                "source_agent_id": agent_id,
+                                "target_agent_id": target_id,
+                                "action_id": action_id,
+                                "action_name": action_config.action_name,
+                                "action_category": action_config.action_category,
+                                "respect_sov": action_config.respect_sov,
+                                "initiator_power_change": action_config.initiator_power_change,
+                                "target_power_change": action_config.target_power_change,
+                                "decision_detail": action_data.get('cost_benefit_analysis', ''),
+                                "action_content": action_data.get('action_content', '')
+                            }
+                            local_records.append(record)
+
+                            logger.info(
+                                f"[第 {round_num} 轮] {agent_name} 决策: "
+                                f"{action_config.action_name} -> 目标 ID:{target_id}"
+                            )
+                    else:
+                        logger.warning(
+                            f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) LLM决策失败: "
+                            f"{decision_result.validation_errors}"
+                        )
+                except Exception as e:
+                    logger.error(
+                        f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) 决策异常: {e}",
+                        exc_info=True
                     )
 
-            except Exception as e:
-                logger.error(
-                    f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) 决策异常: {e}",
-                    exc_info=True
-                )
+            return local_records
+
+        # 并发执行所有agent的决策
+        agent_record_lists = await asyncio.gather(
+            *[_decide_one_agent(agent) for agent in agents],
+            return_exceptions=False
+        )
+        for sub_records in agent_record_lists:
+            records.extend(sub_records)
 
         # 保存记录到数据库
         if records:
