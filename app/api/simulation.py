@@ -43,26 +43,40 @@ class CreateProjectRequest(BaseModel):
     scene_source: str = "自定义"
 
 class AgentConfigRequest(BaseModel):
-    """智能体配置请求模型"""
+    """智能体配置请求模型 (CINC版)
+
+    使用CINC（Composite Index of National Capability）底层指标。
+    CINC指数是基于6项底层指标在体系内总和的占比计算的（0-1比例值）。
+    """
     agent_name: str
     region: str
-    c_score: float
-    e_score: float
-    m_score: float
-    s_score: float = 0.5
-    w_score: float = 0.5
+    milex: float = 0
+    milper: float = 0
+    irst: float = 0
+    pec: float = 0
+    tpop: float = 0
+    upop: float = 0
+    country_code: Optional[int] = None
+    cinc_year: Optional[int] = None
     leader_type: Optional[str] = None
 
 class AgentResponse(BaseModel):
-    """智能体响应模型"""
+    """智能体响应模型 (CINC版)
+
+    initial_total_power 和 current_total_power 现为 CINC指数（0-1比例值）。
+    power_level 按CINC在仿真体系内的相对排名动态判定。
+    """
     agent_id: int
     agent_name: str
     region: str
-    c_score: float
-    e_score: float
-    m_score: float
-    s_score: float
-    w_score: float
+    milex: float
+    milper: float
+    irst: float
+    pec: float
+    tpop: float
+    upop: float
+    country_code: Optional[int] = None
+    cinc_year: Optional[int] = None
     initial_total_power: float
     current_total_power: float
     power_level: str
@@ -239,11 +253,14 @@ async def add_agent(project_id: int, request: AgentConfigRequest):
         config = AgentConfig(
             agent_name=request.agent_name,
             region=request.region,
-            c_score=request.c_score,
-            e_score=request.e_score,
-            m_score=request.m_score,
-            s_score=request.s_score,
-            w_score=request.w_score,
+            milex=request.milex,
+            milper=request.milper,
+            irst=request.irst,
+            pec=request.pec,
+            tpop=request.tpop,
+            upop=request.upop,
+            country_code=request.country_code,
+            cinc_year=request.cinc_year,
             leader_type=request.leader_type
         )
         agent = await agent_service.add_agent(project_id, config)
@@ -314,11 +331,14 @@ async def update_agent(project_id: int, agent_id: int, request: AgentConfigReque
         config = AgentConfig(
             agent_name=request.agent_name,
             region=request.region,
-            c_score=request.c_score,
-            e_score=request.e_score,
-            m_score=request.m_score,
-            s_score=request.s_score,
-            w_score=request.w_score,
+            milex=request.milex,
+            milper=request.milper,
+            irst=request.irst,
+            pec=request.pec,
+            tpop=request.tpop,
+            upop=request.upop,
+            country_code=request.country_code,
+            cinc_year=request.cinc_year,
             leader_type=request.leader_type
         )
         agent = await agent_service.update_agent(project_id, agent_id, config)

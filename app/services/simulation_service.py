@@ -1,6 +1,6 @@
 """
 仿真流程控制服务
-负责仿真项目的启动、执行、暂停和重置等操作
+负责仿真项目的启动、执行、暂停和重置等操作（CINC版）
 """
 
 from typing import Optional, List, Dict, Any
@@ -19,7 +19,7 @@ from app.services.simulation_log_manager import SimulationLogManager
 
 class SimulationService:
     """
-    仿真流程控制服务
+    仿真流程控制服务（CINC版）
 
     负责仿真项目的完整生命周期管理：
     - 启动仿真
@@ -32,6 +32,7 @@ class SimulationService:
         """初始化仿真服务"""
         self.running_simulations = {}  # 跟踪正在运行的仿真
         self.EVALUATION_INTERVAL = 10  # 评估间隔轮次（每10轮评估一次）
+        self._last_update_results = []  # 保存CINC更新结果供_save_power_history使用
 
     async def start_simulation(self, project_id: int) -> dict:
         """
@@ -263,12 +264,12 @@ class SimulationService:
             )
             logger.info(f"生成了 {len(response_records)} 条响应决策记录")
 
-            # 4. 更新国力
-            logger.info(f"阶段 3: 更新第 {current_round} 轮国力")
+            # 4. 更新国力（使用CINCPowerUpdateEngine）
+            logger.info(f"阶段 3: 更新第 {current_round} 轮CINC")
             await self._update_power(project_id, agents, initiative_records + response_records)
 
             # 4.5 保存国力历史
-            logger.info(f"阶段 3.5: 保存第 {current_round} 轮国力历史")
+            logger.info(f"阶段 3.5: 保存第 {current_round} 轮CINC历史")
             await self._save_power_history(project_id, round_id, current_round, agents, log_manager)
 
             # 5. 追随投票阶段
@@ -309,6 +310,18 @@ class SimulationService:
                     logger.error(f"第 {current_round} 轮战略目标评估失败: {e}", exc_info=True)
                     eval_message = " (评估失败)"
 
+            # 10. 战略关系演变评估（每轮）
+            evolve_message = ""
+            try:
+                from app.services.relationship_evolution_service import get_relationship_evolution_service
+                evolution_service = get_relationship_evolution_service(log_manager=log_manager)
+                changes = await evolution_service.evolve_relationships(project_id, current_round)
+                logger.info(f"第 {current_round} 轮战略关系演变完成，{len(changes)} 对关系发生变化")
+                if changes:
+                    evolve_message = f" (战略关系变化: {len(changes)}对)"
+            except Exception as e:
+                logger.error(f"第 {current_round} 轮战略关系演变失败: {e}", exc_info=True)
+
             # 更新轮次
             next_round = current_round + 1
             next_status = "已完成" if next_round > total_rounds else "运行中"
@@ -325,7 +338,7 @@ class SimulationService:
                 )
                 await session.commit()
 
-            message = f"第 {current_round} 轮执行完成" + eval_message
+            message = f"第 {current_round} 轮执行完成" + eval_message + evolve_message
 
             return {
                 "project_id": project_id,
@@ -348,7 +361,7 @@ class SimulationService:
         """
         初始化仿真环境
 
-        记录初始国力信息。
+        记录初始CINC指数信息。
         注意：战略关系已在项目创建时由 scene_service 初始化。
 
         Args:
@@ -360,7 +373,7 @@ class SimulationService:
             agent_name = agent.get('agent_name')
             initial_power = agent.get('initial_total_power', 0)
 
-            logger.info(f"正在初始化智能体 {agent_name} (ID: {agent_id})，初始国力: {initial_power}")
+            logger.info(f"正在初始化智能体 {agent_name} (ID: {agent_id})，初始CINC指数: {initial_power:.6f}")
 
     async def _create_round_record(self, project_id: int, round_num: int) -> int:
         """
@@ -474,17 +487,18 @@ class SimulationService:
             agent_id = agent.get('agent_id')
             agent_name = agent.get('agent_name')
 
-            # 构建AgentInfo
+            # 构建AgentBase（CINC版字段）
             from app.core.agent_base import AgentBase
             agent_base = AgentBase(**{
                 "agent_id": agent.get('agent_id'),
                 "agent_name": agent.get('agent_name'),
                 "region": agent.get('region'),
-                "c_score": agent.get('c_score'),
-                "e_score": agent.get('e_score'),
-                "m_score": agent.get('m_score'),
-                "s_score": agent.get('s_score'),
-                "w_score": agent.get('w_score'),
+                "milex": agent.get('milex', 0),
+                "milper": agent.get('milper', 0),
+                "irst": agent.get('irst', 0),
+                "pec": agent.get('pec', 0),
+                "tpop": agent.get('tpop', 0),
+                "upop": agent.get('upop', 0),
                 "initial_total_power": agent.get('initial_total_power'),
                 "current_total_power": agent.get('current_total_power'),
                 "power_level": agent.get('power_level'),
@@ -662,14 +676,14 @@ class SimulationService:
 
     async def _get_power_history(self, project_id: int, round_num: int) -> List[Dict]:
         """
-        获取历史国力数据
+        获取历史CINC数据
 
         Args:
             project_id: 项目ID
             round_num: 当前轮次
 
         Returns:
-            历史国力数据列表
+            历史CINC数据列表
         """
         async for session in db_config.get_session():
             result = await session.execute(
@@ -788,55 +802,89 @@ class SimulationService:
         self, project_id: int, agents: List[Dict], records: List[Dict]
     ) -> None:
         """
-        更新国力
+        更新CINC（使用CINCPowerUpdateEngine）
 
-        计算每个智能体的国力变化并更新到数据库。
+        基于行为记录更新每个智能体的6项底层指标，
+        然后全局重算CINC和层级。
 
         Args:
             project_id: 项目ID
-            agents: 智能体列表
+            agents: 智能体列表（dict列表）
             records: 行为记录列表
         """
-        # 计算每个智能体的国力变化
-        power_changes = {agent.get('agent_id'): 0 for agent in agents}
+        from app.core.cinc_power_update import CINCPowerUpdateEngine
 
-        for record in records:
-            source_id = record.get('source_agent_id')
-            target_id = record.get('target_agent_id')
-            initiator_change = record.get('initiator_power_change', 0)
-            target_change = record.get('target_power_change', 0)
+        engine = CINCPowerUpdateEngine()
 
-            # 累计变化
-            power_changes[source_id] = power_changes.get(source_id, 0) + initiator_change
-            power_changes[target_id] = power_changes.get(target_id, 0) + target_change
+        # agents 是 dict 列表
+        agent_dicts = [
+            {
+                "agent_id": a["agent_id"],
+                "agent_name": a["agent_name"],
+                "milex": a.get("milex", 0),
+                "milper": a.get("milper", 0),
+                "irst": a.get("irst", 0),
+                "pec": a.get("pec", 0),
+                "tpop": a.get("tpop", 0),
+                "upop": a.get("upop", 0),
+                "cinc": a.get("current_total_power", 0),
+                "power_level": a.get("power_level", "小国"),
+            }
+            for a in agents
+        ]
+        engine.load_agents(agent_dicts)
 
-        # 更新数据库中的国力
-        for agent in agents:
-            agent_id = agent.get('agent_id')
-            current_power = agent.get('current_total_power', 0)
-            change = power_changes.get(agent_id, 0)
-            new_power = current_power + change
-
-            logger.debug(
-                f"智能体 {agent_id} 国力: {current_power} + {change} = {new_power}"
+        # 获取当前轮次
+        current_round = 0
+        async for session in db_config.get_session():
+            result = await session.execute(
+                select(SimulationProject).where(SimulationProject.project_id == project_id)
             )
+            project = result.scalar_one_or_none()
+            if project:
+                current_round = project.current_round or 0
+        engine.set_round(current_round)
 
+        # 转换records为简单dict并更新
+        results = engine.update_round(records)
+
+        # 保存engine结果供_save_power_history使用
+        self._last_update_results = results
+
+        # 将结果写回数据库
+        for r in results:
+            state = engine.get_agent_state(r.agent_id)
             async for session in db_config.get_session():
                 await session.execute(
                     update(AgentConfig)
-                    .where(AgentConfig.agent_id == agent_id)
+                    .where(AgentConfig.agent_id == r.agent_id)
                     .values(
-                        current_total_power=new_power,
+                        milex=state["milex"], milper=state["milper"], irst=state["irst"],
+                        pec=state["pec"], tpop=state["tpop"], upop=state["upop"],
+                        current_total_power=r.end_cinc,
+                        power_level=r.new_power_level.value if hasattr(r.new_power_level, 'value') else r.new_power_level,
                         updated_at=datetime.now()
                     )
                 )
                 await session.commit()
 
+            # 更新内存中的agent dict（这样 _save_power_history 能用到新值）
+            for a in agents:
+                if a["agent_id"] == r.agent_id:
+                    a["milex"] = state["milex"]
+                    a["milper"] = state["milper"]
+                    a["irst"] = state["irst"]
+                    a["pec"] = state["pec"]
+                    a["tpop"] = state["tpop"]
+                    a["upop"] = state["upop"]
+                    a["current_total_power"] = r.end_cinc
+                    a["power_level"] = r.new_power_level.value if hasattr(r.new_power_level, 'value') else r.new_power_level
+
     async def _save_power_history(
         self, project_id: int, round_id: int, round_num: int, agents: List[Dict], log_manager=None
     ) -> None:
         """
-        保存国力历史到 AgentPowerHistory 表
+        保存CINC历史到 AgentPowerHistory 表
 
         Args:
             project_id: 项目ID
@@ -846,7 +894,7 @@ class SimulationService:
             log_manager: 日志管理器实例
         """
         async for session in db_config.get_session():
-            # 先获取本轮开始时的国力（上一轮结束时的国力）
+            # 先获取本轮开始时的CINC（上一轮结束时的CINC）
             if round_num > 1:
                 result = await session.execute(
                     select(AgentPowerHistory)
@@ -856,10 +904,10 @@ class SimulationService:
                 last_round_histories = result.scalars().all()
                 last_round_powers = {h.agent_id: h.round_end_power for h in last_round_histories}
             else:
-                # 第一轮使用初始国力
+                # 第一轮使用初始CINC
                 last_round_powers = {a['agent_id']: a.get('initial_total_power', 0) for a in agents}
 
-            # 保存本轮国力历史
+            # 保存本轮CINC历史
             for agent in agents:
                 agent_id = agent.get('agent_id')
                 start_power = last_round_powers.get(agent_id, 0)
@@ -881,9 +929,9 @@ class SimulationService:
 
             await session.commit()
 
-        logger.info(f"第 {round_num} 轮国力历史已保存，共 {len(agents)} 个智能体")
+        logger.info(f"第 {round_num} 轮CINC历史已保存，共 {len(agents)} 个智能体")
 
-        # 记录到日志文件
+        # 记录到日志文件（包含indicator_changes和passive_change）
         if log_manager:
             power_changes = []
             for agent in agents:
@@ -892,13 +940,25 @@ class SimulationService:
                 end_power = agent.get('current_total_power', 0)
                 change_value = end_power - start_power
                 change_rate = (change_value / start_power * 100) if start_power > 0 else 0.0
+
+                # 从engine结果中获取indicator_changes和passive_change
+                indicator_changes = None
+                passive_change = False
+                for r in getattr(self, '_last_update_results', []):
+                    if r.agent_id == agent_id:
+                        indicator_changes = r.indicator_changes.to_dict() if hasattr(r.indicator_changes, 'to_dict') else r.indicator_changes
+                        passive_change = r.passive_change
+                        break
+
                 power_changes.append({
                     "agent_id": agent_id,
                     "agent_name": agent.get('agent_name'),
                     "start_power": start_power,
                     "end_power": end_power,
                     "change_value": change_value,
-                    "change_rate": change_rate
+                    "change_rate": change_rate,
+                    "indicator_changes": indicator_changes,
+                    "passive_change": passive_change
                 })
             await log_manager.log_power_change(round_num, {"power_changes": power_changes})
 
@@ -996,7 +1056,7 @@ class SimulationService:
 
         # 构建参选者信息字符串
         leader_candidates_info = "\n".join([
-            f"  ID:{a['agent_id']} 名称:{a['agent_name']} 国力:{a['current_total_power']:.2f}"
+            f"  ID:{a['agent_id']} 名称:{a['agent_name']} CINC:{a['current_total_power']:.6f}"
             for a in leader_candidates
         ])
 
@@ -1116,7 +1176,7 @@ class SimulationService:
         # 1. 创建OrderDeterminationEngine
         engine = OrderDeterminationEngine()
 
-        # 2. 加载所有智能体到引擎
+        # 2. 加载所有智能体到引擎（CINC版字段）
         agents = await agent_service.get_agents(project_id)
         engine_agents = []
         for agent in agents:
@@ -1125,11 +1185,16 @@ class SimulationService:
                 agent_id=agent.get('agent_id'),
                 agent_name=agent.get('agent_name'),
                 region=agent.get('region'),
-                c_score=agent.get('c_score', 0),
-                e_score=agent.get('e_score', 0),
-                m_score=agent.get('m_score', 0),
-                s_score=agent.get('s_score', 0),
-                w_score=agent.get('w_score', 0)
+                milex=agent.get('milex', 0),
+                milper=agent.get('milper', 0),
+                irst=agent.get('irst', 0),
+                pec=agent.get('pec', 0),
+                tpop=agent.get('tpop', 0),
+                upop=agent.get('upop', 0),
+                initial_total_power=agent.get('initial_total_power', 0),
+                current_total_power=agent.get('current_total_power', 0),
+                power_level=agent.get('power_level'),
+                leader_type=agent.get('leader_type'),
             )
             engine_agents.append(engine_agent)
 
@@ -1339,7 +1404,7 @@ class SimulationService:
         """
         logger.info(f"正在重置项目 {project_id} 仿真")
 
-        # 重置所有智能体的当前国力到初始值
+        # 重置所有智能体的当前CINC到初始值
         async for session in db_config.get_session():
             result = await session.execute(
                 select(AgentConfig).where(AgentConfig.project_id == project_id)
@@ -1391,14 +1456,22 @@ class SimulationService:
         # 清空国力历史记录
         async for session in db_config.get_session():
             result = await session.execute(
-                select(FollowerRelation).where(FollowerRelation.project_id == project_id)
+                select(AgentPowerHistory).where(AgentPowerHistory.project_id == project_id)
             )
-            relations = result.scalars().all()
+            histories = result.scalars().all()
 
-            for relation in relations:
-                await session.delete(relation)
+            for history in histories:
+                await session.delete(history)
 
             await session.commit()
+
+        # 重置战略关系为初始状态（无外交关系）
+        async for session in db_config.get_session():
+            from ..services.strategic_relationship_service import StrategicRelationshipService
+            sr_service = StrategicRelationshipService(session)
+            await sr_service.initialize_relationships(project_id, skip_existing=False)
+            await session.commit()
+        logger.info(f"项目 {project_id} 战略关系已重置")
 
         # 更新项目状态
         async for session in db_config.get_session():

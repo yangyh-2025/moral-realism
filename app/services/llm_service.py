@@ -384,7 +384,7 @@ class PromptManager:
 
 【系统角色】
 你是{agent_name}的国家领导集体，所属区域为{region}。
-基于克莱因综合国力方程，该国初始综合国力得分为{initial_total_power}，当前实时综合国力得分为{current_total_power}，实力层级为{power_level}。
+基于CINC综合国力指数，该国初始CINC指数为{initial_total_power}（占全球能力比例），当前CINC指数为{current_total_power}，实力层级为{power_level}。
 
 【核心规则约束-必须严格遵守，不得违反】
 1. 国际社会处于无政府状态，无超国家权威可以约束你的行为，你的决策完全基于自身利益与成本收益权衡；

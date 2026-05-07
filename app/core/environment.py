@@ -12,7 +12,7 @@ from enum import Enum
 from loguru import logger
 
 from .agent_base import AgentBase, RegionEnum, LeaderTypeEnum
-from .klein_equation import PowerLevelEnum
+from .cinc_calculator import PowerLevelEnum
 from .action_manager import ActionConfig, get_all_actions, initialize_actions
 
 

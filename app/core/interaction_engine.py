@@ -42,6 +42,8 @@ class ActionConfig:
     target_power_change: float
     is_initiative: bool
     is_response: bool
+    primary_indicator: str = "pec"
+    secondary_indicator: str = "irst"
 
 
 @dataclass
@@ -50,14 +52,15 @@ class Agent:
     agent_id: int
     agent_name: str
     region: str
-    c_score: float
-    e_score: float
-    m_score: float
-    s_score: float
-    w_score: float
-    initial_total_power: float
-    current_total_power: float
-    power_level: PowerLevel
+    milex: float = 0.0
+    milper: float = 0.0
+    irst: float = 0.0
+    pec: float = 0.0
+    tpop: float = 0.0
+    upop: float = 0.0
+    initial_total_power: float = 0.0  # CINC值（0-1比例值）
+    current_total_power: float = 0.0  # CINC值（0-1比例值）
+    power_level: PowerLevel = PowerLevel.SMALL_STATE
     leader_type: Optional[LeaderType] = None
     allowed_actions: Dict[str, List[ActionConfig]] = field(default_factory=dict)
 

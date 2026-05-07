@@ -201,7 +201,7 @@ class DecisionValidator:
 
                 # For non-inept leaders, actions that significantly reduce power
                 # should be justified in cost-benefit analysis
-                if action_power_change < -5:
+                if action_power_change < -0.5:
                     cost_benefit = action.get('cost_benefit_analysis', '')
                     # Check if cost-benefit mentions national interest alignment
                     has_interest_alignment = any(

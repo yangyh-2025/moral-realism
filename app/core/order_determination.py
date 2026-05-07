@@ -20,8 +20,8 @@ from enum import Enum
 from datetime import datetime
 import uuid
 
-# Import PowerLevelEnum from klein_equation
-from .klein_equation import PowerLevelEnum
+# Import PowerLevelEnum from cinc_calculator
+from .cinc_calculator import PowerLevelEnum
 from .interaction_engine import ActionRecord
 from .interaction_engine import Agent
 
@@ -270,13 +270,14 @@ class OrderDeterminationEngine:
                     agent_id=0,
                     agent_name="Unknown",
                     region="",
-                    c_score=0,
-                    e_score=0,
-                    m_score=0,
-                    s_score=0,
-                    w_score=0,
-                    initial_total_power=0,
-                    current_total_power=0,
+                    milex=0.0,
+                    milper=0.0,
+                    irst=0.0,
+                    pec=0.0,
+                    tpop=0.0,
+                    upop=0.0,
+                    initial_total_power=0.0,
+                    current_total_power=0.0,
                     power_level=PowerLevelEnum.SMALL_STATE
                 )).agent_name if leader_agent_id in self._agents else "Unknown"
 

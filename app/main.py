@@ -57,7 +57,7 @@ async def lifespan(app: FastAPI):
 # 创建 FastAPI 应用实例
 app = FastAPI(
     title="International Order ABM Simulation System",
-    description="基于大语言模型的国际秩序ABM仿真系统 - 克莱因国力方程修订版V1.3",
+    description="基于大语言模型的国际秩序ABM仿真系统 - CINC综合国力指数版V1.4",
     version="1.3.0",
     docs_url="/docs",
     redoc_url="/redoc",

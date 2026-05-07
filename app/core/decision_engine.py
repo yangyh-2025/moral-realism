@@ -476,7 +476,7 @@ class DecisionEngine:
                 f"ID:{agent.get('agent_id', 'N/A')} | "
                 f"名称:{agent.get('agent_name', 'N/A')} | "
                 f"区域:{agent.get('region', 'N/A')} | "
-                f"综合国力:{agent.get('current_total_power', 0):.1f} | "
+                f"CINC:{agent.get('current_total_power', 0):.4f} | "
                 f"实力层级:{agent.get('power_level', 'N/A')} | "
                 f"领导类型:{agent.get('leader_type', 'N/A')} | "
                 f"战略关系:{self._format_relationships_for_prompt(agent.get('strategic_relationships', {}))}"
@@ -540,9 +540,9 @@ class DecisionEngine:
             line = (
                 f"轮次:{data.get('round_num', 'N/A')} | "
                 f"国家ID:{data.get('agent_id', 'N/A')} | "
-                f"初始国力:{data.get('round_start_power', 0):.1f} | "
-                f"结束国力:{data.get('round_end_power', 0):.1f} | "
-                f"变化值:{data.get('round_change_value', 0):.1f}"
+                f"初始CINC:{data.get('round_start_power', 0):.6f} | "
+                f"结束CINC:{data.get('round_end_power', 0):.6f} | "
+                f"变化值:{data.get('round_change_value', 0):.6f}"
             )
             lines.append(line)
 

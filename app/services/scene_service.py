@@ -1,9 +1,9 @@
 """
-预置场景管理服务
-提供预设的国际体系场景配置，支持一键创建仿真项目
+预置场景管理服务（CINC版）
+提供基于CINC真实历史数据的预设国际体系场景配置，支持一键创建仿真项目
 """
 
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
 from datetime import datetime
 
 from app.services.project_service import project_service
@@ -15,12 +15,12 @@ from app.config.database import db_config
 
 class SceneService:
     """
-    预置场景管理服务
+    预置场景管理服务（CINC版）
 
-    提供预设的国际体系场景配置，支持：
-    - 单极霸权体系
-    - 两极对抗体系
-    - 多极平衡体系
+    提供基于CINC真实历史数据的预设国际体系场景配置：
+    - 一战前欧洲（1913年，19国）
+    - 二战前欧洲（1938年，28国）
+    - 冷战前欧洲（1946年，25国）
     """
 
     async def get_preset_scenes(self) -> List[dict]:
@@ -33,8 +33,8 @@ class SceneService:
         return [
             {
                 "scene_id": 1,
-                "scene_name": "单极霸权体系",
-                "scene_desc": "模拟单极体系下超级大国霸权维持与新兴大国挑战的动态博弈",
+                "scene_name": "一战前欧洲（1913）",
+                "scene_desc": "基于1913年CINC真实数据的欧洲国际体系，包含19个国家。德国崛起、英俄结盟、巴尔干危机...",
                 "total_rounds": 50,
                 "agent_config_json": '{"agents": []}',
                 "is_default": True,
@@ -43,8 +43,8 @@ class SceneService:
             },
             {
                 "scene_id": 2,
-                "scene_name": "两极对抗体系",
-                "scene_desc": "模拟两极体系下超级大国间的战略竞争与盟友追随动态",
+                "scene_name": "二战前欧洲（1938）",
+                "scene_desc": "基于1938年CINC真实数据的欧洲国际体系，包含28个国家。苏德对抗、张伯伦绥靖、轴心国体系...",
                 "total_rounds": 50,
                 "agent_config_json": '{"agents": []}',
                 "is_default": False,
@@ -53,8 +53,8 @@ class SceneService:
             },
             {
                 "scene_id": 3,
-                "scene_name": "多极平衡体系",
-                "scene_desc": "模拟多极体系下大国间的复杂博弈与中小国家的摇摆行为",
+                "scene_name": "冷战前欧洲（1946）",
+                "scene_desc": "基于1946年CINC真实数据的欧洲国际体系，包含25个国家。苏英对立、铁幕降临、马歇尔计划前夜...",
                 "total_rounds": 50,
                 "agent_config_json": '{"agents": []}',
                 "is_default": False,
@@ -79,233 +79,209 @@ class SceneService:
                 return scene
         return None
 
+    # ------------------------------------------------------------------
+    # 场景1：一战前欧洲（1913年，19国）
+    # ------------------------------------------------------------------
     async def _create_scene1_agents(self, project_id: int) -> Dict[int, int]:
         """
-        创建场景1（单极霸权体系）的智能体
-        返回agent_id到到索引的映射：{index: agent_id}
-
-        Returns:
-            字典 {index: agent_id}
+        创建场景1（一战前欧洲1913）的智能体
+        返回 {index: agent_id}
         """
-        agent_map = {}
+        from app.core.cinc_data_loader import get_cinc_loader
+        loader = get_cinc_loader()
+        YEAR = 1913
 
-        # 1霸权国
-        hegemon = await agent_service.add_agent(project_id, AgentConfigRequest(
-            agent_name="国家1-霸权国",
-            region="美洲",
-            c_score=100,
-            e_score=200,
-            m_score=200,
-            s_score=1.0,
-            w_score=1.0,
-            leader_type="霸权型"
-        ))
-        agent_map[1] = hegemon["agent_id"]
+        countries: List[Tuple[str, str, Optional[str]]] = [
+            ("强国甲", "GMY", "霸权型"),
+            ("强国乙", "RUS", "强权型"),
+            ("强国丙", "UKG", "王道型"),
+            ("中等国甲", "FRN", None),
+            ("中等国乙", "AUH", None),
+            ("中等国丙", "ITA", None),
+            ("小国甲", "TUR", None),
+            ("小国乙", "BUL", None),
+            ("小国丙", "SPN", None),
+            ("小国丁", "BEL", None),
+            ("小国戊", "GRC", None),
+            ("小国己", "SWD", None),
+            ("小国庚", "NTH", None),
+            ("小国辛", "ROM", None),
+            ("小国壬", "POR", None),
+            ("小国癸", "DEN", None),
+            ("小国子", "SWZ", None),
+            ("小国丑", "YUG", None),
+            ("小国寅", "NOR", None),
+        ]
 
-        # 1王道国
-        wangdao = await agent_service.add_agent(project_id, AgentConfigRequest(
-            agent_name="国家2-王道国",
-            region="亚洲",
-            c_score=95,
-            e_score=180,
-            m_score=170,
-            s_score=0.9,
-            w_score=0.9,
-            leader_type="王道型"
-        ))
-        agent_map[2] = wangdao["agent_id"]
+        return await self._create_agents_from_cinc(project_id, loader, YEAR, countries)
 
-        # 1大国
-        great_power = await agent_service.add_agent(project_id, AgentConfigRequest(
-            agent_name="国家3-大国",
-            region="欧洲",
-            c_score=80,
-            e_score=150,
-            m_score=120,
-            s_score=0.7,
-            w_score=0.6,
-            leader_type="强权型"
-        ))
-        agent_map[3] = great_power["agent_id"]
-
-        # 4个中等强国
-        for i in range(4):
-            agent = await agent_service.add_agent(project_id, AgentConfigRequest(
-                agent_name=f"国家{i+4}-中等强国",
-                region="美洲" if i % 2 == 0 else "欧洲",
-                c_score=30 + i * 2,
-                e_score=50 + i * 5,
-                m_score=40 + i * 3,
-                s_score=0.5,
-                w_score=0.5,
-                leader_type=None
-            ))
-            agent_map[i+4] = agent["agent_id"]
-
-        # 13个小国
-        regions = ["亚洲", "欧洲", "美洲", "非洲", "大洋洲"]
-        for i in range(13):
-            agent = await agent_service.add_agent(project_id, AgentConfigRequest(
-                agent_name=f"国家{i+8}-小国",
-                region=regions[i % 5],
-                c_score=15 + (i % 3) * 3,
-                e_score=20 + (i % 4) * 3,
-                m_score=15 + (i % 2) * 3,
-                s_score=0.2 + (i % 3) * 0.1,
-                w_score=0.2 + (i % 3) * 0.1,
-                leader_type=None
-            ))
-            agent_map[i+8] = agent["agent_id"]
-
-        return agent_map
-
+    # ------------------------------------------------------------------
+    # 场景2：二战前欧洲（1938年，28国）
+    # ------------------------------------------------------------------
     async def _create_scene2_agents(self, project_id: int) -> Dict[int, int]:
         """
-        创建场景2（两极对抗体系）的智能体
-
-        Returns:
-            字典 {index: agent_id}
+        创建场景2（二战前欧洲1938）的智能体
+        返回 {index: agent_id}
         """
-        agent_map = {}
+        from app.core.cinc_data_loader import get_cinc_loader
+        loader = get_cinc_loader()
+        YEAR = 1938
 
-        # 1霸权国
-        hegemon = await agent_service.add_agent(project_id, AgentConfigRequest(
-            agent_name="国家1-霸权国",
-            region="美洲",
-            c_score=95,
-            e_score=190,
-            m_score=190,
-            s_score=1.0,
-            w_score=0.9,
-            leader_type="霸权型"
-        ))
-        agent_map[1] = hegemon["agent_id"]
+        countries: List[Tuple[str, str, Optional[str]]] = [
+            ("强国甲", "RUS", "强权型"),
+            ("强国乙", "GMY", "霸权型"),
+            ("强国丙", "UKG", "王道型"),
+            ("中等国甲", "FRN", None),
+            ("中等国乙", "ITA", "霸权型"),
+            ("中等国丙", "POL", None),
+            ("小国甲", "SPN", None),
+            ("小国乙", "CZE", None),
+            ("小国丙", "BEL", None),
+            ("小国丁", "ROM", None),
+            ("小国戊", "TUR", None),
+            ("小国己", "YUG", None),
+            ("小国庚", "SWD", None),
+            ("小国辛", "NTH", None),
+            ("小国壬", "HUN", None),
+            ("小国癸", "GRC", None),
+            ("小国子", "POR", None),
+            ("小国丑", "LUX", None),
+            ("小国寅", "DEN", None),
+            ("小国卯", "FIN", None),
+            ("小国辰", "SWZ", None),
+            ("小国巳", "BUL", None),
+            ("小国午", "NOR", None),
+            ("小国未", "LAT", None),
+            ("小国申", "LIT", None),
+            ("小国酉", "IRE", None),
+            ("小国戌", "EST", None),
+            ("小国亥", "ALB", None),
+        ]
 
-        # 1强权国
-        strong_power = await agent_service.add_agent(project_id, AgentConfigRequest(
-            agent_name="国家2-强权国",
-            region="欧洲",
-            c_score=90,
-            e_score=180,
-            m_score=185,
-            s_score=1.0,
-            w_score=0.9,
-            leader_type="强权型"
-        ))
-        agent_map[2] = strong_power["agent_id"]
+        return await self._create_agents_from_cinc(project_id, loader, YEAR, countries)
 
-        # 2个大国
-        for i in range(2):
-            agent = await agent_service.add_agent(project_id, AgentConfigRequest(
-                agent_name=f"国家{i+3}-大国",
-                region="亚洲" if i == 0 else "欧洲",
-                c_score=75 - i * 5,
-                e_score=140 - i * 10,
-                m_score=130 - i * 10,
-                s_score=0.7,
-                w_score=0.7,
-                leader_type="王道型" if i == 0 else "强权型"
-            ))
-            agent_map[i+3] = agent["agent_id"]
-
-        # 4个中等强国
-        for i in range(4):
-            agent = await agent_service.add_agent(project_id, AgentConfigRequest(
-                agent_name=f"国家{i+5}-中等强国",
-                region="亚洲" if i % 2 == 0 else "欧洲",
-                c_score=28 + i * 2,
-                e_score=45 + i * 5,
-                m_score=35 + i * 3,
-                s_score=0.5,
-                w_score=0.5,
-                leader_type=None
-            ))
-            agent_map[i+5] = agent["agent_id"]
-
-        # 12个小国
-        regions = ["亚洲", "欧洲", "美洲", "非洲", "大洋洲"]
-        for i in range(12):
-            agent = await agent_service.add_agent(project_id, AgentConfigRequest(
-                agent_name=f"国家{i+9}-小国",
-                region=regions[i % 5],
-                c_score=12 + (i % 3) * 3,
-                e_score=18 + (i % 4) * 3,
-                m_score=14 + (i % 2) * 3,
-                s_score=0.2 + (i % 3) * 0.1,
-                w_score=0.2 + (i % 3) * 0.1,
-                leader_type=None
-            ))
-            agent_map[i+9] = agent["agent_id"]
-
-        return agent_map
-
+    # ------------------------------------------------------------------
+    # 场景3：冷战前欧洲（1946年，25国）
+    # ------------------------------------------------------------------
     async def _create_scene3_agents(self, project_id: int) -> Dict[int, int]:
         """
-        创建场景3（多极平衡体系）的智能体
+        创建场景3（冷战前欧洲1946）的智能体
+        返回 {index: agent_id}
+        """
+        from app.core.cinc_data_loader import get_cinc_loader
+        loader = get_cinc_loader()
+        YEAR = 1946
+
+        countries: List[Tuple[str, str, Optional[str]]] = [
+            ("强国甲", "RUS", "强权型"),
+            ("强国乙", "UKG", "王道型"),
+            ("中等国甲", "FRN", None),
+            ("中等国乙", "ITA", None),
+            ("中等国丙", "POL", None),
+            ("小国甲", "SPN", None),
+            ("小国乙", "TUR", None),
+            ("小国丙", "CZE", None),
+            ("小国丁", "BEL", None),
+            ("小国戊", "NTH", None),
+            ("小国己", "SWD", None),
+            ("小国庚", "YUG", None),
+            ("小国辛", "ROM", None),
+            ("小国壬", "HUN", None),
+            ("小国癸", "GRC", None),
+            ("小国子", "BUL", None),
+            ("小国丑", "POR", None),
+            ("小国寅", "LUX", None),
+            ("小国卯", "DEN", None),
+            ("小国辰", "SWZ", None),
+            ("小国巳", "NOR", None),
+            ("小国午", "FIN", None),
+            ("小国未", "IRE", None),
+            ("小国申", "ALB", None),
+            ("小国酉", "ICE", None),
+        ]
+
+        return await self._create_agents_from_cinc(project_id, loader, YEAR, countries)
+
+    # ------------------------------------------------------------------
+    # 通用CINC数据创建智能体方法
+    # ------------------------------------------------------------------
+    async def _create_agents_from_cinc(
+        self,
+        project_id: int,
+        loader,
+        year: int,
+        countries: List[Tuple[str, str, Optional[str]]]
+    ) -> Dict[int, int]:
+        """
+        从CINC数据创建智能体的通用方法
+
+        Args:
+            project_id: 项目ID
+            loader: CINC数据加载器
+            year: 目标年份
+            countries: [(糊名, COW缩写, 领导类型), ...]
 
         Returns:
-            字典 {index: agent_id}
+            {index: agent_id}
         """
-        agent_map = {}
+        agent_map: Dict[int, int] = {}
+        for idx, (alias, abb, leader) in enumerate(countries, start=1):
+            record = loader.get_record_by_abb(abb, year)
+            if record is None:
+                # 兜底：用最近年份的数据
+                for offset in [1, -1, 2, -2, 3, -3]:
+                    record = loader.get_record_by_abb(abb, year + offset)
+                    if record:
+                        break
+            if record is None:
+                continue
 
-        # 3个大国
-        for i, (region, lt, c, e, m) in enumerate([
-            ("美洲", "霸权型", 90, 180, 180),
-            ("亚洲", "王道型", 90, 175, 170),
-            ("欧洲", "强权型", 75, 140, 130)
-        ]):
-            agent = await agent_service.add_agent(project_id, AgentConfigRequest(
-                agent_name=f"国家{i+1}-大国",
-                region=region,
-                c_score=c,
-                e_score=e,
-                m_score=m,
-                s_score=0.9 if i < 2 else 0.7,
-                w_score=0.9 if i < 2 else 0.7,
-                leader_type=lt
-            ))
-            agent_map[i+1] = agent["agent_id"]
-
-        # 5个中等强国
-        for i in range(5):
-            agent = await agent_service.add_agent(project_id, AgentConfigRequest(
-                agent_name=f"国家{i+4}-中等强国",
-                region=["欧洲", "亚洲", "美洲", "亚洲", "欧洲"][i],
-                c_score=32 - i * 2,
-                e_score=50 - i * 3,
-                m_score=40 - i * 3,
-                s_score=0.5,
-                w_score=0.5,
-                leader_type=None
-            ))
-            agent_map[i+4] = agent["agent_id"]
-
-        # 12个小国
-        regions = ["亚洲", "欧洲", "美洲", "非洲", "大洋洲"]
-        for i in range(12):
-            agent = await agent_service.add_agent(project_id, AgentConfigRequest(
-                agent_name=f"国家{i+9}-小国",
-                region=regions[i % 5],
-                c_score=18 + (i % 3) * 3,
-                e_score=25 + (i % 4) * 3,
-                m_score=20 + (i % 2) * 3,
-                s_score=0.3 + (i % 3) * 0.05,
-                w_score=0.3 + (i % 3) * 0.05,
-                leader_type=None
-            ))
-            agent_map[i+9] = agent["agent_id"]
+            result = await agent_service.add_agent(
+                project_id,
+                AgentConfigRequest(
+                    agent_name=alias,
+                    region="欧洲",
+                    milex=record.milex,
+                    milper=record.milper,
+                    irst=record.irst,
+                    pec=record.pec,
+                    tpop=record.tpop,
+                    upop=record.upop,
+                    country_code=record.ccode,
+                    cinc_year=year,
+                    leader_type=leader,
+                ),
+            )
+            agent_map[idx] = result["agent_id"]
 
         return agent_map
 
-    async def create_project_from_scene(self, scene_id: int, project_name: Optional[str] = None,
-                                     project_desc: Optional[str] = None) -> dict:
+    # ------------------------------------------------------------------
+    # 战略关系设置辅助方法
+    # ------------------------------------------------------------------
+    async def _set_rel(
+        self,
+        sr_service: StrategicRelationshipService,
+        project_id: int,
+        source_id: Optional[int],
+        target_id: Optional[int],
+        rel: StrategicRelationshipEnum,
+    ) -> None:
+        """安全设置战略关系（忽略None）"""
+        if source_id and target_id:
+            await sr_service.set_relationship(project_id, source_id, target_id, rel)
+
+    # ------------------------------------------------------------------
+    # 从预置场景创建项目
+    # ------------------------------------------------------------------
+    async def create_project_from_scene(
+        self,
+        scene_id: int,
+        project_name: Optional[str] = None,
+        project_desc: Optional[str] = None,
+    ) -> dict:
         """
         从预置场景一键创建仿真项目
-
-        根据选择的场景类型创建项目并自动配置智能体：
-        - 单极霸权体系：1霸权+1王道+1大国+4中等强国+13小国
-        - 两极对抗体系：1霸权+1强权+2大国+4中等强国+12小国
-        - 多极平衡体系：3大国+5中等强国+12小国
 
         Args:
             scene_id: 场景ID
@@ -324,7 +300,7 @@ class SceneService:
             project_name=project_name or f"Project from {scene['scene_name']}",
             project_desc=project_desc or scene["scene_desc"],
             total_rounds=scene["total_rounds"],
-            scene_source=scene["scene_name"]
+            scene_source=scene["scene_name"],
         )
 
         project_id = project["project_id"]
@@ -343,136 +319,327 @@ class SceneService:
         async for session in db_config.get_session():
             sr_service = StrategicRelationshipService(session)
 
-            # 先初始化所有允许的配对关系（大国/超级大国 × 中小国家）
+            # 先初始化所有允许的配对关系
             await sr_service.initialize_relationships(project_id)
 
             # 根据场景设置特定的战略关系
             if scene_id == 1:
-                # 单极霸权体系 - 1霸权国(1) + 1王道国(2) + 1大国(3) + 4中等强国(4-7) + 13小国(8-20)
-                hegemon = agent_map.get(1)    # 霸权国
-                wangdao = agent_map.get(2)    # 王道国
-                great_power = agent_map.get(3)  # 大国
-                middle_powers = [agent_map.get(i) for i in range(4, 8)]   # 4个中等强国
-                small_states = [agent_map.get(i) for i in range(8, 21)]   # 13个小国
-
-                # 大国之间的关系
-                if hegemon and wangdao:
-                    await sr_service.set_relationship(project_id, hegemon, wangdao, StrategicRelationshipEnum.CONFLICT)
-                if hegemon and great_power:
-                    await sr_service.set_relationship(project_id, hegemon, great_power, StrategicRelationshipEnum.CONFLICT)
-                if wangdao and great_power:
-                    await sr_service.set_relationship(project_id, wangdao, great_power, StrategicRelationshipEnum.PARTNERSHIP)
-
-                # 霸权国与中小国家：部分盟友，部分冲突
-                for i, mid_id in enumerate(middle_powers):
-                    if mid_id:
-                        rel = StrategicRelationshipEnum.ALLIANCE if i < 2 else StrategicRelationshipEnum.CONFLICT
-                        await sr_service.set_relationship(project_id, hegemon, mid_id, rel)
-                for i, small_id in enumerate(small_states):
-                    if small_id:
-                        rel = StrategicRelationshipEnum.PARTNERSHIP if i < 5 else StrategicRelationshipEnum.NO_DIPLOMACY
-                        await sr_service.set_relationship(project_id, hegemon, small_id, rel)
-
-                # 王道国与中小国家：主要是伙伴关系
-                for mid_id in middle_powers:
-                    if mid_id:
-                        await sr_service.set_relationship(project_id, wangdao, mid_id, StrategicRelationshipEnum.PARTNERSHIP)
-                for i, small_id in enumerate(small_states):
-                    if small_id:
-                        rel = StrategicRelationshipEnum.PARTNERSHIP if i < 8 else StrategicRelationshipEnum.NO_DIPLOMACY
-                        await sr_service.set_relationship(project_id, wangdao, small_id, rel)
-
-                # 大国与中小国家：混合关系
-                for i, mid_id in enumerate(middle_powers):
-                    if mid_id:
-                        rel = StrategicRelationshipEnum.CONFLICT if i < 2 else StrategicRelationshipEnum.PARTNERSHIP
-                        await sr_service.set_relationship(project_id, great_power, mid_id, rel)
-                for i, small_id in enumerate(small_states):
-                    if small_id:
-                        rel = StrategicRelationshipEnum.NO_DIPLOMACY if i < 6 else StrategicRelationshipEnum.PARTNERSHIP
-                        await sr_service.set_relationship(project_id, great_power, small_id, rel)
-
+                await self._setup_scene1_relationships(sr_service, project_id, agent_map)
             elif scene_id == 2:
-                # 两极对抗体系 - 1霸权国(1) + 1强权国(2) + 2大国(3-4) + 4中等强国(5-8) + 12小国(9-20)
-                hegemon = agent_map.get(1)    # 霸权国
-                strong_power = agent_map.get(2)  # 强权国
-                great_powers = [agent_map.get(i) for i in range(3, 5)]   # 2个大国
-                middle_powers = [agent_map.get(i) for i in range(5, 9)]   # 4个中等强国
-                small_states = [agent_map.get(i) for i in range(9, 21)]  # 12个小国
-
-                # 大国之间的关系：阵营对抗
-                if hegemon and strong_power:
-                    await sr_service.set_relationship(project_id, hegemon, strong_power, StrategicRelationshipEnum.WAR)
-                if hegemon and great_powers[0]:
-                    await sr_service.set_relationship(project_id, hegemon, great_powers[0], StrategicRelationshipEnum.ALLIANCE)
-                if hegemon and great_powers[1]:
-                    await sr_service.set_relationship(project_id, hegemon, great_powers[1], StrategicRelationshipEnum.CONFLICT)
-                if strong_power and great_powers[0]:
-                    await sr_service.set_relationship(project_id, strong_power, great_powers[0], StrategicRelationshipEnum.CONFLICT)
-                if strong_power and great_powers[1]:
-                    await sr_service.set_relationship(project_id, strong_power, great_powers[1], StrategicRelationshipEnum.ALLIANCE)
-                if great_powers[0] and great_powers[1]:
-                    await sr_service.set_relationship(project_id, great_powers[0], great_powers[1], StrategicRelationshipEnum.NO_DIPLOMACY)
-
-                # 霸权国阵营与中小国家：盟友关系为主
-                for mid_id in middle_powers:
-                    if mid_id:
-                        await sr_service.set_relationship(project_id, hegemon, mid_id, StrategicRelationshipEnum.ALLIANCE)
-                for small_id in small_states:
-                    if small_id:
-                        await sr_service.set_relationship(project_id, hegemon, small_id, StrategicRelationshipEnum.PARTNERSHIP)
-
-                # 强权国阵营与中小国家：盟友关系为主
-                for i, mid_id in enumerate(middle_powers):
-                    if mid_id:
-                        rel = StrategicRelationshipEnum.ALLIANCE if i < 3 else StrategicRelationshipEnum.CONFLICT
-                        await sr_service.set_relationship(project_id, strong_power, mid_id, rel)
-                for i, small_id in enumerate(small_states):
-                    if small_id:
-                        rel = StrategicRelationshipEnum.PARTNERSHIP if i < 8 else StrategicRelationshipEnum.CONFLICT
-                        await sr_service.set_relationship(project_id, strong_power, small_id, rel)
-
-                # 两极各自阵营的盟友关系
-                for gp_id in great_powers:
-                    for i, mid_id in enumerate(middle_powers):
-                        if gp_id and mid_id:
-                            rel = StrategicRelationshipEnum.ALLIANCE if i < 2 else StrategicRelationshipEnum.NO_DIPLOMACY
-                            await sr_service.set_relationship(project_id, gp_id, mid_id, rel)
-
+                await self._setup_scene2_relationships(sr_service, project_id, agent_map)
             elif scene_id == 3:
-                # 多极平衡体系 - 3大国(1-3) + 5中等强国(4-8) + 12小国(9-20)
-                great_powers = [agent_map.get(i) for i in range(1, 4)]   # 3个大国
-                middle_powers = [agent_map.get(i) for i in range(4, 9)]   # 5个中等强国
-                small_states = [agent_map.get(i) for i in range(9, 21)]  # 12个小国
+                await self._setup_scene3_relationships(sr_service, project_id, agent_map)
 
-                # 大国之间的关系：伙伴与冲突交织
-                if great_powers[0] and great_powers[1]:
-                    await sr_service.set_relationship(project_id, great_powers[0], great_powers[1], StrategicRelationshipEnum.PARTNERSHIP)
-                if great_powers[0] and great_powers[2]:
-                    await sr_service.set_relationship(project_id, great_powers[0], great_powers[2], StrategicRelationshipEnum.CONFLICT)
-                if great_powers[1] and great_powers[2]:
-                    await sr_service.set_relationship(project_id, great_powers[1], great_powers[2], StrategicRelationshipEnum.PARTNERSHIP)
-
-                # 大国与中小国家：多元化的战略关系
-                for i, gp_id in enumerate(great_powers):
-                    for j, mid_id in enumerate(middle_powers):
-                        if gp_id and mid_id:
-                            # 交替设置关系：盟友、伙伴、冲突、无外交
-                            rel_types = [StrategicRelationshipEnum.ALLIANCE, StrategicRelationshipEnum.PARTNERSHIP,
-                                         StrategicRelationshipEnum.CONFLICT, StrategicRelationshipEnum.NO_DIPLOMACY]
-                            await sr_service.set_relationship(project_id, gp_id, mid_id, rel_types[(i + j) % 4])
-
-                    for j, small_id in enumerate(small_states):
-                        if gp_id and small_id:
-                            # 交替设置关系：伙伴、无外交
-                            rel = StrategicRelationshipEnum.PARTNERSHIP if (i + j) % 2 == 0 else StrategicRelationshipEnum.NO_DIPLOMACY
-                            await sr_service.set_relationship(project_id, gp_id, small_id, rel)
+            await session.commit()
 
         return {
             "project_id": project_id,
             "project_name": project["project_name"],
-            "status": project["status"]
+            "status": project["status"],
         }
+
+    # ------------------------------------------------------------------
+    # 场景1战略关系（一战前1913）
+    # ------------------------------------------------------------------
+    async def _setup_scene1_relationships(
+        self,
+        sr_service: StrategicRelationshipService,
+        project_id: int,
+        agent_map: Dict[int, int],
+    ) -> None:
+        """设置场景1（一战前1913）的战略关系"""
+        gp1 = agent_map.get(1)   # 强国甲(德)
+        gp2 = agent_map.get(2)   # 强国乙(俄)
+        gp3 = agent_map.get(3)   # 强国丙(英)
+        mp1 = agent_map.get(4)   # 中等国甲(法)
+        mp2 = agent_map.get(5)   # 中等国乙(奥匈)
+        mp3 = agent_map.get(6)   # 中等国丙(意)
+        s1  = agent_map.get(7)   # 小国甲(奥斯曼)
+        s2  = agent_map.get(8)   # 小国乙(保加利亚)
+        s3  = agent_map.get(9)   # 小国丙(西班牙)
+        s4  = agent_map.get(10)  # 小国丁(比利时)
+        s5  = agent_map.get(11)  # 小国戊(希腊)
+        s6  = agent_map.get(12)  # 小国己(瑞典)
+        s7  = agent_map.get(13)  # 小国庚(荷兰)
+        s8  = agent_map.get(14)  # 小国辛(罗马尼亚)
+        s9  = agent_map.get(15)  # 小国壬(葡萄牙)
+        s10 = agent_map.get(16)  # 小国癸(丹麦)
+        s11 = agent_map.get(17)  # 小国子(瑞士)
+        s12 = agent_map.get(18)  # 小国丑(塞尔维亚)
+        s13 = agent_map.get(19)  # 小国寅(挪威)
+
+        # 强国之间
+        await self._set_rel(sr_service, project_id, gp1, gp2, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, gp3, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, gp3, StrategicRelationshipEnum.ALLIANCE)
+
+        # 强国甲(德国) ↔ 中小国家
+        await self._set_rel(sr_service, project_id, gp1, mp1, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, mp2, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp1, mp3, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s1,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp1, s2,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s3,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s4,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s5,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s6,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s7,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s8,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s9,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s10, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s11, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s12, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s13, StrategicRelationshipEnum.PARTNERSHIP)
+
+        # 强国乙(俄国) ↔ 中小国家
+        await self._set_rel(sr_service, project_id, gp2, mp1, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, mp2, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, mp3, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s1,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s2,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s3,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s4,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s5,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s6,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s7,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s8,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s9,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s10, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s11, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s12, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s13, StrategicRelationshipEnum.PARTNERSHIP)
+
+        # 强国丙(英国) ↔ 中小国家
+        await self._set_rel(sr_service, project_id, gp3, mp1, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, mp2, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp3, mp3, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s1,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s2,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s3,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s4,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s5,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s6,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s7,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s8,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s9,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s10, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s11, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s12, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s13, StrategicRelationshipEnum.ALLIANCE)
+
+    # ------------------------------------------------------------------
+    # 场景2战略关系（二战前1938）
+    # ------------------------------------------------------------------
+    async def _setup_scene2_relationships(
+        self,
+        sr_service: StrategicRelationshipService,
+        project_id: int,
+        agent_map: Dict[int, int],
+    ) -> None:
+        """设置场景2（二战前1938）的战略关系"""
+        gp1 = agent_map.get(1)   # 强国甲(苏)
+        gp2 = agent_map.get(2)   # 强国乙(德)
+        gp3 = agent_map.get(3)   # 强国丙(英)
+        mp1 = agent_map.get(4)   # 中等国甲(法)
+        mp2 = agent_map.get(5)   # 中等国乙(意)
+        mp3 = agent_map.get(6)   # 中等国丙(波兰)
+        s1  = agent_map.get(7)   # 小国甲(西班牙)
+        s2  = agent_map.get(8)   # 小国乙(捷克斯洛伐克)
+        s3  = agent_map.get(9)   # 小国丙(比利时)
+        s4  = agent_map.get(10)  # 小国丁(罗马尼亚)
+        s5  = agent_map.get(11)  # 小国戊(土耳其)
+        s6  = agent_map.get(12)  # 小国己(南斯拉夫)
+        s7  = agent_map.get(13)  # 小国庚(瑞典)
+        s8  = agent_map.get(14)  # 小国辛(荷兰)
+        s9  = agent_map.get(15)  # 小国壬(匈牙利)
+        s10 = agent_map.get(16)  # 小国癸(希腊)
+        s11 = agent_map.get(17)  # 小国子(葡萄牙)
+        s12 = agent_map.get(18)  # 小国丑(卢森堡)
+        s13 = agent_map.get(19)  # 小国寅(丹麦)
+        s14 = agent_map.get(20)  # 小国卯(芬兰)
+        s15 = agent_map.get(21)  # 小国辰(瑞士)
+        s16 = agent_map.get(22)  # 小国巳(保加利亚)
+        s17 = agent_map.get(23)  # 小国午(挪威)
+        s18 = agent_map.get(24)  # 小国未(拉脱维亚)
+        s19 = agent_map.get(25)  # 小国申(立陶宛)
+        s20 = agent_map.get(26)  # 小国酉(爱尔兰)
+        s21 = agent_map.get(27)  # 小国戌(爱沙尼亚)
+        s22 = agent_map.get(28)  # 小国亥(阿尔巴尼亚)
+
+        # 强国之间
+        await self._set_rel(sr_service, project_id, gp1, gp2, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, gp3, StrategicRelationshipEnum.NO_DIPLOMACY)
+        await self._set_rel(sr_service, project_id, gp2, gp3, StrategicRelationshipEnum.CONFLICT)
+
+        # 强国甲(苏联) ↔ 中小国家
+        await self._set_rel(sr_service, project_id, gp1, mp1, StrategicRelationshipEnum.NO_DIPLOMACY)
+        await self._set_rel(sr_service, project_id, gp1, mp2, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, mp3, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s1,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s2,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s3,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s4,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s5,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s6,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s7,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s8,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s9,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s10, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s11, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s12, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s13, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s14, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s15, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s16, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s17, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s18, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s19, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s20, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s21, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s22, StrategicRelationshipEnum.PARTNERSHIP)
+
+        # 强国乙(德国) ↔ 中小国家
+        await self._set_rel(sr_service, project_id, gp2, mp1, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, mp2, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, mp3, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s1,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s2,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s3,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s4,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s5,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s6,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s7,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s8,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s9,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s10, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s11, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s12, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s13, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s14, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s15, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s16, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s17, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s18, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s19, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s20, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s21, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s22, StrategicRelationshipEnum.PARTNERSHIP)
+
+        # 强国丙(英国) ↔ 中小国家
+        await self._set_rel(sr_service, project_id, gp3, mp1, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, mp2, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp3, mp3, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s1,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s2,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s3,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s4,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s5,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s6,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s7,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s8,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s9,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp3, s10, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s11, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s12, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s13, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s14, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s15, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s16, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp3, s17, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s18, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s19, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s20, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp3, s21, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp3, s22, StrategicRelationshipEnum.PARTNERSHIP)
+
+    # ------------------------------------------------------------------
+    # 场景3战略关系（冷战前1946）
+    # ------------------------------------------------------------------
+    async def _setup_scene3_relationships(
+        self,
+        sr_service: StrategicRelationshipService,
+        project_id: int,
+        agent_map: Dict[int, int],
+    ) -> None:
+        """设置场景3（冷战前1946）的战略关系"""
+        gp1 = agent_map.get(1)   # 强国甲(苏)
+        gp2 = agent_map.get(2)   # 强国乙(英)
+        mp1 = agent_map.get(3)   # 中等国甲(法)
+        mp2 = agent_map.get(4)   # 中等国乙(意)
+        mp3 = agent_map.get(5)   # 中等国丙(波兰)
+        s1  = agent_map.get(6)   # 小国甲(西班牙)
+        s2  = agent_map.get(7)   # 小国乙(土耳其)
+        s3  = agent_map.get(8)   # 小国丙(捷克斯洛伐克)
+        s4  = agent_map.get(9)   # 小国丁(比利时)
+        s5  = agent_map.get(10)  # 小国戊(荷兰)
+        s6  = agent_map.get(11)  # 小国己(瑞典)
+        s7  = agent_map.get(12)  # 小国庚(南斯拉夫)
+        s8  = agent_map.get(13)  # 小国辛(罗马尼亚)
+        s9  = agent_map.get(14)  # 小国壬(匈牙利)
+        s10 = agent_map.get(15)  # 小国癸(希腊)
+        s11 = agent_map.get(16)  # 小国子(保加利亚)
+        s12 = agent_map.get(17)  # 小国丑(葡萄牙)
+        s13 = agent_map.get(18)  # 小国寅(卢森堡)
+        s14 = agent_map.get(19)  # 小国卯(丹麦)
+        s15 = agent_map.get(20)  # 小国辰(瑞士)
+        s16 = agent_map.get(21)  # 小国巳(挪威)
+        s17 = agent_map.get(22)  # 小国午(芬兰)
+        s18 = agent_map.get(23)  # 小国未(爱尔兰)
+        s19 = agent_map.get(24)  # 小国申(阿尔巴尼亚)
+        s20 = agent_map.get(25)  # 小国酉(冰岛)
+
+        # 强国之间
+        await self._set_rel(sr_service, project_id, gp1, gp2, StrategicRelationshipEnum.CONFLICT)
+
+        # 强国甲(苏联) ↔ 中小国家
+        await self._set_rel(sr_service, project_id, gp1, mp1, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, mp2, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, mp3, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp1, s1,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s2,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s3,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp1, s4,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s5,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s6,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s7,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s8,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp1, s9,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp1, s10, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s11, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp1, s12, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s13, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s14, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s15, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s16, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s17, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp1, s18, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, s19, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp1, s20, StrategicRelationshipEnum.PARTNERSHIP)
+
+        # 强国乙(英国) ↔ 中小国家
+        await self._set_rel(sr_service, project_id, gp2, mp1, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, mp2, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, mp3, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s1,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s2,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s3,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s4,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s5,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s6,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s7,  StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s8,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s9,  StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s10, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s11, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s12, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s13, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s14, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s15, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s16, StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp2, s17, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s18, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp2, s19, StrategicRelationshipEnum.CONFLICT)
+        await self._set_rel(sr_service, project_id, gp2, s20, StrategicRelationshipEnum.ALLIANCE)
 
 
 # 单例实例

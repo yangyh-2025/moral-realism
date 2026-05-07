@@ -1,6 +1,6 @@
 """
 智能体管理服务
-负责智能体配置的增删改查和基本操作
+负责智能体配置的增删改查和基本操作（CINC版）
 """
 
 from typing import List, Optional
@@ -13,86 +13,155 @@ from app.models import AgentConfig
 
 class AgentConfigRequest(BaseModel):
     """
-    智能体配置请求模型
+    智能体配置请求模型（CINC版）
 
     用于验证和传递智能体配置数据。
     """
     agent_name: str
     region: str
-    c_score: float = Field(ge=0, le=100, description="基本实体得分 0-100")
-    e_score: float = Field(ge=0, le=200, description="经济实力 0-200")
-    m_score: float = Field(ge=0, le=200, description="军事实力 0-200")
-    s_score: float = Field(ge=0, le=2, description="战略目的系数 0-2")
-    w_score: float = Field(ge=0, le=2, description="战略意志系数 0-2")
+    milex: float = Field(default=0, ge=0, description="军事支出（千美元）")
+    milper: float = Field(default=0, ge=0, description="军事人员（千人）")
+    irst: float = Field(default=0, ge=0, description="钢铁产量（千吨）")
+    pec: float = Field(default=0, ge=0, description="一次能源消耗（千吨煤当量）")
+    tpop: float = Field(default=0, ge=0, description="总人口（千人）")
+    upop: float = Field(default=0, ge=0, description="城市人口（千人）")
+    country_code: Optional[int] = Field(default=None, description="COW国家数字代码")
+    cinc_year: Optional[int] = Field(default=2016, description="CINC数据年份")
     leader_type: Optional[str] = None
 
 
 class AgentService:
     """
-    智能体管理服务
+    智能体管理服务（CINC版）
 
     提供智能体配置的完整生命周期管理，
-    包括创建、查询、更新、删除以及国力计算等功能。
+    包括创建、查询、更新、删除以及CINC国力计算等功能。
     """
 
-    def calculate_total_power(self, c_score: float, e_score: float, m_score: float,
-                           s_score: float, w_score: float) -> float:
+    async def calculate_total_power(self, project_id: int,
+                                    agent_indicators: dict) -> float:
         """
-        计算综合国力（克莱因方程）
+        计算单个国家的CINC指数
 
-        使用克莱因综合国力方程计算国家的综合实力：
-        Pp = (C + E + M) × (S + W)
-
-        其中：
-        - C: 基本实体得分（人口+领土）
-        - E: 经济实力
-        - M: 军事实力
-        - S: 战略目的系数
-        - W: 战略意志系数
+        基于CINC公式计算国家在仿真体系内的相对国力：
+        cinc = (milex/Σmilex + milper/Σmilper + irst/Σirst +
+                pec/Σpec + tpop/Σtpop + upop/Σupop) / 6
 
         Args:
-            c_score: 基本实体得分
-            e_score: 经济实力
-            m_score: 军事实力
-            s_score: 战略目的系数
-            w_score: 战略意志系数
+            project_id: 项目ID
+            agent_indicators: 当前国家的6项指标 {"milex": float, ...}
 
         Returns:
-            综合国力得分
+            CINC指数（0-1之间的比例值），如果项目无其他agent则返回0.0
         """
-        return (c_score + e_score + m_score) * (s_score + w_score)
+        from app.core.cinc_calculator import CINCCalculator
 
-    def determine_power_level(self, total_power: float) -> str:
+        async for session in db_config.get_session():
+            result = await session.execute(
+                select(AgentConfig).where(AgentConfig.project_id == project_id)
+            )
+            agents = result.scalars().all()
+
+            if not agents:
+                return 0.0
+
+            all_indicators = [
+                {"agent_id": a.agent_id, "milex": a.milex, "milper": a.milper,
+                 "irst": a.irst, "pec": a.pec, "tpop": a.tpop, "upop": a.upop}
+                for a in agents
+            ]
+
+            return CINCCalculator.calculate_cinc(agent_indicators, all_indicators)
+
+    async def determine_power_level(self, project_id: int, cinc: float) -> str:
         """
-        判定实力层级
+        判定实力层级（基于CINC相对排名）
 
-        根据综合国力得分判定国家的实力层级：
-        - 超级大国：≥500
-        - 大国：200-499
-        - 中等强国：100-199
-        - 小国：<100
+        根据CINC在仿真体系内的相对排名判定国家层级：
+        - 超级大国：前10%
+        - 大国：10%-30%
+        - 中等强国：30%-60%
+        - 小国：后40%
+
+        如果项目只有一个agent，按绝对阈值：
+        - cinc > 0.1: 超级大国
+        - cinc > 0.05: 大国
+        - cinc > 0.01: 中等强国
+        - 否则: 小国
 
         Args:
-            total_power: 综合国力得分
+            project_id: 项目ID
+            cinc: CINC指数
 
         Returns:
             实力层级字符串
         """
-        if total_power >= 500:
-            return "超级大国"
-        elif 200 <= total_power < 500:
-            return "大国"
-        elif 100 <= total_power < 200:
-            return "中等强国"
-        else:
-            return "小国"
+        from app.core.cinc_calculator import CINCCalculator, PowerLevelEnum
+
+        async for session in db_config.get_session():
+            result = await session.execute(
+                select(AgentConfig).where(AgentConfig.project_id == project_id)
+            )
+            agents = result.scalars().all()
+
+            if len(agents) <= 1:
+                # 单agent项目使用绝对阈值
+                if cinc > 0.1:
+                    return PowerLevelEnum.SUPERPOWER.value
+                elif cinc > 0.05:
+                    return PowerLevelEnum.GREAT_POWER.value
+                elif cinc > 0.01:
+                    return PowerLevelEnum.MIDDLE_POWER.value
+                else:
+                    return PowerLevelEnum.SMALL_STATE.value
+
+            all_cincs = [a.current_total_power for a in agents]
+            level = CINCCalculator.determine_power_level(cinc, all_cincs)
+            return level.value if hasattr(level, 'value') else str(level)
+
+    async def _recalculate_all_cincs(self, project_id: int):
+        """重新计算项目内所有agent的CINC和层级"""
+        from app.core.cinc_calculator import CINCCalculator
+        from app.core.cinc_calculator import PowerLevelEnum
+
+        async for session in db_config.get_session():
+            result = await session.execute(
+                select(AgentConfig).where(AgentConfig.project_id == project_id)
+            )
+            agents = result.scalars().all()
+
+            if not agents:
+                return
+
+            # 构建指标列表
+            indicators = [
+                {"agent_id": a.agent_id, "milex": a.milex, "milper": a.milper,
+                 "irst": a.irst, "pec": a.pec, "tpop": a.tpop, "upop": a.upop}
+                for a in agents
+            ]
+
+            cincs = CINCCalculator.calculate_all_cincs(indicators)
+            levels = CINCCalculator.determine_all_power_levels(cincs)
+
+            for a in agents:
+                new_cinc = cincs.get(a.agent_id, 0.0)
+                # 仅在初始化时设置 initial_total_power
+                if a.initial_total_power == 0.0:
+                    a.initial_total_power = new_cinc
+                a.current_total_power = new_cinc
+                level = levels.get(a.agent_id, PowerLevelEnum.SMALL_STATE)
+                a.power_level = level.value if hasattr(level, 'value') else str(level)
+
+            await session.commit()
 
     async def add_agent(self, project_id: int, config: AgentConfigRequest) -> dict:
         """
-        为项目添加智能体
+        为项目添加智能体（CINC版）
 
-        计算智能体的综合国力和实力层级，
-        并保存到数据库中。
+        1. 如果传入了country_code和cinc_year，从CINC数据库自动读取6个指标
+        2. 否则使用请求中的milex/milper/irst/pec/tpop/upop
+        3. 保存后批量重算同项目所有agent的CINC和层级
+        4. 验证leader_type权限
 
         Args:
             project_id: 项目ID
@@ -101,50 +170,91 @@ class AgentService:
         Returns:
             新创建的智能体信息字典
         """
-        # 计算综合国力和实力层级
-        initial_power = self.calculate_total_power(
-            config.c_score, config.e_score, config.m_score,
-            config.s_score, config.w_score
-        )
-        power_level = self.determine_power_level(initial_power)
+        # 确定6项指标值
+        milex = config.milex
+        milper = config.milper
+        irst = config.irst
+        pec = config.pec
+        tpop = config.tpop
+        upop = config.upop
+        country_code = config.country_code
+        cinc_year = config.cinc_year
 
-        # 验证领导类型配置（只有超级大国和大国可以配置领导类型）
-        if config.leader_type and power_level not in ["超级大国", "大国"]:
-            raise ValueError("仅超级大国与大国可配置领导集体类型")
+        # 如果提供了country_code和cinc_year，从CINC数据库读取
+        if country_code is not None and cinc_year is not None:
+            try:
+                from app.core.cinc_data_loader import get_cinc_loader
+                loader = get_cinc_loader()
+                record = loader.get_record(country_code, cinc_year)
+                if record:
+                    milex = record.milex
+                    milper = record.milper
+                    irst = record.irst
+                    pec = record.pec
+                    tpop = record.tpop
+                    upop = record.upop
+            except Exception:
+                # 如果加载失败，使用请求中的值
+                pass
 
-        # 保存到数据库
+        # 保存到数据库（先保存指标，再批量计算CINC）
         async for session in db_config.get_session():
             agent = AgentConfig(
                 project_id=project_id,
                 agent_name=config.agent_name,
                 region=config.region,
-                c_score=config.c_score,
-                e_score=config.e_score,
-                m_score=config.m_score,
-                s_score=config.s_score,
-                w_score=config.w_score,
-                initial_total_power=initial_power,
-                current_total_power=initial_power,
-                power_level=power_level,
-                leader_type=config.leader_type
+                milex=milex,
+                milper=milper,
+                irst=irst,
+                pec=pec,
+                tpop=tpop,
+                upop=upop,
+                initial_total_power=0.0,
+                current_total_power=0.0,
+                power_level="小国",
+                leader_type=config.leader_type,
+                country_code=country_code,
+                cinc_year=cinc_year,
             )
             session.add(agent)
             await session.commit()
             await session.refresh(agent)
 
+            agent_id = agent.agent_id
+
+        # 批量重算项目内所有agent的CINC和层级
+        await self._recalculate_all_cincs(project_id)
+
+        # 重新获取agent以获取更新后的CINC和层级
+        async for session in db_config.get_session():
+            result = await session.execute(
+                select(AgentConfig).where(AgentConfig.agent_id == agent_id)
+            )
+            agent = result.scalar_one()
+
+            # 验证领导类型配置（只有超级大国和大国可以配置领导类型）
+            if config.leader_type and agent.power_level not in ["超级大国", "大国"]:
+                # 回滚：删除刚创建的agent
+                await session.delete(agent)
+                await session.commit()
+                raise ValueError("仅超级大国与大国可配置领导集体类型")
+
             return {
                 "agent_id": agent.agent_id,
                 "agent_name": agent.agent_name,
                 "region": agent.region,
-                "c_score": agent.c_score,
-                "e_score": agent.e_score,
-                "m_score": agent.m_score,
-                "s_score": agent.s_score,
-                "w_score": agent.w_score,
+                "milex": agent.milex,
+                "milper": agent.milper,
+                "irst": agent.irst,
+                "pec": agent.pec,
+                "tpop": agent.tpop,
+                "upop": agent.upop,
                 "initial_total_power": agent.initial_total_power,
                 "current_total_power": agent.current_total_power,
                 "power_level": agent.power_level,
-                "leader_type": agent.leader_type
+                "leader_type": agent.leader_type,
+                "country_code": agent.country_code,
+                "cinc_year": agent.cinc_year,
             }
 
     async def get_agents(self, project_id: int, power_level_filter: Optional[str] = None,
@@ -178,15 +288,18 @@ class AgentService:
                     "agent_id": a.agent_id,
                     "agent_name": a.agent_name,
                     "region": a.region,
-                    "c_score": a.c_score,
-                    "e_score": a.e_score,
-                    "m_score": a.m_score,
-                    "s_score": a.s_score,
-                    "w_score": a.w_score,
+                    "milex": a.milex,
+                    "milper": a.milper,
+                    "irst": a.irst,
+                    "pec": a.pec,
+                    "tpop": a.tpop,
+                    "upop": a.upop,
                     "initial_total_power": a.initial_total_power,
                     "current_total_power": a.current_total_power,
                     "power_level": a.power_level,
-                    "leader_type": a.leader_type
+                    "leader_type": a.leader_type,
+                    "country_code": a.country_code,
+                    "cinc_year": a.cinc_year,
                 }
                 for a in agents
             ]
@@ -218,22 +331,25 @@ class AgentService:
                 "agent_id": agent.agent_id,
                 "agent_name": agent.agent_name,
                 "region": agent.region,
-                "c_score": agent.c_score,
-                "e_score": agent.e_score,
-                "m_score": agent.m_score,
-                "s_score": agent.s_score,
-                "w_score": agent.w_score,
+                "milex": agent.milex,
+                "milper": agent.milper,
+                "irst": agent.irst,
+                "pec": agent.pec,
+                "tpop": agent.tpop,
+                "upop": agent.upop,
                 "initial_total_power": agent.initial_total_power,
                 "current_total_power": agent.current_total_power,
                 "power_level": agent.power_level,
-                "leader_type": agent.leader_type
+                "leader_type": agent.leader_type,
+                "country_code": agent.country_code,
+                "cinc_year": agent.cinc_year,
             }
 
     async def update_agent(self, project_id: int, agent_id: int, config: AgentConfigRequest) -> Optional[dict]:
         """
-        更新智能体初始配置
+        更新智能体初始配置（CINC版）
 
-        更新智能体的配置信息，并重新计算综合国力和实力层级。
+        更新智能体的配置信息，并重新计算CINC和实力层级。
 
         Args:
             project_id: 项目ID
@@ -255,39 +371,80 @@ class AgentService:
             if not agent:
                 return None
 
+            # 确定6项指标值
+            milex = config.milex
+            milper = config.milper
+            irst = config.irst
+            pec = config.pec
+            tpop = config.tpop
+            upop = config.upop
+            country_code = config.country_code
+            cinc_year = config.cinc_year
+
+            # 如果提供了country_code和cinc_year，从CINC数据库读取
+            if country_code is not None and cinc_year is not None:
+                try:
+                    from app.core.cinc_data_loader import get_cinc_loader
+                    loader = get_cinc_loader()
+                    record = loader.get_record(country_code, cinc_year)
+                    if record:
+                        milex = record.milex
+                        milper = record.milper
+                        irst = record.irst
+                        pec = record.pec
+                        tpop = record.tpop
+                        upop = record.upop
+                except Exception:
+                    pass
+
             # 更新基本配置
             agent.agent_name = config.agent_name
             agent.region = config.region
-            agent.c_score = config.c_score
-            agent.e_score = config.e_score
-            agent.m_score = config.m_score
-            agent.s_score = config.s_score
-            agent.w_score = config.w_score
-            # 重新计算综合国力和实力层级
-            agent.initial_total_power = self.calculate_total_power(
-                config.c_score, config.e_score, config.m_score,
-                config.s_score, config.w_score
-            )
-            agent.current_total_power = agent.initial_total_power
-            agent.power_level = self.determine_power_level(agent.initial_total_power)
+            agent.milex = milex
+            agent.milper = milper
+            agent.irst = irst
+            agent.pec = pec
+            agent.tpop = tpop
+            agent.upop = upop
+            agent.country_code = country_code
+            agent.cinc_year = cinc_year
             agent.leader_type = config.leader_type
 
             await session.commit()
-            await session.refresh(agent)
+
+        # 批量重算项目内所有agent的CINC和层级
+        await self._recalculate_all_cincs(project_id)
+
+        # 重新获取agent
+        async for session in db_config.get_session():
+            result = await session.execute(
+                select(AgentConfig).where(
+                    AgentConfig.project_id == project_id,
+                    AgentConfig.agent_id == agent_id
+                )
+            )
+            agent = result.scalar_one()
+
+            # 验证领导类型
+            if config.leader_type and agent.power_level not in ["超级大国", "大国"]:
+                raise ValueError("仅超级大国与大国可配置领导集体类型")
 
             return {
                 "agent_id": agent.agent_id,
                 "agent_name": agent.agent_name,
                 "region": agent.region,
-                "c_score": agent.c_score,
-                "e_score": agent.e_score,
-                "m_score": agent.m_score,
-                "s_score": agent.s_score,
-                "w_score": agent.w_score,
+                "milex": agent.milex,
+                "milper": agent.milper,
+                "irst": agent.irst,
+                "pec": agent.pec,
+                "tpop": agent.tpop,
+                "upop": agent.upop,
                 "initial_total_power": agent.initial_total_power,
                 "current_total_power": agent.current_total_power,
                 "power_level": agent.power_level,
-                "leader_type": agent.leader_type
+                "leader_type": agent.leader_type,
+                "country_code": agent.country_code,
+                "cinc_year": agent.cinc_year,
             }
 
     async def delete_agent(self, project_id: int, agent_id: int) -> bool:
@@ -315,25 +472,24 @@ class AgentService:
 
             await session.delete(agent)
             await session.commit()
+
+            # 删除后批量重算剩余agent的CINC
+            await self._recalculate_all_cincs(project_id)
             return True
 
     async def update_agent_power(self, agent_id: int, power_change: float) -> Optional[dict]:
         """
-        更新智能体实时国力
+        更新智能体实时CINC
 
-        调整智能体的当前国力值。
+        调整智能体的当前CINC值。保持签名兼容，但内部逻辑变为更新CINC值。
 
         Args:
             agent_id: 智能体ID
-            power_change: 国力变化值（正数表示增加，负数表示减少）
+            power_change: CINC变化值（正数表示增加，负数表示减少）
 
         Returns:
-            更新后的国力信息字典，或None（如果不存在）
+            更新后的CINC信息字典，或None（如果不存在）
         """
-        # 验证国力变动范围（单次行为变动绝对值不超过1分）
-        if abs(power_change) > 1:
-            raise ValueError("单次行为国力变动绝对值不能超过1分")
-
         async for session in db_config.get_session():
             result = await session.execute(
                 select(AgentConfig).where(AgentConfig.agent_id == agent_id)
@@ -343,8 +499,8 @@ class AgentService:
             if not agent:
                 return None
 
-            # 更新当前国力，确保不低于0
-            agent.current_total_power = max(0, agent.current_total_power + power_change)
+            # 更新当前CINC，确保不低于0
+            agent.current_total_power = max(0.0, agent.current_total_power + power_change)
             await session.commit()
             await session.refresh(agent)
 

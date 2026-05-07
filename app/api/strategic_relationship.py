@@ -3,8 +3,10 @@
 提供战略关系查询和设置接口。
 """
 
-from typing import Optional
-from fastapi import APIRouter, Depends, Body
+import json
+import os
+from typing import Optional, List, Dict, Any
+from fastapi import APIRouter, Depends, Body, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -115,3 +117,42 @@ async def initialize_strategic_relationships(project_id: int):
         service = StrategicRelationshipService(session)
         await service.initialize_relationships(project_id)
         return SetRelationshipResponse(message="Relationships initialized")
+
+
+@router.get("/project/{project_id}/changes")
+async def get_relationship_changes(
+    project_id: int,
+    round_num: Optional[int] = Query(None, description="指定轮次，不填则返回所有")
+):
+    """
+    获取战略关系变化历史
+
+    从日志文件中读取战略关系变化记录。
+
+    Args:
+        project_id: 项目ID
+        round_num: 可选，指定轮次
+
+    Returns:
+        变化历史列表
+    """
+    log_path = f"logs/{project_id}/relationship_changes.log"
+    changes: List[Dict[str, Any]] = []
+
+    if os.path.exists(log_path):
+        try:
+            with open(log_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        record = json.loads(line)
+                        if round_num is None or record.get("round_num") == round_num:
+                            changes.append(record)
+                    except json.JSONDecodeError:
+                        continue
+        except Exception:
+            pass
+
+    return {"changes": changes}

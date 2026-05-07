@@ -5,8 +5,8 @@
  * 功能说明:
  * - 配置项目基本信息（名称、描述、总轮次）
  * - 配置智能体参数（国家名称、所属区域）
- * - 配置克莱因国力方程指标（C、E、M、S、W）
- * - 自动计算初始综合国力和实力层级
+ * - 配置CINC数据来源（国家代码、年份）
+ * - 自动从CINC数据库加载底层指标并计算初始CINC指数和实力层级
  * - 配置领导集体类型（仅超级大国和大国可用）
  * - 支持动态添加/删除智能体
  * - 自动保存配置到本地存储
@@ -17,8 +17,9 @@
  * - 智能体配置区域:
  *   - 每个智能体一个卡片
  *   - 智能体基本信息: 国家名称、所属区域
- *   - 克莱因国力方程: C（基本实体）、E（经济实力）、M（军事实力）、S（战略目的）、W（战略意志）
- *   - 初始国力计算结果显示
+ *   - CINC数据来源: 选择国家和年份，自动加载6项底层指标
+ *   - CINC底层指标: milex、milper、irst、pec、tpop、upop（只读显示）
+ *   - 初始CINC指数和实力层级计算结果显示
  *   - 领导集体类型选择（仅超级大国和大国）
  * - 操作按钮: 添加智能体、创建项目、重置配置
  *
@@ -115,85 +116,43 @@
                 </el-col>
               </el-row>
 
-              <!-- 克莱因国力方程分隔线 -->
-              <el-divider content-position="left">克莱因国力方程指标</el-divider>
-
-              <!-- C、E、M 指标（三列布局） -->
+              <!-- CINC数据来源分隔线 -->
+              <el-divider content-position="left">CINC数据来源</el-divider>
               <el-row :gutter="20">
-                <el-col :span="8">
-                  <el-form-item label="基本实体 C">
-                    <el-input-number
-                      v-model="agent.cScore"
-                      :min="0"
-                      :max="100"
-                      :precision="2"
-                      @change="calculateAgentPower(agent)"
-                    />
-                    <div class="score-hint">满分100分</div>
+                <el-col :span="12">
+                  <el-form-item label="选择国家">
+                    <el-select v-model="agent.countryCode" filterable placeholder="选择CINC国家" @change="loadCincData(agent)">
+                      <el-option v-for="country in cincCountries" :key="country.ccode"
+                                 :label="`${country.name} (${country.stateabb})`" :value="country.ccode" />
+                    </el-select>
                   </el-form-item>
                 </el-col>
-                <el-col :span="8">
-                  <el-form-item label="经济实力 E">
-                    <el-input-number
-                      v-model="agent.eScore"
-                      :min="0"
-                      :max="200"
-                      :precision="2"
-                      @change="calculateAgentPower(agent)"
-                    />
-                    <div class="score-hint">满分200分</div>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="8">
-                  <el-form-item label="军事实力 M">
-                    <el-input-number
-                      v-model="agent.mScore"
-                      :min="0"
-                      :max="200"
-                      :precision="2"
-                      @change="calculateAgentPower(agent)"
-                    />
-                    <div class="score-hint">满分200分</div>
+                <el-col :span="12">
+                  <el-form-item label="数据年份">
+                    <el-select v-model="agent.cincYear" @change="loadCincData(agent)">
+                      <el-option v-for="y in cincYears" :key="y" :label="y" :value="y" />
+                    </el-select>
                   </el-form-item>
                 </el-col>
               </el-row>
 
-              <!-- S、W 指标（两列布局） -->
-              <el-row :gutter="20">
-                <el-col :span="12">
-                  <el-form-item label="战略目的 S">
-                    <el-input-number
-                      v-model="agent.sScore"
-                      :min="0"
-                      :max="2"
-                      :step="0.1"
-                      :precision="2"
-                      @change="calculateAgentPower(agent)"
-                    />
-                    <div class="score-hint">标准值0.5</div>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="战略意志 W">
-                    <el-input-number
-                      v-model="agent.wScore"
-                      :min="0"
-                      :max="2"
-                      :step="0.1"
-                      :precision="2"
-                      @change="calculateAgentPower(agent)"
-                    />
-                    <div class="score-hint">标准值0.5</div>
-                  </el-form-item>
-                </el-col>
-              </el-row>
+              <!-- CINC底层指标 -->
+              <el-divider content-position="left">CINC底层指标（自动从数据库加载）</el-divider>
+              <el-descriptions :column="3" border size="small">
+                <el-descriptions-item label="军事支出 milex">{{ agent.milex }}</el-descriptions-item>
+                <el-descriptions-item label="军事人员 milper">{{ agent.milper }}</el-descriptions-item>
+                <el-descriptions-item label="钢铁产量 irst">{{ agent.irst }}</el-descriptions-item>
+                <el-descriptions-item label="能源消耗 pec">{{ agent.pec }}</el-descriptions-item>
+                <el-descriptions-item label="总人口 tpop">{{ agent.tpop }}</el-descriptions-item>
+                <el-descriptions-item label="城市人口 upop">{{ agent.upop }}</el-descriptions-item>
+              </el-descriptions>
 
               <!-- 初始国力计算结果 -->
               <el-divider content-position="left">初始国力计算</el-divider>
 
               <el-descriptions :column="1" border size="small">
-                <el-descriptions-item label="初始综合国力">
-                  {{ agent.initialTotalPower.toFixed(2) }}
+                <el-descriptions-item label="初始CINC指数">
+                  {{ Number(agent.initialTotalPower).toFixed(6) }}
                 </el-descriptions-item>
                 <el-descriptions-item label="实力层级">
                   <el-tag :type="getPowerLevelType(agent.powerLevel)">
@@ -201,6 +160,10 @@
                   </el-tag>
                 </el-descriptions-item>
               </el-descriptions>
+              <el-alert type="info" :closable="false" style="margin-top:10px;">
+                CINC指数是基于6项底层指标在体系内总和的占比计算的（0-1比例值），
+                实力层级按CINC在仿真体系内的相对排名动态判定。
+              </el-alert>
 
               <!-- 领导集体类型（仅超级大国和大国可见） -->
               <el-form-item label="领导集体类型" v-if="['超级大国', '大国'].includes(agent.powerLevel)">
@@ -343,7 +306,7 @@
  *
  * 主要功能:
  * - 管理项目和智能体配置的响应式数据
- * - 实现克莱因国力方程计算逻辑
+ * - 实现CINC数据加载与国力计算逻辑
  * - 自动保存配置到本地存储
  * - 与后端API交互创建项目和智能体
  */
@@ -354,6 +317,7 @@ import { ElMessage } from 'element-plus'
 import { useAppStore } from '../store'
 import * as simulationApi from '../api/simulation'
 import * as relationshipApi from '../api/strategicRelationship'
+import * as cincApi from '../api/cinc'
 
 // 获取路由实例和应用状态管理
 const router = useRouter()
@@ -371,6 +335,10 @@ const config = ref({
 
 // 智能体列表
 const agents = ref([])
+
+// CINC数据
+const cincCountries = ref([])
+const cincYears = ref([])
 
 // 大国/超级大国列表（用于战略关系配置）
 const majorPowers = computed(() => {
@@ -403,7 +371,7 @@ onMounted(async () => {
     try {
       // 尝试从现有项目加载配置
       const projectResponse = await simulationApi.getProject(projectId)
-      const project = projectResponse.data
+      const project = projectResponse
 
       config.value = {
         projectName: project.project_name,
@@ -412,15 +380,18 @@ onMounted(async () => {
       }
 
       const agentsResponse = await simulationApi.getAgents(projectId)
-      agents.value = agentsResponse.data.map((agent, index) => ({
+      agents.value = agentsResponse.map((agent, index) => ({
         agentId: agent.agent_id,
         agentName: agent.agent_name,
         region: agent.region,
-        cScore: agent.c_score,
-        eScore: agent.e_score,
-        mScore: agent.m_score,
-        sScore: agent.s_score,
-        wScore: agent.w_score,
+        countryCode: agent.country_code,
+        cincYear: agent.cinc_year,
+        milex: agent.milex,
+        milper: agent.milper,
+        irst: agent.irst,
+        pec: agent.pec,
+        tpop: agent.tpop,
+        upop: agent.upop,
         initialTotalPower: agent.initial_total_power,
         powerLevel: agent.power_level,
         leaderType: agent.leader_type
@@ -457,6 +428,14 @@ onMounted(async () => {
       }
     }
   }
+
+  // 加载CINC国家列表和年份
+  try {
+    cincCountries.value = await cincApi.getCincCountries()
+    cincYears.value = await cincApi.getCincYears()
+  } catch (e) {
+    console.error('加载CINC数据失败', e)
+  }
 })
 
 /**
@@ -478,12 +457,10 @@ watch([config, agents], () => {
 function addAgent() {
   agents.value.push({
     agentName: '',
-    region: '',
-    cScore: 50,
-    eScore: 100,
-    mScore: 100,
-    sScore: 0.5,
-    wScore: 0.5,
+    region: '欧洲',
+    countryCode: null,
+    cincYear: 2016,
+    milex: 0, milper: 0, irst: 0, pec: 0, tpop: 0, upop: 0,
     initialTotalPower: 0,
     powerLevel: '小国',
     leaderType: null
@@ -499,15 +476,24 @@ function removeAgent(index) {
 }
 
 /**
- * 根据克莱因国力方程计算智能体的初始综合国力
- * 公式: Pp = (C + E + M) × (S + W)
+ * 从CINC数据库加载智能体的底层指标
  * @param {Object} agent - 智能体对象
  */
-function calculateAgentPower(agent) {
-  // Pp = (C + E + M) × (S + W)
-  const totalPower = (agent.cScore + agent.eScore + agent.mScore) * (agent.sScore + agent.wScore)
-  agent.initialTotalPower = totalPower
-  agent.powerLevel = determinePowerLevel(totalPower)
+async function loadCincData(agent) {
+  if (!agent.countryCode || !agent.cincYear) return
+  try {
+    const data = await cincApi.getCincData(agent.countryCode, agent.cincYear)
+    agent.milex = data.milex
+    agent.milper = data.milper
+    agent.irst = data.irst
+    agent.pec = data.pec
+    agent.tpop = data.tpop
+    agent.upop = data.upop
+    // initialTotalPower 由后端创建agent时返回，这里先置0
+    agent.initialTotalPower = 0
+  } catch (e) {
+    ElMessage.error('加载CINC数据失败：' + (e.message || e))
+  }
 }
 
 /**
@@ -546,7 +532,7 @@ async function loadRelationships() {
 
   try {
     const response = await relationshipApi.getStrategicRelationships(projectId)
-    relationshipMatrix.value = response.data || {}
+    relationshipMatrix.value = response || {}
     console.log('Loaded relationships:', relationshipMatrix.value)
   } catch (error) {
     // 如果项目刚创建还没有战略关系，使用空对象而不是报错
@@ -722,7 +708,7 @@ async function createProject() {
     }
 
     const projectResponse = await simulationApi.createProject(projectData)
-    const projectId = projectResponse.data.project_id
+    const projectId = projectResponse.project_id
 
     // 逐个添加智能体并建立ID映射
     const idMapping = {} // 本地索引 -> 后端agent_id
@@ -731,16 +717,22 @@ async function createProject() {
       const agentData = {
         agent_name: agent.agentName,
         region: agent.region,
-        c_score: agent.cScore,
-        e_score: agent.eScore,
-        m_score: agent.mScore,
-        s_score: agent.sScore,
-        w_score: agent.wScore,
+        milex: agent.milex,
+        milper: agent.milper,
+        irst: agent.irst,
+        pec: agent.pec,
+        tpop: agent.tpop,
+        upop: agent.upop,
+        country_code: agent.countryCode,
+        cinc_year: agent.cincYear,
         leader_type: agent.leaderType
       }
       const response = await simulationApi.addAgent(projectId, agentData)
       // 建立本地索引到后端ID的映射
-      idMapping[i] = response.data.agent_id
+      idMapping[i] = response.agent_id
+      // 保存后端返回的CINC指数和实力层级
+      agent.initialTotalPower = response.initial_total_power
+      agent.powerLevel = response.power_level
     }
 
     // 初始化战略关系

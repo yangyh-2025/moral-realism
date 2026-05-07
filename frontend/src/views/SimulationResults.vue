@@ -4,14 +4,14 @@
  *
  * 功能说明:
  * - 展示国际秩序演变趋势图
- * - 展示各智能体国力变化趋势图
+ * - 展示各智能体CINC指数变化趋势图
  * - 展示行为类型分布饼图
  * - 展示主权尊重率趋势图
  * - 展示领导国追随率趋势图
  * - 展示智能体关系图谱
  *
  * 组件结构:
- * - 第一行: 国际秩序演变图（左）+ 智能体国力变化图（右）
+ * - 第一行: 国际秩序演变图（左）+ 智能体CINC指数变化图（右）
  * - 第二行: 行为类型分布图 + 主权尊重率趋势图 + 领导国追随率趋势图
  * - 第三行: 智能体关系图谱
  *
@@ -54,12 +54,12 @@
         </el-col>
       </el-row>
 
-      <!-- 智能体国力变化图表 -->
+      <!-- 智能体CINC指数变化图表 -->
       <el-row :gutter="20" style="margin-top: 20px;">
         <el-col :span="24">
           <el-card class="chart-card">
             <template #header>
-              <h3>智能体国力变化</h3>
+              <h3>智能体CINC指数变化</h3>
             </template>
             <div ref="powerChart" class="chart-container"></div>
           </el-card>
@@ -216,7 +216,7 @@ function initializeCharts() {
     charts.push(chart)
   }
 
-  // 智能体国力变化图表
+  // 智能体CINC指数变化图表
   if (powerChart.value) {
     const chart = echarts.init(powerChart.value)
     chart.setOption({
@@ -224,7 +224,7 @@ function initializeCharts() {
       tooltip: { trigger: 'axis' },
       legend: { data: [], top: 10 },
       xAxis: { type: 'category', name: '轮次' },
-      yAxis: { type: 'value', name: '国力' },
+      yAxis: { type: 'value', name: 'CINC指数' },
       series: []
     })
     charts.push(chart)
@@ -289,7 +289,14 @@ function initializeCharts() {
     const chart = echarts.init(relationChart.value)
     chart.setOption({
       grid: { top: 40, right: 40, bottom: 40, left: 40 },
-      tooltip: {},
+      tooltip: {
+        formatter: function(params) {
+          if (params.dataType === 'node') {
+            return `${params.name}<br/>CINC: ${(params.value / 1000).toFixed(6)}`
+          }
+          return params.name
+        }
+      },
       series: [{
         type: 'graph',
         layout: 'force',
@@ -312,7 +319,7 @@ function initializeCharts() {
 
 /**
  * 加载仿真结果数据
- * 同时请求秩序演变、国力历史和行为偏好数据
+ * 同时请求秩序演变、CINC历史和行为偏好数据
  */
 async function loadSimulationData() {
   if (!projectId.value) {
@@ -325,7 +332,7 @@ async function loadSimulationData() {
     const orderData = await getOrderEvolution(projectId.value)
     updateOrderChart(orderData)
 
-    // 加载智能体国力历史数据
+    // 加载智能体CINC指数历史数据
     const powerData = await getPowerHistory(projectId.value)
     updatePowerChart(powerData)
 
@@ -399,8 +406,8 @@ function updateOrderChart(data) {
 }
 
 /**
- * 更新智能体国力变化图表
- * @param {Array} data - 国力历史数据
+ * 更新智能体CINC指数变化图表
+ * @param {Array} data - CINC历史数据
  */
 function updatePowerChart(data) {
   const chart = charts.find(c => c.getDom() === powerChart.value)
@@ -480,12 +487,13 @@ function updateRelationChart(data) {
   const categories = [...new Set(data.nodes?.map(n => n.category) || [])]
 
   // 确保 nodes 的 id 为字符串类型，links 的 source/target 也为字符串类型
+  // symbolSize 基于CINC值（value已被statistics_service放大1000倍）
   const formattedNodes = (data.nodes || []).map(node => ({
     id: String(node.id),
     name: node.name,
     value: node.value,
     category: node.category,
-    symbolSize: node.symbolSize
+    symbolSize: Math.max(20, Math.min(80, node.value * 0.5))
   }))
 
   const formattedLinks = (data.links || []).map(link => ({

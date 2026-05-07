@@ -3,16 +3,16 @@
  * @文件描述: 学术指标统计分析组件 - 提供各类学术统计和分析功能
  *
  * 功能说明:
- * - 国力变化分析：按轮次和智能体查询国力变化趋势
- * - 增长率统计：按领导类型和实力层级统计国力增长率
+ * - CINC变化分析：按轮次和智能体查询CINC指数变化趋势
+ * - 变化率统计：按领导类型和实力层级统计CINC变化率
  * - 行为偏好分析：分析智能体的行为选择偏好
  * - 战略目标评估：评估智能体战略目标的达成情况
  * - 数据导出：支持导出各类统计数据为 JSON 格式
  *
  * 组件结构:
  * - 标签页导航：
- *   - 国力变化分析：国力趋势图 + 详细数据表格
- *   - 增长率统计：分组增长率统计表格
+ *   - CINC变化分析：CINC趋势图 + 详细数据表格
+ *   - 变化率统计：分组变化率统计表格
  *   - 行为偏好分析：行为分布图 + 频次统计表格
  *   - 战略目标评估：评估统计概览 + 趋势图 + 详情表格
  *   - 数据导出：各类数据导出按钮 + 导出说明
@@ -46,8 +46,8 @@
 
       <!-- 标签页导航 -->
       <el-tabs v-model="activeTab">
-        <!-- 国力变化分析标签页 -->
-        <el-tab-pane label="国力变化分析" name="power">
+        <!-- CINC变化分析标签页 -->
+        <el-tab-pane label="CINC变化分析" name="power">
           <div class="tab-content">
             <el-row :gutter="20">
               <el-col :span="24">
@@ -76,23 +76,23 @@
               </el-col>
             </el-row>
 
-            <!-- 国力趋势图 -->
+            <!-- CINC趋势图 -->
             <div ref="powerStatsChart" class="chart-container"></div>
 
-            <!-- 国力数据表格 -->
+            <!-- CINC数据表格 -->
             <el-table :data="powerStatsData" border style="margin-top: 20px;">
               <el-table-column prop="round_num" label="轮次" width="100" />
               <el-table-column prop="agent_name" label="智能体" width="120" />
-              <el-table-column prop="round_start_power" label="初始国力" width="120" />
-              <el-table-column prop="round_end_power" label="结束国力" width="120" />
+              <el-table-column prop="round_start_power" label="初始CINC" width="120" />
+              <el-table-column prop="round_end_power" label="结束CINC" width="120" />
               <el-table-column prop="round_change_value" label="变化值" width="120" />
-              <el-table-column prop="round_change_rate" label="增长率(%)" width="120" />
+              <el-table-column prop="round_change_rate" label="变化率(%)" width="120" />
             </el-table>
           </div>
         </el-tab-pane>
 
-        <!-- 增长率统计标签页 -->
-        <el-tab-pane label="增长率统计" name="growth">
+        <!-- 变化率统计标签页 -->
+        <el-tab-pane label="变化率统计" name="growth">
           <div class="tab-content">
             <el-row :gutter="20">
               <el-col :span="24">
@@ -111,11 +111,11 @@
               </el-col>
             </el-row>
 
-            <!-- 增长率统计表格 -->
+            <!-- 变化率统计表格 -->
             <el-table :data="growthStatsData" border style="margin-top: 20px;">
               <el-table-column prop="leader_type" label="领导类型" width="120" />
               <el-table-column prop="power_level" label="实力层级" width="120" />
-              <el-table-column prop="avg_growth_rate" label="平均增长率(%)" width="150" />
+              <el-table-column prop="avg_growth_rate" label="平均变化率(%)" width="150" />
               <el-table-column prop="sample_size" label="样本数量" width="100" />
             </el-table>
           </div>
@@ -239,7 +239,7 @@
               <el-table-column prop="evaluation_round" label="评估轮次" width="100" />
               <el-table-column prop="agent_name" label="国家名称" width="150" />
               <el-table-column prop="goal_achievement_score" label="目标达成度(%)" width="130" :formatter="(row, column, cellValue) => cellValue ? cellValue.toFixed(2) : 'N/A'" />
-              <el-table-column prop="power_growth_contribution" label="国力贡献度(%)" width="130" :formatter="(row, column, cellValue) => cellValue ? cellValue.toFixed(2) : 'N/A'" />
+              <el-table-column prop="power_growth_contribution" label="CINC贡献度(%)" width="130" :formatter="(row, column, cellValue) => cellValue ? cellValue.toFixed(2) : 'N/A'" />
               <el-table-column prop="action_effectiveness" label="行为有效性(%)" width="130" :formatter="(row, column, cellValue) => cellValue ? cellValue.toFixed(2) : 'N/A'" />
               <el-table-column prop="overall_assessment" label="综合评估" show-overflow-tooltip />
             </el-table>
@@ -257,10 +257,10 @@
                   </template>
                   <!-- 各类数据导出按钮 -->
                   <el-button type="primary" @click="exportPowerData" style="margin-bottom: 10px; width: 100%;">
-                    导出国力数据
+                    导出CINC数据
                   </el-button>
                   <el-button type="success" @click="exportGrowthData" style="margin-bottom: 10px; width: 100%;">
-                    导出增长率数据
+                    导出变化率数据
                   </el-button>
                   <el-button type="warning" @click="exportActionData" style="margin-bottom: 10px; width: 100%;">
                     导出行为数据
@@ -277,8 +277,8 @@
                   </template>
                   <!-- 导出数据说明列表 -->
                   <ul>
-                    <li>国力数据：包含各智能体每轮的初始国力、结束国力、变化值和增长率</li>
-                    <li>增长率数据：包含按领导类型和实力层级分组的平均增长率统计</li>
+                    <li>CINC数据：包含各智能体每轮的初始CINC、结束CINC、变化值和变化率</li>
+                    <li>变化率数据：包含按领导类型和实力层级分组的平均CINC变化率统计</li>
                     <li>行为数据：包含20项互动行为的频次、分类占比和主权尊重率</li>
                     <li>秩序数据：包含每轮的国际秩序类型、核心判定指标和领导权更迭数据</li>
                   </ul>
@@ -333,12 +333,12 @@ const store = useAppStore()
 // 当前激活的标签页
 const activeTab = ref('power')
 
-// 国力变化分析相关状态
+// CINC变化分析相关状态
 const startRound = ref(1)
 const endRound = ref(50)
 const selectedAgent = ref(null)
 
-// 增长率统计相关状态
+// 变化率统计相关状态
 const growthStartRound = ref(1)
 const growthEndRound = ref(50)
 
@@ -408,7 +408,7 @@ watch(activeTab, () => {
 async function loadAgents() {
   try {
     const response = await getAgents(projectId.value)
-    agents.value = response.data
+    agents.value = response
   } catch (error) {
     ElMessage.error('智能体列表加载失败: ' + (error.message || error))
   }
@@ -418,7 +418,7 @@ async function loadAgents() {
  * 初始化所有 ECharts 图表
  */
 function initializeCharts() {
-  // 国力统计图表
+  // CINC统计图表
   if (powerStatsChart.value) {
     const chart = echarts.init(powerStatsChart.value)
     chart.setOption({
@@ -426,7 +426,7 @@ function initializeCharts() {
       tooltip: { trigger: 'axis' },
       legend: { data: [], top: 10 },
       xAxis: { type: 'category', name: '轮次' },
-      yAxis: { type: 'value', name: '国力' },
+      yAxis: { type: 'value', name: 'CINC指数' },
       series: []
     })
     charts.push(chart)
@@ -465,7 +465,7 @@ function initializeCharts() {
 }
 
 /**
- * 加载国力变化统计数据
+ * 加载CINC变化统计数据
  */
 async function loadPowerStats() {
   if (!projectId.value) {
@@ -479,8 +479,8 @@ async function loadPowerStats() {
       start_round: startRound.value,
       end_round: endRound.value
     })
-    powerStatsData.value = response.data
-    updatePowerStatsChart(response.data)
+    powerStatsData.value = response
+    updatePowerStatsChart(response)
     ElMessage.success('数据加载成功')
   } catch (error) {
     ElMessage.error('数据加载失败: ' + (error.message || error))
@@ -488,8 +488,8 @@ async function loadPowerStats() {
 }
 
 /**
- * 更新国力变化趋势图
- * @param {Array} data - 国力历史数据
+ * 更新CINC变化趋势图
+ * @param {Array} data - CINC历史数据
  */
 function updatePowerStatsChart(data) {
   if (!powerStatsChart.value || !data || data.length === 0) return
@@ -535,7 +535,7 @@ function updatePowerStatsChart(data) {
 }
 
 /**
- * 加载增长率统计数据
+ * 加载CINC变化率统计数据
  */
 async function loadGrowthStats() {
   if (!projectId.value) {
@@ -548,8 +548,8 @@ async function loadGrowthStats() {
       start_round: growthStartRound.value,
       end_round: growthEndRound.value
     })
-    growthStatsData.value = response.data
-    ElMessage.success('增长率计算完成')
+    growthStatsData.value = response
+    ElMessage.success('变化率计算完成')
   } catch (error) {
     ElMessage.error('计算失败: ' + (error.message || error))
   }
@@ -570,8 +570,8 @@ async function loadActionStats() {
       power_level: actionLevelFilter.value,
       leader_type: actionLeaderFilter.value
     })
-    actionStatsData.value = response.data
-    updateActionStatsChart(response.data)
+    actionStatsData.value = response
+    updateActionStatsChart(response)
     ElMessage.success('行为偏好分析完成')
   } catch (error) {
     ElMessage.error('分析失败: ' + (error.message || error))
@@ -614,21 +614,21 @@ async function loadGoalEvaluations() {
       agent_id: evalSelectedAgent.value
     })
 
-    goalEvaluationData.value = response.data
+    goalEvaluationData.value = response
 
     // 计算统计概览
-    if (response.data.length > 0) {
-      const totalScore = response.data.reduce((sum, item) => sum + (item.goal_achievement_score || 0), 0)
-      avgGoalAchievement.value = totalScore / response.data.length
+    if (response.length > 0) {
+      const totalScore = response.reduce((sum, item) => sum + (item.goal_achievement_score || 0), 0)
+      avgGoalAchievement.value = totalScore / response.length
 
-      const uniqueRounds = [...new Set(response.data.map(item => item.evaluation_round))]
+      const uniqueRounds = [...new Set(response.map(item => item.evaluation_round))]
       totalEvaluationRounds.value = uniqueRounds.length
 
-      const uniqueAgents = [...new Set(response.data.map(item => item.agent_id))]
+      const uniqueAgents = [...new Set(response.map(item => item.agent_id))]
       evaluatedAgentsCount.value = uniqueAgents.length
     }
 
-    updateGoalTrendChart(response.data)
+    updateGoalTrendChart(response)
     ElMessage.success('评估数据加载成功')
   } catch (error) {
     ElMessage.error('评估数据加载失败: ' + (error.message || error))
@@ -679,7 +679,7 @@ function updateGoalTrendChart(data) {
 }
 
 /**
- * 导出国力数据
+ * 导出CINC数据
  */
 async function exportPowerData() {
   if (!projectId.value) {
@@ -689,15 +689,15 @@ async function exportPowerData() {
 
   try {
     const response = await getPowerHistory(projectId.value)
-    downloadJson(response.data, `power_data_${projectId.value}.json`)
-    ElMessage.success('国力数据导出成功')
+    downloadJson(response, `cinc_data_${projectId.value}.json`)
+    ElMessage.success('CINC数据导出成功')
   } catch (error) {
     ElMessage.error('导出失败: ' + (error.message || error))
   }
 }
 
 /**
- * 导出增长率数据
+ * 导出变化率数据
  */
 async function exportGrowthData() {
   if (!projectId.value) {
@@ -707,8 +707,8 @@ async function exportGrowthData() {
 
   try {
     const response = await getPowerGrowthRate(projectId.value)
-    downloadJson(response.data, `growth_rate_${projectId.value}.json`)
-    ElMessage.success('增长率数据导出成功')
+    downloadJson(response, `cinc_change_rate_${projectId.value}.json`)
+    ElMessage.success('变化率数据导出成功')
   } catch (error) {
     ElMessage.error('导出失败: ' + (error.message || error))
   }
@@ -725,7 +725,7 @@ async function exportActionData() {
 
   try {
     const response = await getActionPreference(projectId.value)
-    downloadJson(response.data, `action_data_${projectId.value}.json`)
+    downloadJson(response, `action_data_${projectId.value}.json`)
     ElMessage.success('行为数据导出成功')
   } catch (error) {
     ElMessage.error('导出失败: ' + (error.message || error))
@@ -743,7 +743,7 @@ async function exportOrderData() {
 
   try {
     const response = await getOrderEvolution(projectId.value)
-    downloadJson(response.data, `order_evolution_${projectId.value}.json`)
+    downloadJson(response, `order_evolution_${projectId.value}.json`)
     ElMessage.success('秩序数据导出成功')
   } catch (error) {
     ElMessage.error('导出失败: ' + (error.message || error))

@@ -2,14 +2,17 @@
 核心仿真引擎模块
 Core Simulation Engine Module
 
-包含克莱因国力方程、智能体基类、互动行为集管理和仿真环境等核心组件。
+包含CINC综合国力指数、智能体基类、互动行为集管理和仿真环境等核心组件。
 """
 
-from .klein_equation import (
-    KleinEquation,
+from .cinc_calculator import (
     PowerLevelEnum,
-    calculate_klein_power,
-    determine_power_level
+    CINCCalculator,
+    calculate_cinc,
+    determine_power_level,
+    calculate_all_cincs,
+    determine_all_power_levels,
+    CINC_INDICATORS
 )
 
 from .agent_base import (
@@ -39,11 +42,14 @@ from .environment import (
 )
 
 __all__ = [
-    # Klein Equation
-    "KleinEquation",
+    # CINC Calculator
     "PowerLevelEnum",
-    "calculate_klein_power",
+    "CINCCalculator",
+    "calculate_cinc",
     "determine_power_level",
+    "calculate_all_cincs",
+    "determine_all_power_levels",
+    "CINC_INDICATORS",
 
     # Agent Base
     "AgentBase",
@@ -62,7 +68,6 @@ __all__ = [
     "get_action_statistics",
 
     # Environment
-
     "SimulationEnvironment",
     "SimulationMode",
     "SimulationStatus",

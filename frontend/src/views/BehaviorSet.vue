@@ -4,7 +4,7 @@
  *
  * 功能说明:
  * - 展示20项标准GDELT互动行为集
- * - 显示每个行为的详细信息（名称、描述、分类、国力影响）
+ * - 显示每个行为的详细信息（名称、描述、分类、CINC指标变化）
  * - 标识行为是否尊重主权
  * - 提供刷新数据功能
  *
@@ -16,8 +16,8 @@
  *   - 行为名称（中英文）
  *   - 行为描述
  *   - 行为分类
- *   - 发起国国力变化
- *   - 目标国国力变化
+ *   - 发起国CINC指标变化
+ *   - 目标国CINC指标变化
  *
  * 依赖:
  * - Vue 3 Composition API
@@ -46,7 +46,7 @@
         :closable="false"
         style="margin-bottom: 20px;"
       >
-        以下20项互动行为集严格对齐《模型建构_改6.docx》表1，系统初始化时自动入库，仿真全程不可修改。所有行为的国力影响值固定，单次行为国力变动绝对值不超过10分。
+        以下20项互动行为集严格对齐《模型建构_改6.docx》表1，系统初始化时自动入库，仿真全程不可修改。所有行为的CINC指标变化值固定，单次行为CINC变动绝对值不超过0.01。
       </el-alert>
 
       <!-- 行为集网格布局 -->
@@ -94,8 +94,8 @@
                 <el-descriptions-item label="行为分类">
                   <el-tag type="info">{{ action.action_category }}</el-tag>
                 </el-descriptions-item>
-                <!-- 发起国国力变化 -->
-                <el-descriptions-item label="发起国国力变化">
+                <!-- 发起国CINC指标变化 -->
+                <el-descriptions-item label="发起国CINC指标变化">
                   <el-tag
                     :type="getChangeType(action.initiator_power_change)"
                     size="small"
@@ -103,8 +103,8 @@
                     {{ formatChange(action.initiator_power_change) }}
                   </el-tag>
                 </el-descriptions-item>
-                <!-- 目标国国力变化 -->
-                <el-descriptions-item label="目标国国力变化">
+                <!-- 目标国CINC指标变化 -->
+                <el-descriptions-item label="目标国CINC指标变化">
                   <el-tag
                     :type="getChangeType(action.target_power_change)"
                     size="small"
@@ -156,7 +156,7 @@ async function loadActions() {
   loading.value = true
   try {
     const response = await getActionConfigs()
-    actions.value = response.data
+    actions.value = response
     ElMessage.success('行为集数据加载成功')
   } catch (error) {
     ElMessage.error('加载行为集失败')
@@ -167,8 +167,8 @@ async function loadActions() {
 }
 
 /**
- * 根据国力变化值返回对应的标签类型
- * @param {number} change - 国力变化值
+ * 根据CINC指标变化值返回对应的标签类型
+ * @param {number} change - CINC指标变化值
  * @returns {string} Element Plus 标签类型
  *  - 正值返回 'success'（绿色）
  *  - 负值返回 'danger'（红色）
@@ -181,8 +181,8 @@ function getChangeType(change) {
 }
 
 /**
- * 格式化国力变化值显示
- * @param {number} change - 国力变化值
+ * 格式化CINC指标变化值显示
+ * @param {number} change - CINC指标变化值
  * @returns {string} 格式化后的变化值（正值添加 '+' 号）
  */
 function formatChange(change) {

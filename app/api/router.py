@@ -12,6 +12,7 @@ from .simulation import router as simulation_router
 from .statistics import router as statistics_router
 from .system import router as system_router
 from .strategic_relationship import router as strategic_relationship_router
+from .cinc import router as cinc_router
 
 # 创建主API路由
 api_router = APIRouter(prefix="/api/v1")
@@ -23,5 +24,6 @@ api_router.include_router(simulation_router)
 api_router.include_router(statistics_router)
 api_router.include_router(system_router)
 api_router.include_router(strategic_relationship_router)
+api_router.include_router(cinc_router)
 
 __all__ = ["api_router"]

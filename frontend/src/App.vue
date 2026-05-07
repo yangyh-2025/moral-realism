@@ -52,7 +52,7 @@
       </el-main>
       <!-- 底部信息栏 -->
       <el-footer class="app-footer">
-        <div>国际秩序ABM仿真系统 V1.3 | 基于克莱因综合国力方程</div>
+        <div>国际秩序ABM仿真系统 V1.3 | 基于CINC综合国力指数</div>
       </el-footer>
     </el-container>
   </div>

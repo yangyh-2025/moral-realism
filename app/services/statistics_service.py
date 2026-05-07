@@ -35,9 +35,9 @@ class StatisticsService:
                                start_round: Optional[int] = None,
                                end_round: Optional[int] = None) -> List[dict]:
         """
-        获取项目全量智能体国力历史数据
+        获取项目全量智能体CINC历史数据
 
-        支持按智能体、轮次范围筛选。
+        支持按智能体、轮次范围筛选。round_start_power/round_end_power 为 CINC 比例值。
 
         Args:
             project_id: 项目ID
@@ -84,9 +84,9 @@ class StatisticsService:
     async def calculate_power_growth_rate(self, project_id: int, start_round: int = 1,
                                        end_round: Optional[int] = None) -> List[dict]:
         """
-        计算自定义轮次区间的实力增长率
+        计算自定义轮次区间的CINC增长率
 
-        按领导类型和实力层级分组计算平均增长率。
+        按领导类型和实力层级分组计算平均CINC增长率。
 
         Args:
             project_id: 项目ID
@@ -488,15 +488,16 @@ class StatisticsService:
             )
             relations = relations_result.scalars().all()
 
-            # 构建节点数据
+            # 构建节点数据（基于CINC归一化显示）
             nodes = []
             for agent in agents:
+                cinc_val = float(agent.initial_total_power or 0)
                 nodes.append({
                     "id": agent.agent_id,
                     "name": agent.agent_name,
                     "category": agent.leader_type or "无",
-                    "symbolSize": 20,
-                    "value": agent.initial_total_power
+                    "symbolSize": max(20, min(80, cinc_val * 500)),
+                    "value": cinc_val * 1000
                 })
 
             # 构建边数据（过滤掉 leader_agent_id 为 None 的关系）

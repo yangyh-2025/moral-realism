@@ -1,6 +1,11 @@
 /**
  * 仿真管理API模块
  * 提供项目管理、智能体管理和仿真控制相关的API接口函数
+ *
+ * 智能体相关API字段说明（CINC版）：
+ * - 创建/更新智能体的data字段：
+ *   {agent_name, region, milex, milper, irst, pec, tpop, upop, country_code, cinc_year, leader_type}
+ * - 响应字段：上述加上 agent_id, initial_total_power(CINC值), current_total_power(CINC值), power_level
  */
 
 import request from './index'

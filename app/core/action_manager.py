@@ -31,6 +31,8 @@ class ActionConfig(BaseModel):
     target_power_change: float = Field(description="目标国国力变化值")
     is_initiative: bool = Field(description="是否为发起类行为")
     is_response: bool = Field(description="是否为响应类行为")
+    primary_indicator: str = Field(default="pec", description="主要影响的CINC底层指标")
+    secondary_indicator: str = Field(default="irst", description="次要影响的CINC底层指标")
 
 
 # 20项GDELT标准互动行为集（硬编码，100%对齐学术模型表1）
@@ -47,7 +49,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=0,
         target_power_change=0,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 2. 呼吁/请求
@@ -61,7 +65,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=0.1,
         target_power_change=0,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 3. 表达合作意向
@@ -75,7 +81,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=0.2,
         target_power_change=0.1,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 4. 协商/磋商
@@ -89,7 +97,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=0.3,
         target_power_change=0.3,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 5. 开展外交合作
@@ -103,7 +113,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=0.4,
         target_power_change=0.4,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 6. 开展实质性合作
@@ -117,7 +129,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=0.5,
         target_power_change=0.5,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 7. 提供援助
@@ -131,7 +145,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=0.2,
         target_power_change=0.6,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 8. 让步/屈服
@@ -145,7 +161,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=-0.5,
         target_power_change=0.5,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 9. 调查
@@ -159,7 +177,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=-0.1,
         target_power_change=-0.2,
         is_initiative=True,
-        is_response=False
+        is_response=False,
+        primary_indicator="pec",
+        secondary_indicator="upop"
     ),
 
     # 10. 要求/索要
@@ -173,7 +193,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=-0.2,
         target_power_change=-0.1,
         is_initiative=True,
-        is_response=False
+        is_response=False,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 11. 表达不满/不赞成
@@ -187,7 +209,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=0,
         target_power_change=-0.1,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 12. 拒绝
@@ -201,7 +225,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=0.1,
         target_power_change=-0.1,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 13. 威胁
@@ -209,13 +235,15 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         action_id=13,
         action_name="威胁",
         action_en_name="THREATEN",
-        action_category="外交手段",
+        action_category="信息手段",
         action_desc="行为行为向目标方发出各类威胁性表述，涵盖非武力制裁威胁、行政制裁威胁、煽动抗议/镇压威胁、中断谈判/调解威胁、军事武力威胁、发出最后通牒等所有未另行分类的威胁行为",
         respect_sov=False,
         initiator_power_change=-0.3,
         target_power_change=-0.2,
         is_initiative=True,
-        is_response=False
+        is_response=False,
+        primary_indicator="pec",
+        secondary_indicator="upop"
     ),
 
     # 14. 抗议
@@ -229,7 +257,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=-0.4,
         target_power_change=-0.3,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 15. 展示军事姿态
@@ -243,7 +273,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=-0.2,
         target_power_change=-0.3,
         is_initiative=True,
-        is_response=False
+        is_response=False,
+        primary_indicator="milex",
+        secondary_indicator="milper"
     ),
 
     # 16. 降级关系
@@ -257,7 +289,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=-0.1,
         target_power_change=-0.4,
         is_initiative=True,
-        is_response=True
+        is_response=True,
+        primary_indicator="pec",
+        secondary_indicator="irst"
     ),
 
     # 17. 胁迫/强制
@@ -271,7 +305,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=-0.5,
         target_power_change=-0.6,
         is_initiative=True,
-        is_response=False
+        is_response=False,
+        primary_indicator="milex",
+        secondary_indicator="milper"
     ),
 
     # 18. 攻击/袭击
@@ -285,7 +321,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=-0.8,
         target_power_change=-0.7,
         is_initiative=True,
-        is_response=False
+        is_response=False,
+        primary_indicator="milex",
+        secondary_indicator="milper"
     ),
 
     # 19. 交战/使用常规军事武力
@@ -299,7 +337,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=-0.7,
         target_power_change=-0.9,
         is_initiative=True,
-        is_response=False
+        is_response=False,
+        primary_indicator="milex",
+        secondary_indicator="milper"
     ),
 
     # 20. 实施非常规大规模暴力
@@ -313,7 +353,9 @@ _STANDARD_ACTIONS: List[ActionConfig] = [
         initiator_power_change=-1.0,
         target_power_change=-1.0,
         is_initiative=True,
-        is_response=False
+        is_response=False,
+        primary_indicator="milex",
+        secondary_indicator="milper"
     )
 ]
 

@@ -29,7 +29,7 @@
         <h2>欢迎使用国际秩序ABM仿真系统</h2>
       </template>
       <p>基于大语言模型的国际秩序演变仿真系统 V1.3</p>
-      <p>严格遵循克莱因综合国力方程与20项GDELT标准互动行为集</p>
+      <p>严格遵循CINC综合国力指数与20项GDELT标准互动行为集</p>
     </el-card>
 
     <!-- 预置场景分隔线 -->
@@ -179,7 +179,7 @@ onMounted(async () => {
 async function loadPresetScenes() {
   try {
     const response = await getPresetScenes()
-    presetScenes.value = response.data
+    presetScenes.value = response
   } catch (error) {
     ElMessage.error('加载预置场景失败')
     console.error(error)
@@ -198,7 +198,7 @@ async function createProjectFromScene(sceneId) {
     ElMessage.success('项目创建成功，正在跳转到控制台...')
     // 延迟1秒后跳转，让用户看到成功提示
     setTimeout(() => {
-      router.push({ name: 'SimulationConsole', query: { projectId: response.data.project_id } })
+      router.push({ name: 'SimulationConsole', query: { projectId: response.project_id } })
     }, 1000)
   } catch (error) {
     ElMessage.error('创建项目失败')

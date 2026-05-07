@@ -161,11 +161,12 @@ class GoalEvaluationService:
                 "agent_id": agent.agent_id,
                 "agent_name": agent.agent_name,
                 "region": agent.region,
-                "c_score": agent.c_score,
-                "e_score": agent.e_score,
-                "m_score": agent.m_score,
-                "s_score": agent.s_score,
-                "w_score": agent.w_score,
+                "milex": agent.milex,
+                "milper": agent.milper,
+                "irst": agent.irst,
+                "pec": agent.pec,
+                "tpop": agent.tpop,
+                "upop": agent.upop,
                 "initial_total_power": agent.initial_total_power,
                 "current_total_power": agent.current_total_power,
                 "power_level": agent.power_level,
@@ -411,8 +412,8 @@ class GoalEvaluationService:
 - 所属区域: {agent_info['region']}
 - 实力层级: {agent_info['power_level']}
 - 领导类型: {agent_info['leader_type']}
-- 初始综合国力: {agent_info['initial_total_power']:.2f}
-- 当前综合国力: {agent_info['current_total_power']:.2f}
+- 初始CINC指数: {agent_info['initial_total_power']:.4f}
+- 当前CINC指数: {agent_info['current_total_power']:.4f}
 
 【国家利益偏好】
 {chr(10).join(f"- {interest}" for interest in agent_info['national_interest'])}
@@ -460,7 +461,7 @@ class GoalEvaluationService:
         Returns:
             系统提示词字符串
         """
-        return """你是一个国际关系和战略评估专家，擅长运用克莱因国力方程和国际关系理论分析国家行为。
+        return """你是一个国际关系和战略评估专家，擅长运用CINC综合国力指数和国际关系理论分析国家行为。
 
 你的任务是评估一个国家在最近10轮仿真中的行为有效性。
 

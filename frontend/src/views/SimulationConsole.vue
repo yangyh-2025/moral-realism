@@ -184,15 +184,39 @@
                     v-for="(relType, targetId) in sourceRelations"
                     :key="targetId"
                     :type="getStrategicRelationType(relType)"
+                    :effect="isRelationChanged(sourceId, targetId) ? 'dark' : 'light'"
                     size="small"
                     style="margin: 2px;"
+                    :title="getRelationChangeDetail(sourceId, targetId)?.reason || ''"
                   >
                     {{ targetId }}: {{ relType }}
+                    <span v-if="isRelationChanged(sourceId, targetId)" style="margin-left: 2px;">*</span>
                   </el-tag>
                 </div>
               </div>
             </div>
             <div v-else class="no-data">暂无战略关系数据</div>
+
+            <!-- 本轮战略关系变化 -->
+            <div v-if="relationshipChanges && relationshipChanges.length > 0" style="margin-top: 10px;">
+              <el-divider content-position="left">本轮关系变化</el-divider>
+              <div class="relationship-changes">
+                <div
+                  v-for="(change, index) in relationshipChanges"
+                  :key="index"
+                  class="change-item"
+                  style="font-size: 12px; margin-bottom: 4px; padding: 4px 8px; background: #f5f7fa; border-radius: 4px;"
+                >
+                  <el-tag size="small" :type="getStrategicRelationType(change.current_type)" effect="plain">{{ change.current_type }}</el-tag>
+                  <span style="margin: 0 6px;">→</span>
+                  <el-tag size="small" :type="getStrategicRelationType(change.new_type)" effect="dark">{{ change.new_type }}</el-tag>
+                  <span style="margin-left: 8px; color: #606266;">
+                    {{ change.source_agent_id }} ↔ {{ change.target_agent_id }}
+                  </span>
+                  <div style="color: #909399; margin-top: 2px; font-size: 11px;">{{ change.reason }}</div>
+                </div>
+              </div>
+            </div>
 
             <!-- LLM Prompt详情按钮 -->
             <el-button
@@ -384,6 +408,9 @@ const lastRound = ref(0)
 // 当前战略关系数据
 const currentStrategicRelations = ref(null)
 
+// 战略关系变化历史
+const relationshipChanges = ref([])
+
 // LLM Prompt详情
 const showPromptDetail = ref(false)
 const selectedPrompt = ref(null)
@@ -456,7 +483,7 @@ async function refreshProjectStatus() {
 
   try {
     const response = await simulationApi.getProject(projectId.value)
-    const project = response.data
+    const project = response
 
     console.log('==== Poll refreshProjectStatus ====')
     console.log('Project status data:', project)
@@ -504,6 +531,11 @@ async function refreshProjectStatus() {
 
     // 加载战略关系数据
     await loadStrategicRelations()
+
+    // 加载战略关系变化历史
+    if (currentRound.value > 0) {
+      await loadRelationshipChanges(currentRound.value)
+    }
   } catch (error) {
     console.error('获取项目状态失败:', error)
   }
@@ -598,6 +630,36 @@ function getStrategicRelationType(relationshipType) {
 }
 
 /**
+ * 判断某对关系是否在本轮发生变化
+ * @param {string|number} sourceId - 源智能体ID
+ * @param {string|number} targetId - 目标智能体ID
+ * @returns {boolean}
+ */
+function isRelationChanged(sourceId, targetId) {
+  return relationshipChanges.value.some(c => {
+    const a = String(c.source_agent_id)
+    const b = String(c.target_agent_id)
+    return (a === String(sourceId) && b === String(targetId)) ||
+           (a === String(targetId) && b === String(sourceId))
+  })
+}
+
+/**
+ * 获取关系变化详情
+ * @param {string|number} sourceId - 源智能体ID
+ * @param {string|number} targetId - 目标智能体ID
+ * @returns {object|null}
+ */
+function getRelationChangeDetail(sourceId, targetId) {
+  return relationshipChanges.value.find(c => {
+    const a = String(c.source_agent_id)
+    const b = String(c.target_agent_id)
+    return (a === String(sourceId) && b === String(targetId)) ||
+           (a === String(targetId) && b === String(sourceId))
+  }) || null
+}
+
+/**
  * 加载战略关系数据
  */
 async function loadStrategicRelations() {
@@ -605,12 +667,28 @@ async function loadStrategicRelations() {
 
   try {
     const response = await relationshipApi.getStrategicRelationships(projectId.value)
-    currentStrategicRelations.value = response.data || {}
+    currentStrategicRelations.value = response || {}
     console.log('Loaded strategic relations:', currentStrategicRelations.value)
   } catch (error) {
     // 如果项目刚创建还没有战略关系，使用空对象而不是报错
     currentStrategicRelations.value = {}
     console.log('No strategic relations loaded (project may be new)', error)
+  }
+}
+
+/**
+ * 加载战略关系变化历史
+ */
+async function loadRelationshipChanges(roundNum) {
+  if (!projectId.value) return
+
+  try {
+    const response = await relationshipApi.getRelationshipChanges(projectId.value, roundNum)
+    relationshipChanges.value = response?.changes || []
+    console.log(`Loaded ${relationshipChanges.value.length} relationship changes for round ${roundNum}`)
+  } catch (error) {
+    relationshipChanges.value = []
+    console.log('No relationship changes loaded', error)
   }
 }
 
@@ -622,7 +700,7 @@ async function loadLLMPrompts(roundNum) {
 
   try {
     const response = await simulationApi.getLLMPrompts(projectId.value, roundNum)
-    llmPrompts.value = response.data || []
+    llmPrompts.value = response || []
     console.log(`Loaded ${llmPrompts.value.length} LLM prompts for round ${roundNum}`)
   } catch (error) {
     console.error('加载LLM提示词失败:', error)
@@ -659,7 +737,7 @@ async function getRoundDetail(roundNum, retryCount = 0) {
 
   try {
     const response = await simulationApi.getRoundDetail(projectId.value, roundNum)
-    const roundData = response.data
+    const roundData = response
 
     console.log(`Round ${roundNum} data:`, roundData)
 
@@ -776,8 +854,8 @@ async function startSimulation() {
     console.log('Start simulation response:', response)
 
     // 检查后端返回的实际状态
-    if (response.data && response.data.status && response.data.status !== '运行中') {
-      const errorMsg = response.data.message || '启动仿真失败'
+    if (response && response.status && response.status !== '运行中') {
+      const errorMsg = response.message || '启动仿真失败'
       ElMessage.error(errorMsg)
       addLog('error', errorMsg)
       return

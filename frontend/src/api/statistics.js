@@ -1,6 +1,11 @@
 /**
  * 统计数据API模块
  * 提供仿真结果统计相关的API接口函数
+ *
+ * power字段说明（CINC版）：
+ * - round_start_power / round_end_power / round_change_value 均为 CINC指数（0-1比例值）
+ * - round_change_rate 为 CINC变化率（百分比）
+ * - 关系图谱中 node.value 已被 statistics_service 放大1000倍，前端显示时需除以1000
  */
 
 import request from './index'

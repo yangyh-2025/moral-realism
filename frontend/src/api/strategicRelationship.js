@@ -64,6 +64,20 @@ export function initializeStrategicRelationships(projectId) {
 }
 
 /**
+ * 获取战略关系变化历史
+ * @param {number} projectId - 项目ID
+ * @param {number} roundNum - 可选，指定轮次
+ * @returns {Promise} 返回变化历史列表
+ */
+export function getRelationshipChanges(projectId, roundNum) {
+  return request({
+    url: `/strategic-relationships/project/${projectId}/changes`,
+    method: 'get',
+    params: roundNum ? { round_num: roundNum } : {}
+  })
+}
+
+/**
  * 获取关系类型对应的标签类型
  * @param {string} relationshipType - 关系类型
  * @returns {string} Element Plus 标签类型

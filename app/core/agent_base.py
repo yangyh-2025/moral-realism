@@ -9,7 +9,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
-from .klein_equation import PowerLevelEnum, calculate_klein_power, determine_power_level
+from .cinc_calculator import PowerLevelEnum, calculate_cinc, determine_power_level, CINC_INDICATORS
 
 
 class RegionEnum(str, Enum):
@@ -41,6 +41,8 @@ class ActionConfig(BaseModel):
     target_power_change: float
     is_initiative: bool
     is_response: bool
+    primary_indicator: str = Field(default="pec", description="主要影响的CINC底层指标")
+    secondary_indicator: str = Field(default="irst", description="次要影响的CINC底层指标")
 
 
 class AgentBase(BaseModel):
@@ -55,41 +57,40 @@ class AgentBase(BaseModel):
     agent_name: str = Field(description="国家名称")
     region: RegionEnum = Field(description="所属区域")
 
-    # 克莱因国力方程一级初始指标，仿真全程固定
-    c_score: float = Field(
-        ge=0,
-        le=100,
-        description="基本实体初始得分，克莱因官方满分100分"
+    # CINC综合国力指数底层指标（6项），仿真全程固定
+    milex: float = Field(
+        default=0.0, ge=0,
+        description="军事支出（Military Expenditures），CINC底层指标"
     )
-    e_score: float = Field(
-        ge=0,
-        le=200,
-        description="经济实力初始得分，克莱因官方满分200分"
+    milper: float = Field(
+        default=0.0, ge=0,
+        description="军事人员（Military Personnel），CINC底层指标"
     )
-    m_score: float = Field(
-        ge=0,
-        le=200,
-        description="军事实力初始得分，克莱因官方满分200分"
+    irst: float = Field(
+        default=0.0, ge=0,
+        description="钢铁产量（Iron and Steel Production），CINC底层指标"
     )
-    s_score: float = Field(
-        ge=0,
-        le=2,
-        description="战略目的对数，克莱因标准值0.5"
+    pec: float = Field(
+        default=0.0, ge=0,
+        description="能源消耗（Primary Energy Consumption），CINC底层指标"
     )
-    w_score: float = Field(
-        ge=0,
-        le=2,
-        description="国家战略意志对数，克莱因标准值0.5"
+    tpop: float = Field(
+        default=0.0, ge=0,
+        description="总人口（Total Population），CINC底层指标"
+    )
+    upop: float = Field(
+        default=0.0, ge=0,
+        description="城市人口（Urban Population），CINC底层指标"
     )
 
-    # 只读自动计算字段（由model_post_init初始化）
+    # CINC综合国力指数（0-1比例值），由外部批量计算后传入
     initial_total_power: float = Field(
         default=0.0,
-        description="克莱因初始综合国力，自动计算"
+        description="CINC初始综合国力指数（0-1比例值），由外部批量计算"
     )
     current_total_power: float = Field(
         default=0.0,
-        description="实时综合国力，每轮更新"
+        description="CINC实时综合国力指数（0-1比例值），每轮更新"
     )
     power_level: PowerLevelEnum = Field(
         default=PowerLevelEnum.SMALL_STATE,
@@ -124,32 +125,22 @@ class AgentBase(BaseModel):
         """
         领导类型合法性校验：仅超级大国/大国可配置
 
+        CINC需要全体系数据才能计算排名，单个agent无法独立计算。
+        因此验证简化为：如果设置了leader_type则跳过这里的层级验证
+        （power_level由外部批量计算后传入）。
+
         Args:
             v: 领导类型值
             info: 字段验证上下文
 
         Returns:
             验证后的领导类型值
-
-        Raises:
-            ValueError: 如果中小国家设置了领导类型
         """
         if v is not None:
-            # 总是重新计算power_level以确保准确性
-            data = info.data
-            c_score = data.get("c_score", 0)
-            e_score = data.get("e_score", 0)
-            m_score = data.get("m_score", 0)
-            s_score = data.get("s_score", 0)
-            w_score = data.get("w_score", 0)
-
-            power = calculate_klein_power(c_score, e_score, m_score, s_score, w_score)
-            power_level = determine_power_level(power)
-
-            if power_level not in [PowerLevelEnum.SUPERPOWER, PowerLevelEnum.GREAT_POWER]:
-                raise ValueError(
-                    "仅超级大国与大国可配置领导集体类型，中小国家禁止设置该字段"
-                )
+            # CINC需要全体系数据，单个agent无法独立计算power_level
+            # 验证简化为：如果设置了leader_type则跳过这里的层级验证
+            # power_level由外部批量计算后传入
+            pass
 
         return v
 
@@ -157,16 +148,16 @@ class AgentBase(BaseModel):
         """
         模型初始化后自动执行的计算
 
-        计算初始综合国力、判定实力层级、映射国家利益、生成允许行为列表
+        CINC需要全体系数据才能计算，单个agent无法独立计算。
+        initial_total_power由外部批量计算后传入，这里直接使用传入值。
+        power_level也由外部传入或保持默认值。
         """
-        # 计算初始综合国力
-        self.initial_total_power = self._calculate_initial_power()
-
-        # 初始化实时综合国力
+        # CINC由外部批量计算后传入，直接使用传入值（不再独立计算）
+        # 如果未传入（为0.0），保持0.0，由simulation_service后续批量重算
         self.current_total_power = self.initial_total_power
 
-        # 判定实力层级
-        self.power_level = self._calculate_power_level(self.current_total_power)
+        # power_level由外部传入或保持默认值（CINC需要全体系排名）
+        # 不在这里重新计算
 
         # 映射国家利益偏好
         self.national_interest = self._get_national_interest()
@@ -178,28 +169,32 @@ class AgentBase(BaseModel):
         """
         计算初始综合国力
 
+        CINC需要全体系数据（所有国家的6项指标），单个智能体无法独立计算。
+        返回0.0，由simulation_service批量重算后传入。
+
         Returns:
-            综合国力得分
+            0.0（占位值，实际CINC由外部批量计算）
         """
-        return calculate_klein_power(
-            self.c_score,
-            self.e_score,
-            self.m_score,
-            self.s_score,
-            self.w_score
-        )
+        # CINC = (milex/Σmilex + milper/Σmilper + irst/Σirst + pec/Σpec + tpop/Σtpop + upop/Σupop) / 6
+        # 需要全体系数据，单个agent无法计算
+        return 0.0
 
     def _calculate_power_level(self, power: float) -> PowerLevelEnum:
         """
         根据综合国力判定实力层级
 
+        CINC需要全体系排名才能判定层级，单个智能体无法独立判定。
+        保持当前power_level不变（接受外部传入的层级）。
+
         Args:
-            power: 综合国力得分
+            power: 综合国力得分（CINC值，此处未使用）
 
         Returns:
-            实力层级枚举
+            实力层级枚举（保持当前值）
         """
-        return determine_power_level(power)
+        # CINC层级判定需要全体系所有国家的CINC值进行排名
+        # 单个agent无法判定，保持预先设定的power_level
+        return self.power_level
 
     def _get_national_interest(self) -> List[str]:
         """
@@ -266,18 +261,24 @@ class AgentBase(BaseModel):
         """
         更新实时综合国力
 
+        CINC更新需走cinc_power_update引擎（批量重算全体系CINC）。
+        此方法仅记录power_change，待批量处理。
+
         Args:
             power_change: 国力变化值（可正可负）
         """
+        # CINC是比例值，单个国家指标变化会影响全体系分布
+        # 实际CINC更新由cinc_power_update引擎批量处理
+        # 这里仅记录变化，不做独立计算
         self.current_total_power += power_change
-        self.power_level = self._calculate_power_level(self.current_total_power)
+        # power_level由外部批量重算后更新，不在这里独立判定
 
     def reset_to_initial(self) -> None:
         """
         重置到初始状态
         """
         self.current_total_power = self.initial_total_power
-        self.power_level = self._calculate_power_level(self.current_total_power)
+        # power_level由外部批量重算后更新，不在这里独立判定
 
     def get_leader_type_rules(self) -> Dict[str, any]:
         """

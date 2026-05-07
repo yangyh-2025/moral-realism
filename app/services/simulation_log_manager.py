@@ -36,14 +36,18 @@ class SimulationLogManager:
         self._file_handles: Dict[str, Any] = {}
 
         # 日志文件定义
+        # power_changes.log 保留向后兼容，实际记录CINC变化
         self.log_files = {
             "llm_interaction": "llm_interaction.log",
             "llm_following": "llm_following.log",
             "llm_goal_evaluation": "llm_goal_evaluation.log",
+            "llm_relationship_evolution": "llm_relationship_evolution.log",
             "power_changes": "power_changes.log",
+            "cinc_changes": "cinc_changes.log",  # CINC变化日志（与power_changes内容相同）
             "order_changes": "order_changes.log",
             "goal_evaluations": "goal_evaluations.log",
             "follower_relations": "follower_relations.log",
+            "relationship_changes": "relationship_changes.log",
             "interactions": "interactions.log"
         }
 
@@ -116,11 +120,11 @@ class SimulationLogManager:
 
     async def log_power_change(self, round_num: int, power_data: Dict[str, Any]):
         """
-        记录国力变化
+        记录CINC变化（国力历史日志）
 
         Args:
             round_num: 轮次编号
-            power_data: 国力变化数据
+            power_data: CINC变化数据（含indicator_changes和passive_change）
         """
         log_data = {
             "round_num": round_num,
@@ -178,6 +182,20 @@ class SimulationLogManager:
             **interaction_data
         }
         await self._write_log("interactions", log_data)
+
+    async def log_relationship_change(self, round_num: int, change_data: Dict[str, Any]):
+        """
+        记录战略关系变化
+
+        Args:
+            round_num: 轮次编号
+            change_data: 变化数据（source_agent_id, target_agent_id, current_type, new_type, reason）
+        """
+        log_data = {
+            "round_num": round_num,
+            **change_data
+        }
+        await self._write_log("relationship_changes", log_data)
 
     async def close(self):
         """关闭日志文件句柄（如果需要）"""

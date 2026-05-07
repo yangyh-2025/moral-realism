@@ -211,7 +211,7 @@ onMounted(async () => {
 async function loadConfig() {
   try {
     const response = await getSystemConfig()
-    Object.assign(config.value, response.data)
+    Object.assign(config.value, response)
   } catch (error) {
     ElMessage.error('加载配置失败')
     console.error(error)

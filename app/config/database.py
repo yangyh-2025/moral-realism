@@ -176,7 +176,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": 0,
             "target_power_change": 0,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "呼吁/请求",
@@ -187,7 +189,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": 0.1,
             "target_power_change": 0,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "表达合作意向",
@@ -198,7 +202,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": 0.2,
             "target_power_change": 0.1,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "协商/磋商",
@@ -209,7 +215,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": 0.3,
             "target_power_change": 0.3,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "开展外交合作",
@@ -220,7 +228,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": 0.4,
             "target_power_change": 0.4,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "开展实质性合作",
@@ -231,7 +241,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": 0.5,
             "target_power_change": 0.5,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "提供援助",
@@ -242,7 +254,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": 0.2,
             "target_power_change": 0.6,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "让步/屈服",
@@ -253,7 +267,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": -0.5,
             "target_power_change": 0.5,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "调查",
@@ -264,7 +280,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": -0.1,
             "target_power_change": -0.2,
             "is_initiative": True,
-            "is_response": False
+            "is_response": False,
+            "primary_indicator": "pec",
+            "secondary_indicator": "upop"
         },
         {
             "action_name": "要求/索要",
@@ -275,7 +293,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": -0.2,
             "target_power_change": -0.1,
             "is_initiative": True,
-            "is_response": False
+            "is_response": False,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "表达不满/不赞成",
@@ -286,7 +306,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": 0,
             "target_power_change": -0.1,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "拒绝",
@@ -297,7 +319,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": 0.1,
             "target_power_change": -0.1,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "威胁",
@@ -308,7 +332,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": -0.3,
             "target_power_change": -0.2,
             "is_initiative": True,
-            "is_response": False
+            "is_response": False,
+            "primary_indicator": "pec",
+            "secondary_indicator": "upop"
         },
         {
             "action_name": "抗议",
@@ -319,7 +345,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": -0.4,
             "target_power_change": -0.3,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "展示军事姿态",
@@ -330,7 +358,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": -0.2,
             "target_power_change": -0.3,
             "is_initiative": True,
-            "is_response": False
+            "is_response": False,
+            "primary_indicator": "milex",
+            "secondary_indicator": "milper"
         },
         {
             "action_name": "降级关系",
@@ -341,7 +371,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": -0.1,
             "target_power_change": -0.4,
             "is_initiative": True,
-            "is_response": True
+            "is_response": True,
+            "primary_indicator": "pec",
+            "secondary_indicator": "irst"
         },
         {
             "action_name": "胁迫/强制",
@@ -352,7 +384,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": -0.5,
             "target_power_change": -0.6,
             "is_initiative": True,
-            "is_response": False
+            "is_response": False,
+            "primary_indicator": "milex",
+            "secondary_indicator": "milper"
         },
         {
             "action_name": "攻击/袭击",
@@ -363,7 +397,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": -0.8,
             "target_power_change": -0.7,
             "is_initiative": True,
-            "is_response": False
+            "is_response": False,
+            "primary_indicator": "milex",
+            "secondary_indicator": "milper"
         },
         {
             "action_name": "交战/使用常规军事武力",
@@ -374,7 +410,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": -0.7,
             "target_power_change": -0.9,
             "is_initiative": True,
-            "is_response": False
+            "is_response": False,
+            "primary_indicator": "milex",
+            "secondary_indicator": "milper"
         },
         {
             "action_name": "实施非常规大规模暴力",
@@ -385,7 +423,9 @@ async def _init_action_configs(session: AsyncSession) -> None:
             "initiator_power_change": -1.0,
             "target_power_change": -1.0,
             "is_initiative": True,
-            "is_response": False
+            "is_response": False,
+            "primary_indicator": "milex",
+            "secondary_indicator": "milper"
         }
     ]
 

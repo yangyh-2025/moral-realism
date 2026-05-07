@@ -16,7 +16,10 @@ router = APIRouter(prefix="/simulation", tags=["statistics"])
 
 # 请求/响应模型
 class PowerHistoryResponse(BaseModel):
-    """国力历史响应模型"""
+    """国力历史响应模型 (CINC版)
+
+    round_start_power / round_end_power 现为 CINC指数（0-1比例值）。
+    """
     history_id: int
     agent_id: int
     agent_name: str
@@ -28,7 +31,9 @@ class PowerHistoryResponse(BaseModel):
 
 
 class GrowthRateResponse(BaseModel):
-    """增长率响应模型"""
+    """增长率响应模型 (CINC版)
+
+    avg_growth_rate 基于 CINC指数（0-1比例值）计算。"""
     leader_type: str
     power_level: str
     avg_growth_rate: float
@@ -108,9 +113,10 @@ class AgentRelationsResponse(BaseModel):
 @router.get("/{project_id}/stats/power-history", response_model=List[PowerHistoryResponse])
 async def get_power_history(project_id: int, agent_id: Optional[int] = None, start_round: Optional[int] = None, end_round: Optional[int] = None):
     """
-    获取项目全量智能体国力历史数据
+    获取项目全量智能体CINC历史数据
 
-    获取仿真项目中所有智能体的国力变化历史记录，支持按智能体和轮次范围筛选。
+    获取仿真项目中所有智能体的CINC指数变化历史记录，支持按智能体和轮次范围筛选。
+    CINC指数为0-1比例值，反映国家在仿真体系内的相对实力占比。
 
     Args:
         project_id: 项目ID
@@ -119,7 +125,7 @@ async def get_power_history(project_id: int, agent_id: Optional[int] = None, sta
         end_round: 可选，结束轮次
 
     Returns:
-        List[PowerHistoryResponse]: 国力历史数据列表
+        List[PowerHistoryResponse]: CINC历史数据列表（power字段为CINC值）
     """
     data = await statistics_service.get_power_history(
         project_id=project_id,
@@ -133,9 +139,10 @@ async def get_power_history(project_id: int, agent_id: Optional[int] = None, sta
 @router.get("/{project_id}/stats/power-growth-rate", response_model=List[GrowthRateResponse])
 async def get_power_growth_rate(project_id: int, start_round: int = 1, end_round: Optional[int] = None):
     """
-    计算自定义轮次区间的实力增长率
+    计算自定义轮次区间的CINC变化率
 
-    计算智能体在指定轮次区间内的平均实力增长率，支持按领导类型和实力等级分组。
+    计算智能体在指定轮次区间内的平均CINC变化率，支持按领导类型和实力等级分组。
+    CINC为0-1比例值，变化率反映相对实力占比的变动。
 
     Args:
         project_id: 项目ID
@@ -143,7 +150,7 @@ async def get_power_growth_rate(project_id: int, start_round: int = 1, end_round
         end_round: 可选，结束轮次
 
     Returns:
-        List[GrowthRateResponse]: 增长率数据列表
+        List[GrowthRateResponse]: CINC变化率数据列表
     """
     data = await statistics_service.calculate_power_growth_rate(
         project_id=project_id,

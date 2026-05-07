@@ -17,7 +17,7 @@ class PromptTemplates:
     # System role template
     SYSTEM_ROLE_TEMPLATE = """
 你是{agent_name}的国家领导集体集体，所属区域为{region}。
-基于克莱因综合国力方程，该国初始综合国力得分为{initial_total_power}，当前当前综合国力得分为{current_total_power}，实力层级为{power_level}。
+基于CINC综合国力指数（Composite Index of National Capability），该国初始CINC指数为{initial_total_power}（占全球能力比例），当前CINC指数为{current_total_power}，实力层级为{power_level}（按CINC体系内排名判定）。
 """
 
     # Core rules template
@@ -26,7 +26,7 @@ class PromptTemplates:
 1. 国际社会处于无政府状态，无超国家权威可以约束你的行为，你的决策完全基于自身利益与成本收益权衡；
 2. 你的国家核心利益固定为：{national_interest}，该利益仅由国家实力层级决定，与领导集体类型无关；除昏庸型领导外，所有决策必须完全围绕该核心利益展开，不得做出损害国家客观利益的决策；
 3. 你的领导集体类型为{leader_type}，该类型仅决定你的利益排序、策略偏好与行为约束，具体规则为：{leader_type_rules}；
-4. 决策前必须对每一个可选行为进行完整的成本收益分析，成本需包含行为对应的国力损耗，收益需包含行为对应的国力提升，最终仅选择净收益最大化的行为组合；
+4. 决策前必须对每一个可选行为进行完整的成本收益分析，成本需包含行为对应的国力损耗，收益需包含行为对应的国力提升，最终仅选择净收益最大化的行为组合；注意：CINC是比例值，任何国家底层指标变化都会影响整个体系的国力分布，因此你的行为成本/收益还会通过指标变化间接影响所有国家的相对地位。
 5. 你**只能从下方【允许执行的行为列表】中选择行为**，禁止选择列表外的任何行为，禁止编造列表中不存在的行为名称；
 6. 你可以获取全量信息：当前体系内所有国家的实力、层级、领导类型，以及历史所有轮次的全部互动行为、追随关系、国力变化数据。
 7. 在进行成本收益分析和行为选择时，**必须考虑地理位置和战略关系因素**：
@@ -39,7 +39,7 @@ class PromptTemplates:
     OUTPUT_REQUIREMENTS_TEMPLATE = """
 【输出要求】
 1. 必须输出结构化JSON格式，禁止额外文本、禁止解释说明、禁止markdown格式；
-2. 必须包含每一项行为的成本收益分析，明确净收益计算逻辑，必须包含行为对应的国力变化影响；
+2. 必须包含每一项行为的成本收益分析，明确净收益计算逻辑，必须包含行为对各底层国力指标（milex军事支出/milper军事人员/irst钢铁产量/pec能源消耗/tpop总人口/upop城市人口）的影响；
 3. 必须为每一项行为指定明确的目标对象国（agent_id），目标国必须存在于当前体系内；
 4. 可选择1-5项行为，禁止选择无收益的行为，禁止选择列表外的行为；
 5. 必须填写action_id、action_name、action_category，且必须与允许行为列表完全一致。
@@ -69,7 +69,7 @@ class PromptTemplates:
 【全量信息池】
 1. 当前体系内所有国家信息：{all_agent_info}
 2. 历史轮次互动行为记录：{history_action_records}
-3. 历史轮次各国国力变化数据：{history_power_data}
+3. 历史轮次各国国力变化数据（国力数据为CINC比例值）：{history_power_data}
 4. 上一轮体系追随关系与国际秩序类型：{last_round_order_info}
 """
 
@@ -85,6 +85,9 @@ class PromptTemplates:
 - respect_sov：该行为是否尊重主权，影响本轮国际秩序判定
 - initiator_power_change：你执行该行为后，你的国家国力变化值
 - target_power_change：你执行该行为后，目标国家国力变化值
+- primary_indicator：行为主要影响的CINC底层指标
+- secondary_indicator：行为次要影响的CINC底层指标
+说明：CINC指数 = (milex/Σmilex + milper/Σmilper + irst/Σirst + pec/Σpec + tpop/Σtpop + upop/Σupop) / 6，其中Σ为体系内所有国家的总和
 """
 
     # User prompt template (task description + context + data)
@@ -118,7 +121,7 @@ class PromptTemplates:
                 "action_category": "行为分类",
                 "action_name": "行为名称，必须与列表完全一致",
                 "target_agent_id": "目标国家ID",
-                "cost_benefit_analysis": "该行为的成本、预期收益、净收益分析详情，必须包含国力变化影响",
+                "cost_benefit_analysis": "该行为的成本、预期收益、净收益分析详情，必须包含对各底层CINC指标（milex/milper/irst/pec/tpop/upop）的影响",
                 "action_content": "该行为的具体执行内容，如声明文本、协议概要、援助规模等，50-200字"
             }
         ]
@@ -148,6 +151,8 @@ class PromptTemplates:
                 f"发起国力变化:{action['initiator_power_change']} | "
                 f"目标国力变化:{action['target_power_change']} | "
                 f"简介:{action['action_desc']}"
+                f" | 主指标:{action.get('primary_indicator', 'pec')}"
+                f" | 次指标:{action.get('secondary_indicator', 'irst')}"
             )
             table_lines.append(line)
 
@@ -394,7 +399,7 @@ class PromptTemplates:
     # 领导竞争参与决策提示模板
     LEADERSHIP_PARTICIPATION_TEMPLATE = """
 【领导竞争参与决策】
-你是{agent_name}的国家领导集体，当前综合国力为{current_total_power}，实力层级为{power_level}。
+你是{agent_name}的国家领导集体，当前CINC指数为{current_total_power}（0-1比例值），实力层级为{power_level}。
 
 【当前国际体系状态】
 体系内所有国家信息：{all_agent_info}
@@ -413,7 +418,7 @@ class PromptTemplates:
     # 追随投票决策提示模板
     FOLLOWER_VOTE_TEMPLATE = """
 【追随投票决策】
-你是{agent_name}的国家领导集体，当前综合国力为{current_total_power}，实力层级为{power_level}。
+你是{agent_name}的国家领导集体，当前CINC指数为{current_total_power}（0-1比例值），实力层级为{power_level}。
 
 【当前国际体系状态】
 体系内所有国家信息：{all_agent_info}
@@ -440,7 +445,7 @@ class PromptTemplates:
 
 # 追随决策的系统提示词模板（角色、规则、输出要求）
     FOLLOWER_SYSTEM_PROMPT_TEMPLATE = """
-你是一个{agent_name}的国家领导集体，当前综合国力为{current_total_power}，实力层级为{power_level}。
+你是一个{agent_name}的国家领导集体，当前CINC指数为{current_total_power}（0-1比例值），实力层级为{power_level}。
 
 【角色设定】
 你需要代表国家做出追随相关的重要决策。
@@ -528,7 +533,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": 0,
         "target_power_change": 0,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 2,
@@ -540,7 +547,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": 0.1,
         "target_power_change": 0,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 3,
@@ -552,7 +561,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": 0.2,
         "target_power_change": 0.1,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 4,
@@ -564,7 +575,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": 0.3,
         "target_power_change": 0.3,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 5,
@@ -576,7 +589,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": 0.4,
         "target_power_change": 0.4,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 6,
@@ -588,7 +603,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": 0.5,
         "target_power_change": 0.5,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 7,
@@ -600,7 +617,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": 0.2,
         "target_power_change": 0.6,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 8,
@@ -612,7 +631,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": -0.5,
         "target_power_change": 0.5,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 9,
@@ -624,7 +645,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": -0.1,
         "target_power_change": -0.2,
         "is_initiative": True,
-        "is_response": False
+        "is_response": False,
+        "primary_indicator": "pec",
+        "secondary_indicator": "upop"
     },
     {
         "action_id": 10,
@@ -636,7 +659,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": -0.2,
         "target_power_change": -0.1,
         "is_initiative": True,
-        "is_response": False
+        "is_response": False,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 11,
@@ -648,7 +673,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": 0,
         "target_power_change": -0.1,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 12,
@@ -660,7 +687,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": 0.1,
         "target_power_change": -0.1,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 13,
@@ -672,7 +701,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": -0.3,
         "target_power_change": -0.2,
         "is_initiative": True,
-        "is_response": False
+        "is_response": False,
+        "primary_indicator": "pec",
+        "secondary_indicator": "upop"
     },
     {
         "action_id": 14,
@@ -684,7 +715,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": -0.4,
         "target_power_change": -0.3,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 15,
@@ -696,19 +729,23 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": -0.2,
         "target_power_change": -0.3,
         "is_initiative": True,
-        "is_response": False
+        "is_response": False,
+        "primary_indicator": "milex",
+        "secondary_indicator": "milper"
     },
     {
         "action_id": 16,
         "action_name": "降级关系",
         "action_en_name": "REDUCE RELATIONS",
         "action_category": "外交手段",
-        "action_desc": "行为方针对目标方降级双边互动关系，涵盖降级/断绝外交关系、削减/ari止各类援助、实施禁运/抵制/制裁、中断谈判/调解、驱逐/撤出相关人员与机构等所有未另行分类的关系降级行为",
+        "action_desc": "行为方针对目标方降级双边互动关系，涵盖降级/断绝外交关系、削减/停止各类援助、实施禁运/抵制/制裁、中断谈判/调解、驱逐/撤出相关人员与机构等所有未另行分类的关系降级行为",
         "respect_sov": True,
         "initiator_power_change": -0.1,
         "target_power_change": -0.4,
         "is_initiative": True,
-        "is_response": True
+        "is_response": True,
+        "primary_indicator": "pec",
+        "secondary_indicator": "irst"
     },
     {
         "action_id": 17,
@@ -720,7 +757,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": -0.5,
         "target_power_change": -0.6,
         "is_initiative": True,
-        "is_response": False
+        "is_response": False,
+        "primary_indicator": "milex",
+        "secondary_indicator": "milper"
     },
     {
         "action_id": 18,
@@ -732,7 +771,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": -0.8,
         "target_power_change": -0.7,
         "is_initiative": True,
-        "is_response": False
+        "is_response": False,
+        "primary_indicator": "milex",
+        "secondary_indicator": "milper"
     },
     {
         "action_id": 19,
@@ -744,7 +785,9 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": -0.7,
         "target_power_change": -0.9,
         "is_initiative": True,
-        "is_response": False
+        "is_response": False,
+        "primary_indicator": "milex",
+        "secondary_indicator": "milper"
     },
     {
         "action_id": 20,
@@ -756,6 +799,8 @@ STANDARD_BEHAVIORS = [
         "initiator_power_change": -1.0,
         "target_power_change": -1.0,
         "is_initiative": True,
-        "is_response": False
+        "is_response": False,
+        "primary_indicator": "milex",
+        "secondary_indicator": "milper"
     }
 ]
