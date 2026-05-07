@@ -238,11 +238,16 @@ class SimulationService:
                 "message": "仿真已完成所有轮次"
             }
 
-        logger.info(f"正在执行项目 {project_id} 第 {current_round}/{total_rounds} 轮")
+        logger.info(
+            f"\n╔══════════════════════════════════════════════════════════╗\n"
+            f"║  项目 {project_id} - 第 {current_round}/{total_rounds} 轮 开始执行\n"
+            f"╚══════════════════════════════════════════════════════════╝"
+        )
 
         try:
+            import time as _time
+            _round_start_ts = _time.time()
             # 0. 创建轮次记录
-            logger.info(f"创建第 {current_round} 轮记录")
             round_id = await self._create_round_record(project_id, current_round)
 
             # 1. 获取所有智能体
@@ -251,49 +256,44 @@ class SimulationService:
                 raise ValueError(f"项目 {project_id} 中没有智能体")
 
             # 2. 执行决策生成（主动阶段）
-            logger.info(f"阶段 1: 生成第 {current_round} 轮主动决策")
             initiative_records = await self._generate_decisions(
                 project_id, agents, current_round, round_id, phase="initiative", log_manager=log_manager
             )
-            logger.info(f"生成了 {len(initiative_records)} 条主动决策记录")
 
             # 3. 执行决策生成（响应阶段）
-            logger.info(f"阶段 2: 生成第 {current_round} 轮响应决策")
             response_records = await self._generate_decisions(
                 project_id, agents, current_round, round_id, phase="response", log_manager=log_manager
             )
-            logger.info(f"生成了 {len(response_records)} 条响应决策记录")
 
             # 4. 更新国力（使用CINCPowerUpdateEngine）
-            logger.info(f"阶段 3: 更新第 {current_round} 轮CINC")
+            logger.info(f"[阶段3/6] 项目{project_id} R{current_round} CINC更新中...")
             await self._update_power(project_id, agents, initiative_records + response_records)
 
             # 4.5 保存国力历史
-            logger.info(f"阶段 3.5: 保存第 {current_round} 轮CINC历史")
             await self._save_power_history(project_id, round_id, current_round, agents, log_manager)
 
             # 5. 追随投票阶段
-            logger.info(f"阶段 4: 生成第 {current_round} 轮追随决策")
+            logger.info(f"[阶段4/6] 项目{project_id} R{current_round} 追随投票中...")
             follower_decisions = await self._generate_follower_decisions(
                 project_id, agents, round_id, current_round, log_manager
             )
-            logger.info(f"生成了 {len(follower_decisions)} 条追随决策")
+            logger.info(f"  生成 {len(follower_decisions)} 条追随决策")
 
             # 6. 秩序判定阶段
-            logger.info(f"阶段 5: 判定第 {current_round} 轮秩序")
+            logger.info(f"[阶段5/6] 项目{project_id} R{current_round} 秩序判定中...")
             order_result = await self._determine_order(
                 project_id, current_round,
                 initiative_records + response_records,
                 follower_decisions,
                 log_manager
             )
-            logger.info(f"秩序类型: {order_result.order_type.value}")
+            logger.info(f"  秩序类型: {order_result.order_type.value}")
 
             # 7. 保存追随关系到数据库
             await self._save_follower_relations(project_id, round_id, current_round, follower_decisions, log_manager)
 
             # 8. 更新轮次记录统计信息
-            logger.info(f"阶段 6: 更新第 {current_round} 轮记录")
+            logger.info(f"[阶段6/6] 项目{project_id} R{current_round} 更新轮次统计")
             await self._update_round_record(project_id, current_round, initiative_records + response_records, order_result)
 
             # 9. 每10轮触发一次战略目标评估
@@ -339,6 +339,15 @@ class SimulationService:
                 await session.commit()
 
             message = f"第 {current_round} 轮执行完成" + eval_message + evolve_message
+
+            elapsed = _time.time() - _round_start_ts
+            logger.info(
+                f"\n╔══════════════════════════════════════════════════════════╗\n"
+                f"║  项目 {project_id} - 第 {current_round}/{total_rounds} 轮 完成 (耗时 {elapsed:.1f}s)\n"
+                f"║  主动行为: {len(initiative_records)} | 响应行为: {len(response_records)} | "
+                f"秩序: {order_result.order_type.value}\n"
+                f"╚══════════════════════════════════════════════════════════╝\n"
+            )
 
             return {
                 "project_id": project_id,
@@ -490,9 +499,16 @@ class SimulationService:
         except Exception:
             max_concurrent = 5
         max_concurrent = max(1, min(max_concurrent, 20))
-        logger.info(f"[第 {round_num} 轮] 决策并发度: {max_concurrent}")
+
+        total_agents = len(agents)
+        phase_label = "主动决策" if phase == "initiative" else "响应决策"
+        logger.info(
+            f"\n========== 第 {round_num} 轮 - {phase_label}阶段开始 "
+            f"(共{total_agents}国, 并发度{max_concurrent}) =========="
+        )
 
         semaphore = asyncio.Semaphore(max_concurrent)
+        completed_counter = {"n": 0}  # 用dict使闭包可写
 
         async def _decide_one_agent(agent):
             """并发安全的单agent决策；失败仅记录，不影响其他agent"""
@@ -552,9 +568,17 @@ class SimulationService:
 
                     if decision_result.success and decision_result.decision:
                         actions_list = decision_result.decision.get('actions', [])
+                        completed_counter["n"] += 1
+                        progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
+                        action_summary = "; ".join(
+                            f"{a.get('action_name','?')}->ID{a.get('target_agent_id','?')}"
+                            for a in actions_list[:3]
+                        )
+                        if len(actions_list) > 3:
+                            action_summary += f" ...等{len(actions_list)}个"
                         logger.info(
-                            f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) LLM决策成功: "
-                            f"{len(actions_list)} 个行为"
+                            f"  {progress} ✓ R{round_num} {phase_label} | "
+                            f"{agent_name}(ID:{agent_id}) → {action_summary}"
                         )
 
                         for action_data in actions_list:
@@ -588,20 +612,20 @@ class SimulationService:
                                 "action_content": action_data.get('action_content', '')
                             }
                             local_records.append(record)
-
-                            logger.info(
-                                f"[第 {round_num} 轮] {agent_name} 决策: "
-                                f"{action_config.action_name} -> 目标 ID:{target_id}"
-                            )
                     else:
+                        completed_counter["n"] += 1
+                        progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
                         logger.warning(
-                            f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) LLM决策失败: "
+                            f"  {progress} ✗ R{round_num} {phase_label} | "
+                            f"{agent_name}(ID:{agent_id}) LLM决策失败: "
                             f"{decision_result.validation_errors}"
                         )
                 except Exception as e:
+                    completed_counter["n"] += 1
+                    progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
                     logger.error(
-                        f"[第 {round_num} 轮] {agent_name} (ID:{agent_id}) 决策异常: {e}",
-                        exc_info=True
+                        f"  {progress} ✗ R{round_num} {phase_label} | "
+                        f"{agent_name}(ID:{agent_id}) 决策异常: {e}"
                     )
 
             return local_records
@@ -613,6 +637,11 @@ class SimulationService:
         )
         for sub_records in agent_record_lists:
             records.extend(sub_records)
+
+        logger.info(
+            f"========== 第 {round_num} 轮 - {phase_label}阶段完成 "
+            f"(产生 {len(records)} 条行为记录) ==========\n"
+        )
 
         # 保存记录到数据库
         if records:
