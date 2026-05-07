@@ -224,8 +224,8 @@
 
           <!-- 动态列：每个智能体的关系选择器 -->
           <el-table-column
-            v-for="targetAgent in agents"
-            :key="targetAgent.agentId"
+            v-for="(targetAgent, targetIndex) in agents"
+            :key="targetIndex"
             :label="targetAgent.agentName"
             min-width="120"
             align="center"
@@ -237,15 +237,15 @@
               </el-tag>
             </template>
 
-            <template #default="{ row }">
+            <template #default="{ row, $index }">
               <!-- 跳过自身 -->
-              <span v-if="row.agentId === targetAgent.agentId" style="color: #909399;">-</span>
+              <span v-if="$index === targetIndex" style="color: #909399;">-</span>
 
-              <!-- 只显示允许配对且 source_id < target_id 的单元格（可编辑） -->
+              <!-- 只显示允许配对且 sourceIndex < targetIndex 的单元格（可编辑） -->
               <el-select
-                v-else-if="canSetRelation(row.agentId, targetAgent.agentId) && row.agentId < targetAgent.agentId"
-                :model-value="getRelation(row.agentId, targetAgent.agentId)"
-                @update:model-value="val => setRelation(row.agentId, targetAgent.agentId, val)"
+                v-else-if="canSetRelation($index, targetIndex) && $index < targetIndex"
+                :model-value="getRelation($index, targetIndex)"
+                @update:model-value="val => setRelation($index, targetIndex, val)"
                 placeholder="选择关系"
                 size="small"
                 style="width: 100px;"
@@ -260,11 +260,11 @@
 
               <!-- 对称单元格显示值（只读） -->
               <el-tag
-                v-else-if="canSetRelation(row.agentId, targetAgent.agentId)"
-                :type="getRelationType(getRelation(targetAgent.agentId, row.agentId))"
+                v-else-if="canSetRelation($index, targetIndex)"
+                :type="getRelationType(getRelation(targetIndex, $index))"
                 size="small"
               >
-                {{ getRelation(targetAgent.agentId, row.agentId) }}
+                {{ getRelation(targetIndex, $index) }}
               </el-tag>
 
               <!-- 不允许配对的单元格 -->
@@ -532,8 +532,32 @@ async function loadRelationships() {
 
   try {
     const response = await relationshipApi.getStrategicRelationships(projectId)
-    relationshipMatrix.value = response || {}
-    console.log('Loaded relationships:', relationshipMatrix.value)
+    // 后端返回的是agentId-based，需要转换为index-based
+    // agentId -> index 映射
+    const idToIndex = {}
+    agents.value.forEach((agent, idx) => {
+      if (agent.agentId !== undefined && agent.agentId !== null) {
+        idToIndex[agent.agentId] = idx
+      }
+    })
+
+    const indexMatrix = {}
+    if (response && typeof response === 'object') {
+      for (const [sourceAgentId, targets] of Object.entries(response)) {
+        const sourceIdx = idToIndex[parseInt(sourceAgentId)]
+        if (sourceIdx === undefined) continue
+        for (const [targetAgentId, type] of Object.entries(targets || {})) {
+          const targetIdx = idToIndex[parseInt(targetAgentId)]
+          if (targetIdx === undefined) continue
+          const smaller = Math.min(sourceIdx, targetIdx)
+          const larger = Math.max(sourceIdx, targetIdx)
+          if (!indexMatrix[smaller]) indexMatrix[smaller] = {}
+          indexMatrix[smaller][larger] = type
+        }
+      }
+    }
+    relationshipMatrix.value = indexMatrix
+    console.log('Loaded relationships (index-based):', relationshipMatrix.value)
   } catch (error) {
     // 如果项目刚创建还没有战略关系，使用空对象而不是报错
     relationshipMatrix.value = {}
@@ -542,32 +566,32 @@ async function loadRelationships() {
 }
 
 /**
- * 获取两个智能体之间的关系
- * @param {number} sourceId - 源智能体ID
- * @param {number} targetId - 目标智能体ID
+ * 获取两个智能体之间的关系（基于agents数组索引）
+ * @param {number} sourceIndex - 源智能体在agents数组中的索引
+ * @param {number} targetIndex - 目标智能体在agents数组中的索引
  * @returns {string} 关系类型
  */
-function getRelation(sourceId, targetId) {
-  const smallerId = Math.min(sourceId, targetId)
-  const largerId = Math.max(sourceId, targetId)
+function getRelation(sourceIndex, targetIndex) {
+  const smaller = Math.min(sourceIndex, targetIndex)
+  const larger = Math.max(sourceIndex, targetIndex)
 
-  if (relationshipMatrix.value[smallerId] && relationshipMatrix.value[smallerId][largerId]) {
-    return relationshipMatrix.value[smallerId][largerId]
+  if (relationshipMatrix.value[smaller] && relationshipMatrix.value[smaller][larger]) {
+    return relationshipMatrix.value[smaller][larger]
   }
   return '无外交关系'
 }
 
 /**
- * 判断两个智能体是否可以建立战略关系
+ * 判断两个智能体是否可以建立战略关系（基于index）
  * 规则：高层级（超级大国/大国）与低层级（中等强国/小国）或高层级之间可以建立关系
  * 不允许：中等强国×中等强国、中等强国×小国、小国×小国
- * @param {number} sourceId - 源智能体ID
- * @param {number} targetId - 目标智能体ID
+ * @param {number} sourceIndex - 源智能体在agents数组中的索引
+ * @param {number} targetIndex - 目标智能体在agents数组中的索引
  * @returns {boolean} 是否可以建立关系
  */
-function canSetRelation(sourceId, targetId) {
-  const sourceAgent = agents.value.find(a => a.agentId === sourceId)
-  const targetAgent = agents.value.find(a => a.agentId === targetId)
+function canSetRelation(sourceIndex, targetIndex) {
+  const sourceAgent = agents.value[sourceIndex]
+  const targetAgent = agents.value[targetIndex]
 
   if (!sourceAgent || !targetAgent) return false
 
@@ -593,28 +617,34 @@ function canSetRelation(sourceId, targetId) {
 }
 
 /**
- * 设置两个智能体之间的关系
- * @param {number} sourceId - 源智能体ID
- * @param {number} targetId - 目标智能体ID
+ * 设置两个智能体之间的关系（基于index）
+ * 在项目尚未创建时仅写入本地matrix；项目已创建则同时调用后端API同步
+ * @param {number} sourceIndex - 源智能体在agents数组中的索引
+ * @param {number} targetIndex - 目标智能体在agents数组中的索引
  * @param {string} type - 关系类型
  */
-async function setRelation(sourceId, targetId, type) {
-  const projectId = appStore.loadProjectId()
-  if (!projectId) return
+async function setRelation(sourceIndex, targetIndex, type) {
+  const smaller = Math.min(sourceIndex, targetIndex)
+  const larger = Math.max(sourceIndex, targetIndex)
 
-  const smallerId = Math.min(sourceId, targetId)
-  const largerId = Math.max(sourceId, targetId)
-
-  if (!relationshipMatrix.value[smallerId]) {
-    relationshipMatrix.value[smallerId] = {}
+  if (!relationshipMatrix.value[smaller]) {
+    relationshipMatrix.value[smaller] = {}
   }
-  relationshipMatrix.value[smallerId][largerId] = type
+  relationshipMatrix.value[smaller][larger] = type
 
-  try {
-    await relationshipApi.setStrategicRelationship(projectId, sourceId, targetId, type)
-    ElMessage.success('关系设置成功')
-  } catch (error) {
-    ElMessage.error(`设置关系失败: ${error.message || error}`)
+  // 仅在项目已创建（agent都有agentId）时同步到后端
+  const projectId = appStore.loadProjectId()
+  const sourceAgent = agents.value[sourceIndex]
+  const targetAgent = agents.value[targetIndex]
+  if (projectId && sourceAgent?.agentId && targetAgent?.agentId) {
+    try {
+      await relationshipApi.setStrategicRelationship(
+        projectId, sourceAgent.agentId, targetAgent.agentId, type
+      )
+      ElMessage.success('关系设置成功')
+    } catch (error) {
+      ElMessage.error(`设置关系失败: ${error.message || error}`)
+    }
   }
 }
 
@@ -662,13 +692,17 @@ async function saveRelations() {
 
   try {
     loadingRelations.value = true
-    // 遍历关系矩阵并保存
-    for (const [sourceId, targets] of Object.entries(relationshipMatrix.value)) {
-      for (const [targetId, type] of Object.entries(targets)) {
+    // matrix 的 key 是 agents 数组的 index，需要先转换为 agentId 再调用后端API
+    for (const [sourceIdxStr, targets] of Object.entries(relationshipMatrix.value)) {
+      const sourceAgent = agents.value[parseInt(sourceIdxStr)]
+      if (!sourceAgent?.agentId) continue
+      for (const [targetIdxStr, type] of Object.entries(targets)) {
+        const targetAgent = agents.value[parseInt(targetIdxStr)]
+        if (!targetAgent?.agentId) continue
         await relationshipApi.setStrategicRelationship(
           projectId,
-          parseInt(sourceId),
-          parseInt(targetId),
+          sourceAgent.agentId,
+          targetAgent.agentId,
           type
         )
       }
