@@ -45,6 +45,15 @@ async def lifespan(app: FastAPI):
     await init_database()
     logger.info("正在初始化默认数据...")
     await init_default_data()
+
+    # 从数据库加载系统配置并同步到LLM服务（让前端配置生效）
+    try:
+        from app.services.system_service import get_system_config_service
+        await get_system_config_service().sync_to_llm_service()
+        logger.info("LLM配置已从数据库同步")
+    except Exception as e:
+        logger.warning(f"LLM配置同步失败（将使用环境变量）: {e}")
+
     logger.info("应用启动完成")
 
     # 应用运行期间
