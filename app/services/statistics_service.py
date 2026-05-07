@@ -492,11 +492,13 @@ class StatisticsService:
             nodes = []
             for agent in agents:
                 cinc_val = float(agent.initial_total_power or 0)
+                # symbolSize 必须是 int（前端模型要求），用CINC*500映射到20-80范围
+                symbol_size = int(max(20, min(80, cinc_val * 500)))
                 nodes.append({
                     "id": agent.agent_id,
                     "name": agent.agent_name,
                     "category": agent.leader_type or "无",
-                    "symbolSize": max(20, min(80, cinc_val * 500)),
+                    "symbolSize": symbol_size,
                     "value": cinc_val * 1000
                 })
 
