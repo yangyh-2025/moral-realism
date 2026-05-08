@@ -239,9 +239,9 @@ class SimulationService:
             }
 
         logger.info(
-            f"\n╔══════════════════════════════════════════════════════════╗\n"
-            f"║  项目 {project_id} - 第 {current_round}/{total_rounds} 轮 开始执行\n"
-            f"╚══════════════════════════════════════════════════════════╝"
+            f"\n{'='*58}\n"
+            f"  项目 {project_id} - 第 {current_round}/{total_rounds} 轮 开始执行\n"
+            f"{'='*58}"
         )
 
         try:
@@ -342,11 +342,11 @@ class SimulationService:
 
             elapsed = _time.time() - _round_start_ts
             logger.info(
-                f"\n╔══════════════════════════════════════════════════════════╗\n"
-                f"║  项目 {project_id} - 第 {current_round}/{total_rounds} 轮 完成 (耗时 {elapsed:.1f}s)\n"
-                f"║  主动行为: {len(initiative_records)} | 响应行为: {len(response_records)} | "
+                f"\n{'='*58}\n"
+                f"  项目 {project_id} - 第 {current_round}/{total_rounds} 轮 完成 (耗时 {elapsed:.1f}s)\n"
+                f"  主动行为: {len(initiative_records)} | 响应行为: {len(response_records)} | "
                 f"秩序: {order_result.order_type.value}\n"
-                f"╚══════════════════════════════════════════════════════════╝\n"
+                f"{'='*58}\n"
             )
 
             return {
@@ -577,7 +577,7 @@ class SimulationService:
                         if len(actions_list) > 3:
                             action_summary += f" ...等{len(actions_list)}个"
                         logger.info(
-                            f"  {progress} ✓ R{round_num} {phase_label} | "
+                            f"  {progress} [OK] R{round_num} {phase_label} | "
                             f"{agent_name}(ID:{agent_id}) → {action_summary}"
                         )
 
@@ -616,7 +616,7 @@ class SimulationService:
                         completed_counter["n"] += 1
                         progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
                         logger.warning(
-                            f"  {progress} ✗ R{round_num} {phase_label} | "
+                            f"  {progress} [FAIL] R{round_num} {phase_label} | "
                             f"{agent_name}(ID:{agent_id}) LLM决策失败: "
                             f"{decision_result.validation_errors}"
                         )
@@ -624,7 +624,7 @@ class SimulationService:
                     completed_counter["n"] += 1
                     progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
                     logger.error(
-                        f"  {progress} ✗ R{round_num} {phase_label} | "
+                        f"  {progress} [FAIL] R{round_num} {phase_label} | "
                         f"{agent_name}(ID:{agent_id}) 决策异常: {e}"
                     )
 
@@ -1051,7 +1051,8 @@ class SimulationService:
                 system_prompt = PromptTemplates.build_follower_system_prompt(
                     agent_name=agent.get('agent_name'),
                     current_total_power=agent.get('current_total_power', 0),
-                    power_level=agent.get('power_level')
+                    power_level=agent.get('power_level'),
+                    leader_type=agent.get('leader_type', '未定义')
                 )
 
                 # 构建用户提示词

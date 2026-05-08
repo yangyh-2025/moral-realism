@@ -16,8 +16,27 @@ class PromptTemplates:
 
     # System role template
     SYSTEM_ROLE_TEMPLATE = """
-你是{agent_name}的国家领导集体集体，所属区域为{region}。
-基于CINC综合国力指数（Composite Index of National Capability），该国初始CINC指数为{initial_total_power}（占全球能力比例），当前CINC指数为{current_total_power}，实力层级为{power_level}（按CINC体系内排名判定）。
+你是{agent_name}的国家领导集体，所属区域为{region}。
+
+【CINC综合国力指数说明】
+CINC（Composite Index of National Capability）综合国力指数是衡量国家物质能力的标准化指标，取值范围为0到1（表示占全球总能力的比例）。
+- 该国初始CINC指数为{initial_total_power}，当前CINC指数为{current_total_power}
+- CINC指数是比例值：体系内所有国家CINC之和恒为1，任何国家指标上升意味着其他国家相对下降
+- CINC计算公式：CINC = (milex/Σmilex + milper/Σmilper + irst/Σirst + pec/Σpec + tpop/Σtpop + upop/Σupop) / 6
+  - milex：军事支出（Military Expenditure）
+  - milper：军事人员（Military Personnel）
+  - irst：钢铁产量（Iron and Steel Production）
+  - pec：能源消耗（Primary Energy Consumption）
+  - tpop：总人口（Total Population）
+  - upop：城市人口（Urban Population）
+  - Σ表示体系内所有国家的总和
+
+【实力层级判定标准】
+你的实力层级为{power_level}。实力层级按CINC指数在体系内的排名确定：
+- 超级大国：CINC指数排名前1位
+- 大国：CINC指数排名2-3位
+- 中等强国：CINC指数排名4-6位
+- 小国：CINC指数排名7位及以后
 """
 
     # Core rules template
@@ -83,11 +102,15 @@ class PromptTemplates:
 - action_id：行为唯一ID，输出时必须填写
 - action_name：行为中文名称，必须与列表完全一致，不得修改
 - respect_sov：该行为是否尊重主权，影响本轮国际秩序判定
-- initiator_power_change：你执行该行为后，你的国家国力变化值
-- target_power_change：你执行该行为后，目标国家国力变化值
+- 你方国力变化：执行该行为后你的CINC指数变化值（正数=国力提升，负数=国力下降，0=无变化）
+- 目标方国力变化：执行该行为后目标国的CINC指数变化值（正数=国力提升，负数=国力下降，0=无变化）
 - primary_indicator：行为主要影响的CINC底层指标
 - secondary_indicator：行为次要影响的CINC底层指标
-说明：CINC指数 = (milex/Σmilex + milper/Σmilper + irst/Σirst + pec/Σpec + tpop/Σtpop + upop/Σupop) / 6，其中Σ为体系内所有国家的总和
+
+【国力变化值的使用要求】
+上表中每一项行为的"你方国力变化"和"目标方国力变化"是系统预设的确切数值。
+你在成本收益分析中必须引用这些确切的国力变化值进行计算，不得编造或估算其他数值。
+注意：CINC是比例值，你方指标变化会影响体系内所有国家的相对CINC比例。
 """
 
     # User prompt template (task description + context + data)
@@ -96,6 +119,9 @@ class PromptTemplates:
 你需要在当前国际政治环境下，作为{agent_name}的国家领导集体，基于上述核心规则和全量信息池，做出符合国家利益的最优决策。
 
 请从下方允许执行的行为列表中选择1-5项行为，并为每项行为提供详细的成本收益分析。
+
+【当前态势摘要】
+{situation_summary}
 
 {info_pool}{actions_list}
 
@@ -111,17 +137,25 @@ class PromptTemplates:
         "昏庸型": "个人利益优先，可牺牲国家利益；决策以决策者个人利益为核心，可制定损害国家利益的政策，无固定策略偏好；唯一可主动偏离国家客观利益的类型，无行为禁止约束，可执行20项行为集中的所有行为"
     }
 
+    # Follower decision leader type rules mapping
+    FOLLOWER_LEADER_TYPE_RULES = {
+        "王道型": "追随偏好：优先追随价值观相近、尊重国际道义的领导者；对霸权型和强权型领导者持警惕态度，除非形势所迫否则不追随；更愿意建立多边合作关系而非单边追随；参与领导竞争时强调道义感召力和规则构建能力",
+        "霸权型": "追随偏好：优先追随实力最强、能带来实际利益的领导者；追随决策完全基于利益计算，不受道义约束；会根据实力对比动态调整追随对象，灵活务实；参与领导竞争时强调规则制定权和利益分配能力",
+        "强权型": "追随偏好：对追随行为持抵触态度，倾向独立自主；如必须追随，只追随比自己更强大的军事强国；对合作型和道义型领导者不屑一顾；参与领导竞争时强调军事实力和强制能力",
+        "昏庸型": "追随偏好：决策非理性，追随选择缺乏一致性；可能因个人好恶、短期利益或随机因素做出追随决策；参与领导竞争的动机不明，可能高估自身实力"
+    }
+
 
     # JSON output format template
     JSON_OUTPUT_TEMPLATE = {
         "decision_reason": "整体决策的核心逻辑与成本收益总览",
         "actions": [
             {
-                "action_id": "行为ID",
-                "action_category": "行为分类",
-                "action_name": "行为名称，必须与列表完全一致",
-                "target_agent_id": "目标国家ID",
-                "cost_benefit_analysis": "该行为的成本、预期收益、净收益分析详情，必须包含对各底层CINC指标（milex/milper/irst/pec/tpop/upop）的影响",
+                "action_id": 1,
+                "action_category": "外交手段",
+                "action_name": "发表公开声明",
+                "target_agent_id": 2,
+                "cost_benefit_analysis": "该行为的成本（如军事支出增加0.001）、预期收益（如提升国际影响力）、净收益分析详情，必须包含对各底层CINC指标（milex/milper/irst/pec/tpop/upop）的具体数值影响",
                 "action_content": "该行为的具体执行内容，如声明文本、协议概要、援助规模等，50-200字"
             }
         ]
@@ -143,13 +177,19 @@ class PromptTemplates:
 
         table_lines = []
         for action in allowed_actions:
+            # 国力变化值的文字说明
+            init_change = action['initiator_power_change']
+            target_change = action['target_power_change']
+            init_desc = f"提升{abs(init_change)}" if init_change > 0 else (f"下降{abs(init_change)}" if init_change < 0 else "不变")
+            target_desc = f"提升{abs(target_change)}" if target_change > 0 else (f"下降{abs(target_change)}" if target_change < 0 else "不变")
+
             line = (
                 f"ID:{action['action_id']} | "
                 f"名称:{action['action_name']} ({action['action_en_name']}) | "
                 f"分类:{action['action_category']} | "
                 f"尊重主权:{action['respect_sov']} | "
-                f"发起国力变化:{action['initiator_power_change']} | "
-                f"目标国力变化:{action['target_power_change']} | "
+                f"你方国力变化:{init_change}({init_desc}) | "
+                f"目标方国力变化:{target_change}({target_desc}) | "
                 f"简介:{action['action_desc']}"
                 f" | 主指标:{action.get('primary_indicator', 'pec')}"
                 f" | 次指标:{action.get('secondary_indicator', 'irst')}"
@@ -210,7 +250,8 @@ class PromptTemplates:
         cls,
         agent_info: Dict[str, Any],
         allowed_actions: List[Dict[str, Any]],
-        info_pool: Dict[str, Any]
+        info_pool: Dict[str, Any],
+        situation_summary: str = ""
     ) -> str:
         """
         Build user prompt for decision making.
@@ -221,6 +262,7 @@ class PromptTemplates:
             agent_info: Agent information including name, region, power, etc.
             allowed_actions: List of allowed action configurations
             info_pool: Information pool with all agents, history, etc.
+            situation_summary: Optional situation summary text
 
         Returns:
             User prompt string
@@ -247,6 +289,7 @@ class PromptTemplates:
         # Build user prompt
         user_prompt = cls.USER_PROMPT_TEMPLATE.format(
             agent_name=agent_info.get('agent_name', ''),
+            situation_summary=situation_summary or "暂无态势摘要",
             info_pool=info_pool_section,
             actions_list=actions_list,
             json_example=json_example
@@ -259,7 +302,8 @@ class PromptTemplates:
         cls,
         agent_name: str,
         current_total_power: float,
-        power_level: str
+        power_level: str,
+        leader_type: str = "未定义"
     ) -> str:
         """
         构建追随决策的系统提示词
@@ -268,14 +312,19 @@ class PromptTemplates:
             agent_name: 智能体名称
             current_total_power: 当前国力
             power_level: 实力层级
+            leader_type: 领导类型
 
         Returns:
             系统提示词字符串
         """
+        follower_rules = cls.FOLLOWER_LEADER_TYPE_RULES.get(leader_type, "根据国家利益和实力对比做出理性决策")
         return cls.FOLLOWER_SYSTEM_PROMPT_TEMPLATE.format(
             agent_name=agent_name,
             current_total_power=current_total_power,
-            power_level=power_level
+            power_level=power_level,
+            leader_type=leader_type,
+            leader_type_follower_rules=follower_rules,
+            initial_total_power=0  # 默认值，如需准确值需修改调用处
         ).strip()
 
     @classmethod
@@ -445,16 +494,39 @@ class PromptTemplates:
 
 # 追随决策的系统提示词模板（角色、规则、输出要求）
     FOLLOWER_SYSTEM_PROMPT_TEMPLATE = """
-你是一个{agent_name}的国家领导集体，当前CINC指数为{current_total_power}（0-1比例值），实力层级为{power_level}。
+你是一个{agent_name}的国家领导集体，当前CINC指数为{current_total_power}（0-1比例值），实力层级为{power_level}，领导类型为{leader_type}。
+
+【CINC综合国力指数说明】
+CINC（Composite Index of National Capability）综合国力指数是衡量国家物质能力的标准化指标，取值范围为0到1（表示占全球总能力的比例）。
+- 该国初始CINC指数为{initial_total_power}，当前CINC指数为{current_total_power}
+- CINC指数是比例值：体系内所有国家CINC之和恒为1，任何国家指标上升意味着其他国家相对下降
+- 6项底层指标：milex（军事支出）、milper（军事人员）、irst（钢铁产量）、pec（能源消耗）、tpop（总人口）、upop（城市人口）
+
+【实力层级判定标准】
+- 超级大国：CINC指数排名前1位
+- 大国：CINC指数排名2-3位
+- 中等强国：CINC指数排名4-6位
+- 小国：CINC指数排名7位及以后
+
+【战略关系等级】（从敌对到友好）
+1. 战争关系 - 最高烈度敌对
+2. 冲突关系 - 存在明显对抗
+3. 无外交关系 - 中立状态
+4. 伙伴关系 - 存在合作倾向
+5. 盟友关系 - 最高级别友好
 
 【角色设定】
-你需要代表国家做出追随相关的重要决策。
+你需要代表国家做出追随相关的重要决策。你的领导类型会深刻影响你的追随偏好和选择逻辑。
 
-【决策规则】
+【领导类型对追随决策的影响】
+{leader_type_follower_rules}
+
+【通用决策规则】
 1. 基于全量信息池中的所有信息做出理性决策
-2. 考虑战略关系对追随选择的影响
+2. 考虑战略关系对追随选择的影响：盟友倾向追随同一领导者，冲突方倾向避免追随同一领导者
 3. 考虑历史互动模式对决策的指导作用
 4. 考虑国力变化趋势对战略选择的影响
+5. 参与领导竞争时，需评估自身国力是否具备竞争优势
 
 【输出要求】
 - 必须严格按照JSON格式输出

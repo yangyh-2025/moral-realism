@@ -44,7 +44,7 @@ class LLMConfig:
     api_key: str = ""  # API密钥
     api_base: str = ""  # 可选的自定义API基础URL
     max_tokens: int = 2000  # 最大生成令牌数
-    temperature: float = 0.7  # 温度参数（控制随机性）
+    temperature: float = 0.35  # 温度参数（控制随机性），决策类任务使用较低值保证确定性
     timeout: int = 60  # 超时时间（秒）
     max_retries: int = 3  # 最大重试次数
     retry_delay: float = 1.0  # 重试延迟（秒）

@@ -51,6 +51,8 @@ class RelationshipEvolutionService:
     def __init__(self, log_manager=None):
         self.llm_service = get_llm_service()
         self.log_manager = log_manager
+        # 存储上一轮的关系变化记录，key: project_id, value: List[Dict]
+        self._last_round_changes: Dict[int, List[Dict[str, Any]]] = {}
 
     async def evolve_relationships(self, project_id: int, round_num: int) -> List[Dict[str, Any]]:
         """
@@ -77,6 +79,9 @@ class RelationshipEvolutionService:
             logger.info(f"项目 {project_id} 没有战略关系，跳过演变")
             return []
 
+        # 1.5 获取上一轮关系变化记录
+        last_round_changes = await self._get_last_round_changes(project_id, round_num)
+
         # 2. 构建LLM提示词
         system_prompt = self._build_system_prompt()
         user_prompt = self._build_user_prompt(
@@ -87,6 +92,7 @@ class RelationshipEvolutionService:
             recent_followers=recent_followers,
             recent_order=recent_order,
             round_num=round_num,
+            last_round_changes=last_round_changes,
         )
 
         # 3. 调用LLM
@@ -120,6 +126,9 @@ class RelationshipEvolutionService:
                     await self.log_manager.log_relationship_change(round_num, change)
             else:
                 logger.warning(f"战略关系变化应用失败，跳过: {change}")
+
+        # 保存本轮变化记录，供下一轮使用
+        self._last_round_changes[project_id] = applied_changes
 
         logger.info(f"第 {round_num} 轮战略关系演变完成，{len(applied_changes)} 对关系发生变化")
         return applied_changes
@@ -249,6 +258,28 @@ class RelationshipEvolutionService:
                 }
             return {"order_type": "未确定", "has_leader": "false", "leader_agent_id": None}
 
+    def _get_last_round_changes(
+        self, project_id: int, round_num: int
+    ) -> List[Dict[str, Any]]:
+        """获取上一轮的关系变化记录，用于历史连续性约束。
+
+        数据来自实例变量存储，在上一轮evolve_relationships结束时保存。
+        """
+        if round_num <= 1:
+            return []
+
+        changes = self._last_round_changes.get(project_id, [])
+        return [
+            {
+                "source_agent_id": c["source_agent_id"],
+                "target_agent_id": c["target_agent_id"],
+                "current_type": c.get("current_type", ""),
+                "new_type": c["new_type"],
+                "reason": c.get("reason", ""),
+            }
+            for c in changes
+        ]
+
     # ==================== 提示词构建 ====================
 
     def _build_system_prompt(self) -> str:
@@ -262,22 +293,44 @@ class RelationshipEvolutionService:
 4. 伙伴关系 - 存在合作倾向，有一定程度的互信
 5. 盟友关系 - 最高级别友好关系，深度战略合作
 
-【评估规则】：
-1. 行为互动模式：分析两国之间最近的行为记录
-   - 合作类行为（外交合作、经济援助、协商等）增多 → 关系倾向于升级（友好化）
-   - 对抗类行为（威胁、制裁、军事展示、攻击等）增多 → 关系倾向于降级（敌对化）
-2. 国力对比变化：如果一方国力显著增长并持续对另一方施压，关系可能恶化
-3. 追随格局：如果两国追随同一领导者，关系倾向于改善；如果追随不同领导者，关系可能恶化
-4. 第三方影响：盟友的行为可能影响关系（如盟友对某国敌对，本国关系也可能受影响）
-5. 变化约束：
+【评估规则-量化标准】：
+1. 行为互动模式（最近3轮内）：
+   - 合作类行为：发表公开声明、呼吁/请求、表达合作意向、协商/磋商、开展外交合作、开展实质性合作、提供援助、让步/屈服
+   - 对抗类行为：调查、要求/索要、表达不满/不赞成、威胁、抗议、展示军事姿态、降级关系、胁迫/强制、攻击/袭击、交战/使用常规军事武力、实施非常规大规模暴力
+   - 升级阈值：两国间合作类行为 >= 2次 且 对抗类行为 = 0次 → 可考虑升级
+   - 降级阈值：两国间对抗类行为 >= 2次 且 合作类行为 = 0次 → 可考虑降级
+   - 混合互动：合作和对抗都有时，需权衡行为强度和国力影响，不急于变化
+   - 无互动：最近3轮两国间无任何互动 → 必须保持不变
+
+2. 国力对比变化：
+   - "显著增长"定义为：某国最近3轮CINC累计增长 >= 0.01，且对方CINC累计变化 <= 0
+   - 强势方对弱势方持续施压（如威胁、军事展示）→ 关系恶化风险高
+
+3. 追随格局：
+   - 两国追随同一领导者 → 关系改善倾向（+1级升级压力）
+   - 两国追随不同领导者 → 关系恶化倾向（+1级降级压力）
+   - 一方中立、一方有追随 → 无显著影响
+
+4. 第三方影响（盟友传导效应）：
+   - 如果A国与B国是盟友关系，且B国对C国执行了对抗类行为（威胁及以上级别）
+   - 则A国对C国的关系有降级压力（压力等级：冲突/战争关系=-2级，其他对抗=-1级）
+   - 传导效应仅影响"无外交关系"及以上的关系，不影响已有的战争/冲突关系
+
+5. 变化约束（硬性规则）：
    - 每次变化最多只能升降一级（如从"无外交"只能到"冲突"或"伙伴"）
-   - 如果近期两国之间没有显著互动，倾向于保持不变
-   - 关系变化需要有明确的、基于数据的依据
-6. 连续性：除非发生重大事件，否则关系不应频繁剧烈波动
+   - 如果近期两国之间无任何互动 → 必须保持不变，禁止无理由变化
+   - 关系变化需要有明确的行为数据作为依据，禁止仅凭国力变化或推测就改变关系
+
+6. 历史连续性约束：
+   - 上一轮刚刚发生变化的关系对，本轮除非出现重大事件（战争行为、大规模暴力），否则必须保持不变
+   - "重大事件"仅限：交战/使用常规军事武力、实施非常规大规模暴力、大规模胁迫导致人员伤亡
+   - 关系从"无外交"升级为"伙伴"后，至少需要稳定1轮才能再次变化
+   - 关系从"伙伴"升级为"盟友"后，至少需要稳定2轮才能降级
+   - 关系降级（友好→敌对）不受稳定期限制，但需要有明确对抗行为支撑
 
 【输出要求】：
 - 必须输出严格的JSON格式
-- 对每一对需要变化的关系给出明确的变化理由
+- 对每一对需要变化的关系给出明确的变化理由，必须引用具体的行为数据
 - 如果没有明显变化依据，保持当前关系不变（不输出）
 - 禁止使用markdown格式，禁止任何额外文本说明
 """
@@ -291,6 +344,7 @@ class RelationshipEvolutionService:
         recent_followers: Dict[int, Optional[int]],
         recent_order: Dict[str, Any],
         round_num: int,
+        last_round_changes: List[Dict[str, Any]] = None,
     ) -> str:
         """构建用户提示词"""
         # 智能体信息
@@ -352,6 +406,17 @@ class RelationshipEvolutionService:
             f"尊重主权率: {recent_order.get('respect_sov_ratio', 0):.2%}"
         )
 
+        # 上一轮关系变化记录
+        last_changes_str = ""
+        if last_round_changes:
+            last_changes_str = "\n".join(
+                f"  {c['source_agent_id']} <-> {c['target_agent_id']}: "
+                f"{c['current_type']} -> {c['new_type']} | 理由: {c['reason'][:60]}..."
+                for c in last_round_changes
+            )
+        else:
+            last_changes_str = "  无"
+
         return f"""【评估任务】
 请基于以下全局信息，对每一对战略关系逐一评估是否需要调整。
 
@@ -360,6 +425,9 @@ class RelationshipEvolutionService:
 
 【当前战略关系】
 {rel_str}
+
+【上一轮(R{round_num-1})关系变化记录】
+{last_changes_str}
 
 【最近3轮行为记录（按关系对分组）】
 {pair_actions_str}
