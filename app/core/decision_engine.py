@@ -135,6 +135,12 @@ class DecisionEngine:
             action_stage
         )
 
+        # Extract all agent IDs for retry prompt building (avoid NameError on retry)
+        all_agent_ids = [
+            a.get('agent_id') for a in info_pool.all_agent_info
+            if 'agent_id' in a
+        ]
+
         # Build system and user prompts
         system_prompt, user_prompt = self._build_prompts_for_llm(
             agent_info,
@@ -527,59 +533,79 @@ class DecisionEngine:
     def _format_history_for_prompt(
         self,
         history: List[Dict[str, Any]],
-        agent_id: int
+        agent_id: Optional[int] = None
     ) -> str:
-        """Format action history for prompt, aggregated by relationship pair."""
+        """Format action history for prompt, aggregated by relationship pair.
+
+        若 agent_id 为 None（追随决策、关系演变等非单 agent 视角），按 (source, target)
+        关系对全局聚合；否则按当前 agent 的 outgoing/incoming 视角聚合。
+        """
         if not history:
             return "无历史互动行为记录"
 
         from collections import defaultdict
 
-        # Separate actions where this agent is source vs target
-        outgoing = defaultdict(lambda: {"cooperation": 0, "conflict": 0, "actions": []})
-        incoming = defaultdict(lambda: {"cooperation": 0, "conflict": 0, "actions": []})
-
         # Categorize actions
         cooperation_actions = {"发表公开声明", "呼吁/请求", "表达合作意向", "协商/磋商",
                                "开展外交合作", "开展实质性合作", "提供援助", "让步/屈服"}
 
-        for record in history:
-            src = record.get('source_agent_id')
-            tgt = record.get('target_agent_id')
-            name = record.get('action_name', '')
-            is_coop = name in cooperation_actions
-            cat = "cooperation" if is_coop else "conflict"
-
-            if src == agent_id and tgt is not None:
-                outgoing[tgt][cat] += 1
-                outgoing[tgt]["actions"].append(name)
-            elif tgt == agent_id and src is not None:
-                incoming[src][cat] += 1
-                incoming[src]["actions"].append(name)
-
         lines = []
 
-        # Summarize outgoing actions
-        if outgoing:
-            lines.append("你作为发起方的互动：")
-            for target_id, stats in sorted(outgoing.items()):
-                coop = stats["cooperation"]
-                conf = stats["conflict"]
-                action_list = ", ".join(sorted(set(stats["actions"])))
-                lines.append(
-                    f"  -> ID{target_id}: 合作类{coop}次, 对抗类{conf}次 | 行为:{action_list}"
-                )
+        if agent_id is not None:
+            outgoing = defaultdict(lambda: {"cooperation": 0, "conflict": 0, "actions": []})
+            incoming = defaultdict(lambda: {"cooperation": 0, "conflict": 0, "actions": []})
 
-        # Summarize incoming actions
-        if incoming:
-            lines.append("其他国对你发起的互动：")
-            for source_id, stats in sorted(incoming.items()):
-                coop = stats["cooperation"]
-                conf = stats["conflict"]
-                action_list = ", ".join(sorted(set(stats["actions"])))
-                lines.append(
-                    f"  ID{source_id}->你: 合作类{coop}次, 对抗类{conf}次 | 行为:{action_list}"
-                )
+            for record in history:
+                src = record.get('source_agent_id')
+                tgt = record.get('target_agent_id')
+                name = record.get('action_name', '')
+                cat = "cooperation" if name in cooperation_actions else "conflict"
+
+                if src == agent_id and tgt is not None:
+                    outgoing[tgt][cat] += 1
+                    outgoing[tgt]["actions"].append(name)
+                elif tgt == agent_id and src is not None:
+                    incoming[src][cat] += 1
+                    incoming[src]["actions"].append(name)
+
+            if outgoing:
+                lines.append("你作为发起方的互动：")
+                for target_id, stats in sorted(outgoing.items()):
+                    action_list = ", ".join(sorted(set(stats["actions"])))
+                    lines.append(
+                        f"  -> ID{target_id}: 合作类{stats['cooperation']}次, "
+                        f"对抗类{stats['conflict']}次 | 行为:{action_list}"
+                    )
+
+            if incoming:
+                lines.append("其他国对你发起的互动：")
+                for source_id, stats in sorted(incoming.items()):
+                    action_list = ", ".join(sorted(set(stats["actions"])))
+                    lines.append(
+                        f"  ID{source_id}->你: 合作类{stats['cooperation']}次, "
+                        f"对抗类{stats['conflict']}次 | 行为:{action_list}"
+                    )
+        else:
+            pair_stats = defaultdict(lambda: {"cooperation": 0, "conflict": 0, "actions": []})
+            for record in history:
+                src = record.get('source_agent_id')
+                tgt = record.get('target_agent_id')
+                if src is None or tgt is None:
+                    continue
+                name = record.get('action_name', '')
+                cat = "cooperation" if name in cooperation_actions else "conflict"
+                key = (src, tgt)
+                pair_stats[key][cat] += 1
+                pair_stats[key]["actions"].append(name)
+
+            if pair_stats:
+                lines.append("各关系对互动汇总：")
+                for (src, tgt), stats in sorted(pair_stats.items()):
+                    action_list = ", ".join(sorted(set(stats["actions"])))
+                    lines.append(
+                        f"  ID{src}->ID{tgt}: 合作类{stats['cooperation']}次, "
+                        f"对抗类{stats['conflict']}次 | 行为:{action_list}"
+                    )
 
         # Add recent detailed records (last 5, for reference)
         recent = history[-5:] if len(history) > 5 else history

@@ -220,11 +220,36 @@ function initializeCharts() {
   if (powerChart.value) {
     const chart = echarts.init(powerChart.value)
     chart.setOption({
-      grid: { top: 40, right: 40, bottom: 80, left: 60 },
-      tooltip: { trigger: 'axis' },
-      legend: { data: [], top: 10 },
-      xAxis: { type: 'category', name: '轮次' },
-      yAxis: { type: 'value', name: 'CINC指数' },
+      grid: { top: 50, right: 40, bottom: 80, left: 70 },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'cross' },
+        formatter: (params) => {
+          if (!params || params.length === 0) return ''
+          let html = `<b>第 ${params[0].axisValue} 轮</b><br/>`
+          // 按 value 倒序展示，关注 dominant 国家
+          const sorted = [...params].sort((a, b) => (b.value || 0) - (a.value || 0))
+          sorted.forEach(p => {
+            const v = (p.value || 0).toFixed(6)
+            html += `${p.marker}${p.seriesName}: ${v}<br/>`
+          })
+          return html
+        }
+      },
+      legend: { data: [], top: 10, type: 'scroll' },
+      xAxis: {
+        type: 'category',
+        name: '轮次',
+        boundaryGap: false
+      },
+      yAxis: {
+        type: 'value',
+        name: 'CINC占比',
+        min: 0,
+        axisLabel: {
+          formatter: (v) => `${(v * 100).toFixed(0)}%`
+        }
+      },
       series: []
     })
     charts.push(chart)
@@ -427,22 +452,29 @@ function updatePowerChart(data) {
 
   // 获取所有轮次并排序
   const rounds = [...new Set(data.map(item => item.round_num))].sort((a, b) => a - b)
-  // 为每个智能体创建一个系列
-  const series = Object.keys(agentGroups).map(agentName => ({
+  // 为每个智能体创建一个系列（百分百堆叠面积图）
+  const agentNames = Object.keys(agentGroups)
+  const series = agentNames.map(agentName => ({
     name: agentName,
     type: 'line',
+    stack: 'cinc-stack',          // 关键：相同 stack 名字，触发堆叠
+    areaStyle: { opacity: 0.7 },  // 关键：开启面积填充
+    smooth: true,
+    showSymbol: false,
+    emphasis: { focus: 'series' },
+    lineStyle: { width: 1 },
     data: rounds.map(round => {
-      const record = agentGroups[agentName].find(r => r.round === round)
-      return record ? record.power : null
-    }),
-    smooth: true
+      const r = agentGroups[agentName].find(r => r.round === round)
+      return r && r.power != null ? r.power : 0   // 改 null → 0，避免堆叠断裂
+    })
   }))
 
   // 更新图表
   chart.setOption({
-    legend: { data: Object.keys(agentGroups) },
+    legend: { data: agentNames, top: 10, type: 'scroll' },
     xAxis: {
       type: 'category',
+      boundaryGap: false,
       data: rounds,
       name: '轮次'
     },

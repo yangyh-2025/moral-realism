@@ -439,13 +439,51 @@ async def _init_preset_scenes(session: AsyncSession) -> None:
     """
     初始化预置仿真场景
 
-    暂未实现，计划添加3个经典学术场景供一键启动。
+    添加3个基于CINC真实历史数据的经典学术场景供一键启动。
+    场景ID固定为1/2/3，与scene_service中的硬编码数据保持一致。
 
     Args:
         session: 数据库会话
     """
-    # 待实现：添加3个经典学术场景
-    pass
+    from app.models import PresetScene
+    from datetime import datetime
+
+    scenes = [
+        {
+            "scene_id": 1,
+            "scene_name": "一战前欧洲（1913）",
+            "scene_desc": "基于1913年CINC真实数据的欧洲国际体系，包含19个国家。德国崛起、英俄结盟、巴尔干危机...",
+            "total_rounds": 50,
+            "agent_config_json": '{"agents": []}',
+            "is_default": True,
+            "created_at": datetime.now(),
+            "updated_at": datetime.now(),
+        },
+        {
+            "scene_id": 2,
+            "scene_name": "二战前欧洲（1938）",
+            "scene_desc": "基于1938年CINC真实数据的欧洲国际体系，包含28个国家。苏德对抗、张伯伦绥靖、轴心国体系...",
+            "total_rounds": 50,
+            "agent_config_json": '{"agents": []}',
+            "is_default": False,
+            "created_at": datetime.now(),
+            "updated_at": datetime.now(),
+        },
+        {
+            "scene_id": 3,
+            "scene_name": "冷战前欧洲（1946）",
+            "scene_desc": "基于1946年CINC真实数据的欧洲国际体系，包含25个国家。苏英对立、铁幕降临、马歇尔计划前夜...",
+            "total_rounds": 50,
+            "agent_config_json": '{"agents": []}',
+            "is_default": False,
+            "created_at": datetime.now(),
+            "updated_at": datetime.now(),
+        },
+    ]
+
+    for scene_data in scenes:
+        scene = PresetScene(**scene_data)
+        session.add(scene)
 
 
 async def _init_system_config(session: AsyncSession) -> None:

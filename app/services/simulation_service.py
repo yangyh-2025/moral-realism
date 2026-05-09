@@ -5,6 +5,7 @@
 
 from typing import Optional, List, Dict, Any
 import asyncio
+import math
 from datetime import datetime
 from sqlalchemy import select, update
 from loguru import logger
@@ -950,7 +951,11 @@ class SimulationService:
                 start_power = last_round_powers.get(agent_id, 0)
                 end_power = agent.get('current_total_power', 0)
                 change_value = end_power - start_power
-                change_rate = (change_value / start_power * 100) if start_power > 0 else 0.0
+                # 对数变化率（百分点），避免极小起点放大效应
+                if start_power > 0 and end_power > 0:
+                    change_rate = math.log(end_power / start_power) * 100.0
+                else:
+                    change_rate = 0.0
 
                 history_record = AgentPowerHistory(
                     project_id=project_id,
@@ -976,7 +981,11 @@ class SimulationService:
                 start_power = last_round_powers.get(agent_id, 0)
                 end_power = agent.get('current_total_power', 0)
                 change_value = end_power - start_power
-                change_rate = (change_value / start_power * 100) if start_power > 0 else 0.0
+                # 对数变化率（百分点），避免极小起点放大效应
+                if start_power > 0 and end_power > 0:
+                    change_rate = math.log(end_power / start_power) * 100.0
+                else:
+                    change_rate = 0.0
 
                 # 从engine结果中获取indicator_changes和passive_change
                 indicator_changes = None

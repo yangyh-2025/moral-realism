@@ -54,7 +54,7 @@ class ActionRecord(Base):
     action_id: Mapped[int] = mapped_column(ForeignKey("action_config.action_id"), nullable=False, index=True)
     action_category: Mapped[str] = mapped_column(String(50), nullable=False)
     action_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    respect_sov: Mapped[bool] = mapped_column(String(10), nullable=False, default="false")
+    respect_sov: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     initiator_power_change: Mapped[float] = mapped_column(Float, nullable=False)
     target_power_change: Mapped[float] = mapped_column(Float, nullable=False)
     decision_detail: Mapped[str] = mapped_column(String(5000), nullable=True)

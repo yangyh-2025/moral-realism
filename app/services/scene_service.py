@@ -27,9 +27,34 @@ class SceneService:
         """
         获取所有预置仿真场景列表
 
+        优先从数据库查询，若数据库无数据则回退到硬编码数据。
+
         Returns:
             预置场景列表
         """
+        from app.models import PresetScene
+        from sqlalchemy import select
+
+        # 优先从数据库查询
+        async for session in db_config.get_session():
+            result = await session.execute(select(PresetScene))
+            db_scenes = result.scalars().all()
+            if db_scenes:
+                return [
+                    {
+                        "scene_id": s.scene_id,
+                        "scene_name": s.scene_name,
+                        "scene_desc": s.scene_desc,
+                        "total_rounds": s.total_rounds,
+                        "agent_config_json": s.agent_config_json,
+                        "is_default": s.is_default,
+                        "created_at": s.created_at,
+                        "updated_at": s.updated_at,
+                    }
+                    for s in db_scenes
+                ]
+
+        # 数据库无数据时回退到硬编码数据
         return [
             {
                 "scene_id": 1,
@@ -73,6 +98,28 @@ class SceneService:
         Returns:
             场景详情字典，或None（如果不存在）
         """
+        from app.models import PresetScene
+        from sqlalchemy import select
+
+        # 优先从数据库查询
+        async for session in db_config.get_session():
+            result = await session.execute(
+                select(PresetScene).where(PresetScene.scene_id == scene_id)
+            )
+            db_scene = result.scalar_one_or_none()
+            if db_scene:
+                return {
+                    "scene_id": db_scene.scene_id,
+                    "scene_name": db_scene.scene_name,
+                    "scene_desc": db_scene.scene_desc,
+                    "total_rounds": db_scene.total_rounds,
+                    "agent_config_json": db_scene.agent_config_json,
+                    "is_default": db_scene.is_default,
+                    "created_at": db_scene.created_at,
+                    "updated_at": db_scene.updated_at,
+                }
+
+        # 数据库无数据时回退到硬编码数据
         scenes = await self.get_preset_scenes()
         for scene in scenes:
             if scene["scene_id"] == scene_id:

@@ -7,7 +7,7 @@ Agent Core Module
 
 from enum import Enum
 from typing import Dict, List, Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 from .cinc_calculator import PowerLevelEnum, calculate_cinc, determine_power_level, CINC_INDICATORS
 
@@ -118,31 +118,6 @@ class AgentBase(BaseModel):
         },
         description="允许执行的20项标准行为列表，按发起/响应分类"
     )
-
-    @field_validator("leader_type")
-    @classmethod
-    def validate_leader_type_permission(cls, v: Optional[LeaderTypeEnum], info) -> Optional[LeaderTypeEnum]:
-        """
-        领导类型合法性校验：仅超级大国/大国可配置
-
-        CINC需要全体系数据才能计算排名，单个agent无法独立计算。
-        因此验证简化为：如果设置了leader_type则跳过这里的层级验证
-        （power_level由外部批量计算后传入）。
-
-        Args:
-            v: 领导类型值
-            info: 字段验证上下文
-
-        Returns:
-            验证后的领导类型值
-        """
-        if v is not None:
-            # CINC需要全体系数据，单个agent无法独立计算power_level
-            # 验证简化为：如果设置了leader_type则跳过这里的层级验证
-            # power_level由外部批量计算后传入
-            pass
-
-        return v
 
     def model_post_init(self, __context) -> None:
         """
