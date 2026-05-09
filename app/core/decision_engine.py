@@ -537,6 +537,10 @@ class DecisionEngine:
     ) -> str:
         """Format action history for prompt, aggregated by relationship pair.
 
+        历史记录长度控制策略：
+        - 最近10轮的记录做详细聚合（按关系对统计 + 最近5条详细记录）
+        - 超过10轮的早期记录只做极简统计（关系对级别的合作/对抗次数）
+
         若 agent_id 为 None（追随决策、关系演变等非单 agent 视角），按 (source, target)
         关系对全局聚合；否则按当前 agent 的 outgoing/incoming 视角聚合。
         """
@@ -549,75 +553,117 @@ class DecisionEngine:
         cooperation_actions = {"发表公开声明", "呼吁/请求", "表达合作意向", "协商/磋商",
                                "开展外交合作", "开展实质性合作", "提供援助", "让步/屈服"}
 
+        # 按轮次分组并分离近期/早期记录
+        round_groups = defaultdict(list)
+        for record in history:
+            round_groups[record.get('round_num', 0)].append(record)
+
+        all_rounds = sorted(round_groups.keys())
+        recent_rounds_set = set(all_rounds[-10:]) if len(all_rounds) > 10 else set(all_rounds)
+
+        recent_records = [r for r in history if r.get('round_num', 0) in recent_rounds_set]
+        older_records = [r for r in history if r.get('round_num', 0) not in recent_rounds_set]
+
         lines = []
 
-        if agent_id is not None:
-            outgoing = defaultdict(lambda: {"cooperation": 0, "conflict": 0, "actions": []})
-            incoming = defaultdict(lambda: {"cooperation": 0, "conflict": 0, "actions": []})
-
-            for record in history:
-                src = record.get('source_agent_id')
-                tgt = record.get('target_agent_id')
-                name = record.get('action_name', '')
-                cat = "cooperation" if name in cooperation_actions else "conflict"
-
-                if src == agent_id and tgt is not None:
-                    outgoing[tgt][cat] += 1
-                    outgoing[tgt]["actions"].append(name)
-                elif tgt == agent_id and src is not None:
-                    incoming[src][cat] += 1
-                    incoming[src]["actions"].append(name)
-
-            if outgoing:
-                lines.append("你作为发起方的互动：")
-                for target_id, stats in sorted(outgoing.items()):
-                    action_list = ", ".join(sorted(set(stats["actions"])))
-                    lines.append(
-                        f"  -> ID{target_id}: 合作类{stats['cooperation']}次, "
-                        f"对抗类{stats['conflict']}次 | 行为:{action_list}"
-                    )
-
-            if incoming:
-                lines.append("其他国对你发起的互动：")
-                for source_id, stats in sorted(incoming.items()):
-                    action_list = ", ".join(sorted(set(stats["actions"])))
-                    lines.append(
-                        f"  ID{source_id}->你: 合作类{stats['cooperation']}次, "
-                        f"对抗类{stats['conflict']}次 | 行为:{action_list}"
-                    )
-        else:
-            pair_stats = defaultdict(lambda: {"cooperation": 0, "conflict": 0, "actions": []})
-            for record in history:
+        # ========== 早期记录极简统计 ==========
+        if older_records:
+            lines.append("【早期互动概要】（仅统计）：")
+            pair_stats = defaultdict(lambda: {"cooperation": 0, "conflict": 0})
+            for record in older_records:
                 src = record.get('source_agent_id')
                 tgt = record.get('target_agent_id')
                 if src is None or tgt is None:
                     continue
+                key = (min(src, tgt), max(src, tgt))
                 name = record.get('action_name', '')
-                cat = "cooperation" if name in cooperation_actions else "conflict"
-                key = (src, tgt)
-                pair_stats[key][cat] += 1
-                pair_stats[key]["actions"].append(name)
+                if name in cooperation_actions:
+                    pair_stats[key]["cooperation"] += 1
+                else:
+                    pair_stats[key]["conflict"] += 1
 
-            if pair_stats:
-                lines.append("各关系对互动汇总：")
-                for (src, tgt), stats in sorted(pair_stats.items()):
-                    action_list = ", ".join(sorted(set(stats["actions"])))
-                    lines.append(
-                        f"  ID{src}->ID{tgt}: 合作类{stats['cooperation']}次, "
-                        f"对抗类{stats['conflict']}次 | 行为:{action_list}"
-                    )
-
-        # Add recent detailed records (last 5, for reference)
-        recent = history[-5:] if len(history) > 5 else history
-        if recent:
-            lines.append("最近5条详细记录（供参考）：")
-            for record in recent:
-                line = (
-                    f"  轮次{record.get('round_num', 'N/A')}: "
-                    f"{record.get('source_agent_id', 'N/A')}->{record.get('target_agent_id', 'N/A')} "
-                    f"{record.get('action_name', 'N/A')}"
+            for (a, b), stats in sorted(pair_stats.items()):
+                lines.append(
+                    f"  ID{a}<->ID{b}: 合作{stats['cooperation']}次, 对抗{stats['conflict']}次"
                 )
-                lines.append(line)
+            lines.append("")  # 空行分隔
+
+        # ========== 最近10轮详细聚合 ==========
+        if recent_records:
+            earliest_recent = min(r.get('round_num', 0) for r in recent_records)
+            lines.append(f"【最近轮次详细互动】（轮次{earliest_recent}起，共{len(recent_records)}条记录）：")
+
+            if agent_id is not None:
+                outgoing = defaultdict(lambda: {"cooperation": 0, "conflict": 0, "actions": []})
+                incoming = defaultdict(lambda: {"cooperation": 0, "conflict": 0, "actions": []})
+
+                for record in recent_records:
+                    src = record.get('source_agent_id')
+                    tgt = record.get('target_agent_id')
+                    name = record.get('action_name', '')
+                    cat = "cooperation" if name in cooperation_actions else "conflict"
+
+                    if src == agent_id and tgt is not None:
+                        outgoing[tgt][cat] += 1
+                        outgoing[tgt]["actions"].append(name)
+                    elif tgt == agent_id and src is not None:
+                        incoming[src][cat] += 1
+                        incoming[src]["actions"].append(name)
+
+                if outgoing:
+                    lines.append("你作为发起方的互动：")
+                    for target_id, stats in sorted(outgoing.items()):
+                        action_list = ", ".join(sorted(set(stats["actions"])))
+                        lines.append(
+                            f"  -> ID{target_id}: 合作类{stats['cooperation']}次, "
+                            f"对抗类{stats['conflict']}次 | 行为:{action_list}"
+                        )
+
+                if incoming:
+                    lines.append("其他国对你发起的互动：")
+                    for source_id, stats in sorted(incoming.items()):
+                        action_list = ", ".join(sorted(set(stats["actions"])))
+                        lines.append(
+                            f"  ID{source_id}->你: 合作类{stats['cooperation']}次, "
+                            f"对抗类{stats['conflict']}次 | 行为:{action_list}"
+                        )
+            else:
+                pair_stats = defaultdict(lambda: {"cooperation": 0, "conflict": 0, "actions": []})
+                for record in recent_records:
+                    src = record.get('source_agent_id')
+                    tgt = record.get('target_agent_id')
+                    if src is None or tgt is None:
+                        continue
+                    name = record.get('action_name', '')
+                    cat = "cooperation" if name in cooperation_actions else "conflict"
+                    key = (src, tgt)
+                    pair_stats[key][cat] += 1
+                    pair_stats[key]["actions"].append(name)
+
+                if pair_stats:
+                    lines.append("各关系对互动汇总：")
+                    for (src, tgt), stats in sorted(pair_stats.items()):
+                        action_list = ", ".join(sorted(set(stats["actions"])))
+                        lines.append(
+                            f"  ID{src}->ID{tgt}: 合作类{stats['cooperation']}次, "
+                            f"对抗类{stats['conflict']}次 | 行为:{action_list}"
+                        )
+
+            # 最近5条详细记录（仅在 recent_records 中选取）
+            detailed = recent_records[-5:] if len(recent_records) > 5 else recent_records
+            if detailed:
+                lines.append("最近5条详细记录（含具体内容，供参考）：")
+                for record in detailed:
+                    content = record.get('action_content', '')
+                    content_display = content[:80] + "..." if len(content) > 80 else content
+                    line = (
+                        f"  轮次{record.get('round_num', 'N/A')}: "
+                        f"{record.get('source_agent_id', 'N/A')}->{record.get('target_agent_id', 'N/A')} "
+                        f"【{record.get('action_name', 'N/A')}】"
+                    )
+                    if content_display:
+                        line += f" 内容:{content_display}"
+                    lines.append(line)
 
         return "\n".join(lines)
 
@@ -682,7 +728,24 @@ class DecisionEngine:
             ]
             lines.append(f"- 当前实力前三: {' | '.join(top3)}")
 
-        # 3. Strategic relationships summary
+        # 3. 实力矩阵：与各国的CINC对比（用于评估军事冲突获胜概率）
+        if info_pool.all_agent_info:
+            lines.append("- 【实力矩阵-你与各国的CINC比值（用于评估军事冲突获胜概率）】:")
+            for other in info_pool.all_agent_info:
+                other_id = other.get('agent_id')
+                if other_id == agent_id:
+                    continue
+                other_power = other.get('current_total_power', 0)
+                if other_power > 0 and current_power > 0:
+                    ratio = current_power / other_power
+                    assessment = "明显强于" if ratio >= 2.0 else ("略强于" if ratio >= 1.0 else ("略弱于" if ratio >= 0.5 else "明显弱于"))
+                    win_prob = "极高" if ratio >= 2.0 else ("较高" if ratio >= 1.0 else ("较低" if ratio >= 0.5 else "极低"))
+                    lines.append(
+                        f"  ID{other_id}({other.get('agent_name')}): 你的CINC/对方CINC={ratio:.2f}, "
+                        f"判定为{assessment}对手, 军事冲突获胜概率{win_prob}"
+                    )
+
+        # 4. Strategic relationships summary
         own_relationships = agent_info.strategic_relationships or {}
         if own_relationships:
             allies = [f"ID{tid}" for tid, rt in own_relationships.items() if rt == "盟友关系"]
@@ -727,7 +790,53 @@ class DecisionEngine:
         else:
             lines.append("- 国力趋势: 无历史数据")
 
-        # 6. Order info
+        # 6. Conflict escalation trajectory (new)
+        cooperation_actions = {"发表公开声明", "呼吁/请求", "表达合作意向", "协商/磋商",
+                               "开展外交合作", "开展实质性合作", "提供援助", "让步/屈服"}
+        dyad_records = {}
+        for record in info_pool.history_action_records:
+            src = record.get('source_agent_id')
+            tgt = record.get('target_agent_id')
+            if src == agent_id and tgt is not None:
+                dyad_records.setdefault(tgt, []).append(record)
+            elif tgt == agent_id and src is not None:
+                dyad_records.setdefault(src, []).append(record)
+
+        escalation_lines = []
+        for other_id, records in sorted(dyad_records.items()):
+            # Sort by round and take last 3 interactions
+            sorted_records = sorted(records, key=lambda r: r.get('round_num', 0))
+            recent = sorted_records[-3:]
+            if len(recent) >= 3:
+                action_names = [r.get('action_name', '') for r in recent]
+                rounds = [r.get('round_num', '?') for r in recent]
+                is_all_conflict = all(name not in cooperation_actions for name in action_names)
+                is_all_cooperation = all(name in cooperation_actions for name in action_names)
+
+                if is_all_conflict:
+                    escalation_lines.append(
+                        f"ID{other_id}: 轮次{rounds[0]}-{rounds[-1]} 连续{len(recent)}轮对抗 "
+                        f"({'→'.join(action_names)}), **冲突正在快速升级**"
+                    )
+                elif is_all_cooperation:
+                    escalation_lines.append(
+                        f"ID{other_id}: 轮次{rounds[0]}-{rounds[-1]} 连续{len(recent)}轮合作 "
+                        f"({'→'.join(action_names)}), 关系稳定缓和"
+                    )
+                else:
+                    escalation_lines.append(
+                        f"ID{other_id}: 轮次{rounds[0]}-{rounds[-1]} 混合互动 "
+                        f"({'→'.join(action_names)}), 冲突态势不确定"
+                    )
+
+        if escalation_lines:
+            lines.append("- 【冲突升级轨迹-最近3轮互动模式】:")
+            for el in escalation_lines:
+                lines.append(f"  {el}")
+        else:
+            lines.append("- 【冲突升级轨迹】: 历史互动数据不足以判定趋势（至少需要3轮互动）")
+
+        # 7. Order info
         order_info = info_pool.last_round_order_info or {}
         if order_info:
             order_type = order_info.get('order_type', '未确定')
@@ -741,11 +850,40 @@ class DecisionEngine:
 class CostBenefitAnalyzer:
     """Cost-benefit analysis helper for decision engine."""
 
+    # Leader type behavior value weights (aligns with prompt_templates.py LEADER_TYPE_RULES)
+    _LEADER_TYPE_WEIGHTS = {
+        "王道型": {
+            "respect_sov_bonus": 0.2,
+            "disrespect_sov_penalty": -0.3,
+            "cooperation_bonus": 0.1,
+            "military_deterrence_cost": -0.1,
+            "ally_bonus": 0.15,
+        },
+        "霸权型": {
+            "material_interest_bonus": 0.15,
+            "influence_bonus": 0.1,
+            "military_deterrence_bonus": 0.1,
+            "weak_opponent_discount": -0.1,
+        },
+        "强权型": {
+            "military_coercion_bonus": 0.2,
+            "weak_opponent_bonus": 0.1,
+        },
+        "昏庸型": {
+            "random_variance": 0.2,
+            "short_term_bonus": 0.1,
+            "high_risk_bonus": 0.1,
+            "prestige_bonus": 0.1,
+        },
+    }
+
     @staticmethod
     def calculate_net_benefit(
         action_config: Dict[str, Any],
         agent_power: float,
-        strategic_importance: float = 1.0
+        strategic_importance: float = 1.0,
+        leader_type: Optional[str] = None,
+        target_power: Optional[float] = None
     ) -> float:
         """
         Calculate net benefit of an action.
@@ -754,10 +892,14 @@ class CostBenefitAnalyzer:
             action_config: Action configuration
             agent_power: Current agent power
             strategic_importance: Strategic importance multiplier
+            leader_type: Optional leader type for behavioral weight adjustment
+            target_power: Optional target agent power for military balance adjustment
 
         Returns:
             Net benefit score
         """
+        import random
+
         # Power change from action
         power_change = action_config.get('initiator_power_change', 0)
 
@@ -767,18 +909,73 @@ class CostBenefitAnalyzer:
         else:
             relative_impact = 0
 
-        # Strategic benefit (respect sovereignty is beneficial for certain contexts)
-        strategic_benefit = 1.0 if action_config.get('respect_sov', True) else 0.5
+        # Base net benefit - removed respect_sov penalty to avoid systematic bias toward cooperation
+        net_benefit = (power_change + relative_impact * 100) * strategic_importance
 
-        # Combined net benefit
-        net_benefit = (power_change + relative_impact * 100) * strategic_benefit * strategic_importance
+        # Apply leader type behavioral weights
+        if leader_type and leader_type in CostBenefitAnalyzer._LEADER_TYPE_WEIGHTS:
+            weights = CostBenefitAnalyzer._LEADER_TYPE_WEIGHTS[leader_type]
+
+            if leader_type == "王道型":
+                if action_config.get('respect_sov', True):
+                    net_benefit += weights.get('respect_sov_bonus', 0)
+                else:
+                    net_benefit += weights.get('disrespect_sov_penalty', 0)
+                if action_config.get('action_category') in {'外交手段', '经济手段'}:
+                    net_benefit += weights.get('cooperation_bonus', 0)
+                if action_config.get('action_name') in {'威胁', '展示军事姿态'}:
+                    net_benefit += weights.get('military_deterrence_cost', 0)
+
+            elif leader_type == "霸权型":
+                if action_config.get('action_name') in {'开展实质性合作', '提供援助', '开展外交合作'}:
+                    net_benefit += weights.get('material_interest_bonus', 0)
+                if action_config.get('action_name') in {'威胁', '展示军事姿态', '胁迫/强制'}:
+                    net_benefit += weights.get('military_deterrence_bonus', 0)
+                if action_config.get('action_category') in {'外交手段', '经济手段'}:
+                    net_benefit += weights.get('influence_bonus', 0)
+
+            elif leader_type == "强权型":
+                if action_config.get('action_category') == '军事手段':
+                    net_benefit += weights.get('military_coercion_bonus', 0)
+                if action_config.get('action_name') in {'攻击/袭击', '交战/使用常规军事武力'}:
+                    net_benefit += weights.get('weak_opponent_bonus', 0)
+
+            elif leader_type == "昏庸型":
+                # Random variance for inept leader type
+                variance = weights.get('random_variance', 0)
+                net_benefit += random.uniform(-variance, variance)
+                if action_config.get('action_name') in {'发表公开声明', '展示军事姿态'}:
+                    net_benefit += weights.get('prestige_bonus', 0)
+
+        # Apply military balance adjustment based on power ratio
+        # Core logic: military actions against weaker opponents are more profitable (higher win probability)
+        if target_power is not None and target_power > 0 and agent_power > 0:
+            power_ratio = agent_power / target_power
+            action_category = action_config.get('action_category', '')
+            action_name = action_config.get('action_name', '')
+            military_actions = {'威胁', '展示军事姿态', '胁迫/强制', '攻击/袭击', '交战/使用常规军事武力', '实施非常规大规模暴力'}
+
+            if action_category == '军事手段' or action_name in military_actions:
+                if power_ratio >= 2.0:
+                    # Significantly stronger -> much higher win probability
+                    net_benefit += 0.15
+                elif power_ratio >= 1.0:
+                    # Moderately stronger -> higher win probability
+                    net_benefit += 0.05
+                elif power_ratio >= 0.5:
+                    # Moderately weaker -> lower win probability, risk of defeat
+                    net_benefit -= 0.10
+                else:
+                    # Significantly weaker -> very low win probability, likely disastrous defeat
+                    net_benefit -= 0.25
 
         return net_benefit
 
     @staticmethod
     def rank_actions_by_benefit(
         actions: List[Dict[str, Any]],
-        agent_power: float
+        agent_power: float,
+        leader_type: Optional[str] = None
     ) -> List[Tuple[Dict[str, Any], float]]:
         """
         Rank actions by net benefit.
@@ -786,13 +983,16 @@ class CostBenefitAnalyzer:
         Args:
             actions: List of action configurations
             agent_power: Current agent power
+            leader_type: Optional leader type for behavioral weight adjustment
 
         Returns:
             List of (action, net_benefit) tuples sorted by benefit
         """
         ranked = []
         for action in actions:
-            net_benefit = CostBenefitAnalyzer.calculate_net_benefit(action, agent_power)
+            net_benefit = CostBenefitAnalyzer.calculate_net_benefit(
+                action, agent_power, leader_type=leader_type
+            )
             ranked.append((action, net_benefit))
 
         # Sort by net benefit descending

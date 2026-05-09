@@ -99,6 +99,7 @@ class ActionRecordResponse(BaseModel):
     initiator_power_change: float
     target_power_change: float
     decision_detail: Optional[str]
+    action_content: Optional[str]
 
 class FollowerRelationResponse(BaseModel):
     """追随者关系响应模型"""
@@ -546,7 +547,8 @@ async def get_round_detail(project_id: int, round_num: int):
                 respect_sov=respect_sov_val,
                 initiator_power_change=record.initiator_power_change,
                 target_power_change=record.target_power_change,
-                decision_detail=record.decision_detail
+                decision_detail=record.decision_detail,
+                action_content=record.action_content
             ))
 
         # 构建追随者关系响应

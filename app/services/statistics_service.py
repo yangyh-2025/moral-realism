@@ -510,7 +510,8 @@ class StatisticsService:
                     if rel.follower_agent_id != rel.leader_agent_id:
                         links.append({
                             "source": rel.follower_agent_id,
-                            "target": rel.leader_agent_id
+                            "target": rel.leader_agent_id,
+                            "value": "追随"
                         })
 
             result = {

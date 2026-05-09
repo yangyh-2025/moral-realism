@@ -68,7 +68,8 @@ ACTION_CATEGORY_WEIGHTS: Dict[str, Dict[str, float]] = {
 }
 
 # 各指标的scale_factor：将-1到+1的power_change映射到合理的指标变化量
-INDICATOR_SCALE_FACTORS: Dict[str, float] = {
+# 可通过系统配置覆盖（键名：cinc_scale_factors），默认保持以下值
+DEFAULT_INDICATOR_SCALE_FACTORS: Dict[str, float] = {
     "milex": 10000.0,  # 万级
     "milper": 1000.0,  # 千级
     "irst": 5000.0,    # 万级
@@ -76,6 +77,24 @@ INDICATOR_SCALE_FACTORS: Dict[str, float] = {
     "tpop": 100000.0,  # 十万级
     "upop": 50000.0,   # 万级
 }
+
+
+async def load_scale_factors_from_config() -> Dict[str, float]:
+    """从系统配置读取 CINC scale factors，失败时使用默认值。"""
+    try:
+        from app.services.system_service import get_system_config_service
+        svc = get_system_config_service()
+        raw = await svc.get_config_value("cinc_scale_factors", "")
+        if raw:
+            import json
+            parsed = json.loads(raw)
+            # 验证必需的键都存在
+            if all(k in parsed for k in CINC_INDICATORS):
+                logger.info(f"从配置加载 CINC scale factors: {parsed}")
+                return {k: float(parsed[k]) for k in CINC_INDICATORS}
+    except Exception as e:
+        logger.debug(f"读取 cinc_scale_factors 配置失败，使用默认值: {e}")
+    return DEFAULT_INDICATOR_SCALE_FACTORS.copy()
 
 
 @dataclass
@@ -151,6 +170,7 @@ def calculate_indicator_changes(
     action_category: str,
     primary_indicator: Optional[str] = None,
     secondary_indicator: Optional[str] = None,
+    scale_factors: Optional[Dict[str, float]] = None,
 ) -> IndicatorChange:
     """
     根据power_change和行为类别，计算6项底层指标的变化量
@@ -160,10 +180,13 @@ def calculate_indicator_changes(
         action_category: 行为类别（"外交手段"/"经济手段"/"军事手段"/"信息手段"）
         primary_indicator: 主要影响指标（可选，覆盖类别默认）
         secondary_indicator: 次要影响指标（可选，覆盖类别默认）
+        scale_factors: 自定义scale factors（可选，默认使用DEFAULT_INDICATOR_SCALE_FACTORS）
 
     Returns:
         IndicatorChange，包含6项指标的变化量
     """
+    if scale_factors is None:
+        scale_factors = DEFAULT_INDICATOR_SCALE_FACTORS
     weights = ACTION_CATEGORY_WEIGHTS.get(action_category)
     if weights is None:
         # 未知类别，默认使用外交权重
@@ -179,7 +202,7 @@ def calculate_indicator_changes(
     change = IndicatorChange()
     for ind in CINC_INDICATORS:
         weight = weights.get(ind, 0.0)
-        scale = INDICATOR_SCALE_FACTORS.get(ind, 1.0)
+        scale = scale_factors.get(ind, 1.0)
         delta = power_change * scale * weight
         setattr(change, f"{ind}_delta", delta)
 
@@ -198,14 +221,17 @@ class CINCPowerUpdateEngine:
         self,
         max_action_change: float = 1.0,
         enable_logging: bool = True,
+        scale_factors: Optional[Dict[str, float]] = None,
     ):
         """
         Args:
             max_action_change: 单次行为power_change的硬约束（-1到+1）
             enable_logging: 是否启用日志
+            scale_factors: 自定义CINC指标scale factors（可选）
         """
         self.max_action_change = max_action_change
         self.enable_logging = enable_logging
+        self._scale_factors = scale_factors or DEFAULT_INDICATOR_SCALE_FACTORS.copy()
         # 智能体状态：{agent_id: {6项指标 + cinc + power_level + name}}
         self._agents: Dict[int, Dict[str, Any]] = {}
         # 国力历史
@@ -293,7 +319,8 @@ class CINCPowerUpdateEngine:
             # 计算发起方的指标变化
             if source_id in agent_changes:
                 init_delta = calculate_indicator_changes(
-                    initiator_change, category, primary, secondary
+                    initiator_change, category, primary, secondary,
+                    scale_factors=self._scale_factors
                 )
                 agent_changes[source_id].add(init_delta)
                 agent_action_count[source_id] += 1
@@ -301,7 +328,8 @@ class CINCPowerUpdateEngine:
             # 计算目标方的指标变化
             if target_id in agent_changes and target_id != source_id:
                 target_delta = calculate_indicator_changes(
-                    target_change, category, primary, secondary
+                    target_change, category, primary, secondary,
+                    scale_factors=self._scale_factors
                 )
                 agent_changes[target_id].add(target_delta)
                 agent_action_count[target_id] += 1

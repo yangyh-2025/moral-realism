@@ -10,6 +10,7 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel, Field
 
 from .cinc_calculator import PowerLevelEnum, calculate_cinc, determine_power_level, CINC_INDICATORS
+from .action_manager import ActionConfig
 
 
 class RegionEnum(str, Enum):
@@ -27,22 +28,6 @@ class LeaderTypeEnum(str, Enum):
     HEGEMONIC = "霸权型"
     TYRANICAL = "强权型"
     INEPT = "昏庸型"
-
-
-class ActionConfig(BaseModel):
-    """互动行为配置数据模型 - 对齐学术文档"""
-    action_id: int
-    action_name: str
-    action_en_name: str
-    action_category: str
-    action_desc: str
-    respect_sov: bool
-    initiator_power_change: float
-    target_power_change: float
-    is_initiative: bool
-    is_response: bool
-    primary_indicator: str = Field(default="pec", description="主要影响的CINC底层指标")
-    secondary_indicator: str = Field(default="irst", description="次要影响的CINC底层指标")
 
 
 class AgentBase(BaseModel):

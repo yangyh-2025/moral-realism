@@ -530,7 +530,8 @@ function updateRelationChart(data) {
 
   const formattedLinks = (data.links || []).map(link => ({
     source: String(link.source),
-    target: String(link.target)
+    target: String(link.target),
+    value: link.value || ''
   }))
 
   console.log('格式化后的节点:', formattedNodes)

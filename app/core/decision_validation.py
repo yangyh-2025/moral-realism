@@ -145,103 +145,13 @@ class DecisionValidator:
             if not isinstance(cost_benefit, str) or len(cost_benefit.strip()) == 0:
                 return False, f"行为 {i+1} 缺少有效的成本收益分析"
 
-        return True, ""
-
-    def validate_compliance(
-        self,
-        decision: Dict[str, Any],
-        agent_info: Dict[str, Any],
-        national_interests: List[str],
-        action_stage: str = "initiative"
-    ) -> Tuple[bool, str]:
-        """
-        Tier 3: Compliance validation (national interest, leader type constraints).
-
-        Args:
-            decision: Decision dict from LLM
-            agent_info: Agent information including power level and leader type
-            national_interests: List of national interests based on power level
-            action_stage: Current action stage ("initiative" or "response")
-
-        Returns:
-            Tuple of (is_valid, error_message)
-        """
-        leader_type = agent_info.get('leader_type')
-        power_level = agent_info.get('power_level')
-
-        # Get selected actions
-        actions = decision.get('actions', [])
-
-        # Validate leader type constraints
-        for action in actions:
-            action_id = action['action_id']
-            # Convert to int if it's a string
-            try:
-                action_id = int(action_id)
-            except (ValueError, TypeError):
-                return False, f"行为ID {action_id} 格式无效，必须为整数"
-
-            if action_id not in self.behavior_id_map:
-                return False, f"行为ID {action_id} 未找到标准行为定义"
-
-            standard_action = self.behavior_id_map[action_id]
-            forbidden_types = standard_action.get('forbidden_leader_type', [])
-
-            # Check if leader type is forbidden for this action
-            if leader_type and leader_type in forbidden_types:
-                return False, (
-                    f"{leader_type}领导集体禁止执行行为 '{standard_action['action_name']}'"
-                )
-
-            # Validate non-inept leaders cannot deviate from objective national interests
-            if leader_type != LeaderTypeEnum.INEPT.value:
-                # Check if action aligns with national interests
-                action_respects_sov = standard_action.get('respect_sov', True)
-                action_power_change = standard_action.get('initiator_power_change', 0)
-
-                # For non-inept leaders, actions that significantly reduce power
-                # should be justified in cost-benefit analysis
-                if action_power_change < -0.5:
-                    cost_benefit = action.get('cost_benefit_analysis', '')
-                    # Check if cost-benefit mentions national interest alignment
-                    has_interest_alignment = any(
-                        interest in cost_benefit for interest in national_interests
-                    )
-
-                    if not has_interest_alignment:
-                        return False, (
-                            f"非昏庸型领导执行显著损害国力的行为必须"
-                            f"在成本收益分析中明确说明与国家利益的关联"
-                        )
-
-        # Validate action stage rules
-        if action_stage == "initiative":
-            # In initiative stage, only certain agent types can initiate
-            if power_level in [PowerLevelEnum.MIDDLE_POWER.value, PowerLevelEnum.SMALL_STATE.value]:
-                # Medium and small powers can only initiate low-intensity, non-hostile actions
-                for action in actions:
-                    # Convert action_id to int for lookup
-                    action_id = action['action_id']
-                    try:
-                        action_id = int(action_id)
-                    except (ValueError, TypeError):
-                        continue
-
-                    if action_id not in self.behavior_id_map:
-                        continue
-
-                    standard_action = self.behavior_id_map[action_id]
-                    # Check if action is high-intensity or hostile
-                    if not standard_action.get('respect_sov', True):
-                        # This is a non-respecting-sovereignty action
-                        # Medium and small powers should avoid these in initiative stage
-                        # unless it's a response
-                        cost_benefit = action.get('cost_benefit_analysis', '')
-                        if "response" not in cost_benefit.lower():
-                            return False, (
-                                f"中等强国和小国在发起阶段应避免"
-                                f"不尊重主权的高烈度对抗行为"
-                            )
+            # Validate action_content
+            action_content = action.get('action_content', '')
+            if not isinstance(action_content, str):
+                return False, f"行为 {i+1} 的 action_content 必须是字符串"
+            content_len = len(action_content.strip())
+            if content_len > 0 and (content_len < 10 or content_len > 500):
+                return False, f"行为 {i+1} 的 action_content 长度需在10-500字之间（当前{content_len}字）"
 
         return True, ""
 
@@ -291,14 +201,6 @@ class DecisionValidator:
         )
         if not is_valid:
             errors.append(f"[Tier 2 基础校验] {error}")
-            return False, errors
-
-        # Tier 3: Compliance validation
-        is_valid, error = self.validate_compliance(
-            decision, agent_info, national_interests, action_stage
-        )
-        if not is_valid:
-            errors.append(f"[Tier 3 合规性校验] {error}")
             return False, errors
 
         return True, []

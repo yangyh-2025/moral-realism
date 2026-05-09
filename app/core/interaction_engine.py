@@ -31,7 +31,13 @@ from .agent_base import PowerLevelEnum as PowerLevel, LeaderTypeEnum as LeaderTy
 
 @dataclass
 class ActionConfig:
-    """Action configuration from 20 standard actions - aligned with academic document"""
+    """
+    Action configuration from 20 standard actions - aligned with academic document.
+
+    NOTE: This is a self-contained dataclass copy of the Pydantic model in
+    action_manager.py. It is kept independent to avoid import coupling,
+    since InteractionEngine may be used standalone.
+    """
     action_id: int
     action_name: str
     action_en_name: str
@@ -503,6 +509,11 @@ class InteractionEngine:
         """
         Execute initiative phase (synchronous wrapper)
 
+        WARNING: This method creates a new event loop. Do NOT call from
+        an async context (e.g., FastAPI handlers) as it will raise
+        RuntimeError. Use _execute_initiative_phase_async directly in
+        async contexts.
+
         Args:
             agents: List of all agents
             action_generator: Function to generate actions (e.g., LLM call)
@@ -528,6 +539,11 @@ class InteractionEngine:
 ) -> List[ActionRecord]:
         """
         Execute response phase (synchronous wrapper)
+
+        WARNING: This method creates a new event loop. Do NOT call from
+        an async context (e.g., FastAPI handlers) as it will raise
+        RuntimeError. Use _execute_response_phase_async directly in
+        async contexts.
 
         Args:
             agents: List of all agents
@@ -594,6 +610,10 @@ class InteractionEngine:
     ) -> Dict[str, List[ActionRecord]]:
         """
         Execute a complete interaction round (synchronous wrapper)
+
+        WARNING: This method creates a new event loop. Do NOT call from
+        an async context (e.g., FastAPI handlers) as it will raise
+        RuntimeError. Use execute_round_async directly in async contexts.
 
         Args:
             agents: List of all agents

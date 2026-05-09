@@ -3,7 +3,8 @@
 使用LLM驱动的评估智能体，评估每个国家的战略目标达成度
 """
 
-from typing import List, Optional
+import asyncio
+from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -568,9 +569,7 @@ class GoalEvaluationService:
 
     async def evaluate_all_agents(self, project_id: int, evaluation_round: int) -> List[dict]:
         """
-        评估项目中所有国家的战略目标达成度
-
-        遍历项目中的所有国家，逐个进行评估。
+        评估项目中所有国家的战略目标达成度（并发执行）
 
         Args:
             project_id: 项目ID
@@ -579,24 +578,91 @@ class GoalEvaluationService:
         Returns:
             包含所有国家评估结果的列表
         """
+        # 1. 读取所有agent
         async for session in db_config.get_session():
             result = await session.execute(
                 select(AgentConfig).where(AgentConfig.project_id == project_id)
             )
             agents = result.scalars().all()
 
-        results = []
-        for agent in agents:
-            result = await self.evaluate_agent_goal_achievement(
-                project_id, agent.agent_id, evaluation_round
-            )
-            results.append({
-                "agent_id": agent.agent_id,
-                "agent_name": agent.agent_name,
-                **result
-            })
+        if not agents:
+            return []
 
-        logger.info(f"在第 {evaluation_round} 轮完成了 {len(results)} 个国家的评估")
+        # 2. 读取并发配置
+        try:
+            from app.services.system_service import get_system_config_service
+            sys_cfg_svc = get_system_config_service()
+            val = await sys_cfg_svc.get_config_value("simulation_concurrency", 5)
+            max_concurrent = int(val or 5)
+        except Exception:
+            max_concurrent = 5
+        max_concurrent = max(1, min(max_concurrent, 20))
+
+        total = len(agents)
+        semaphore = asyncio.Semaphore(max_concurrent)
+        completed_counter = {"n": 0}
+
+        logger.info(
+            f"========== 第 {evaluation_round} 轮 - 战略目标评估开始 "
+            f"(共{total}国, 并发度{max_concurrent}) =========="
+        )
+
+        async def _evaluate_one(agent: AgentConfig) -> Dict[str, Any]:
+            """评估单个agent，带并发控制和进度日志"""
+            agent_id = agent.agent_id
+            agent_name = agent.agent_name
+
+            async with semaphore:
+                try:
+                    result = await self.evaluate_agent_goal_achievement(
+                        project_id, agent_id, evaluation_round
+                    )
+                    completed_counter["n"] += 1
+                    progress = f"[{completed_counter['n']:>2d}/{total}]"
+                    score = result.get('goal_achievement_score', 'N/A')
+                    logger.info(
+                        f"  {progress} [评估OK] {agent_name}(ID:{agent_id}) "
+                        f"综合得分: {score}"
+                    )
+                    return {
+                        "agent_id": agent_id,
+                        "agent_name": agent_name,
+                        **result
+                    }
+                except Exception as e:
+                    completed_counter["n"] += 1
+                    progress = f"[{completed_counter['n']:>2d}/{total}]"
+                    logger.error(
+                        f"  {progress} [评估FAIL] {agent_name}(ID:{agent_id}): {e}"
+                    )
+                    return {
+                        "agent_id": agent_id,
+                        "agent_name": agent_name,
+                        "goal_achievement_score": 0,
+                        "power_growth_contribution": 0,
+                        "action_effectiveness": 0,
+                        "overall_assessment": f"评估失败: {e}",
+                        "specific_achievements": "",
+                        "challenges": ""
+                    }
+
+        # 3. 并发执行所有评估
+        eval_results = await asyncio.gather(
+            *[_evaluate_one(agent) for agent in agents],
+            return_exceptions=True
+        )
+
+        results = []
+        for r in eval_results:
+            if isinstance(r, Exception):
+                logger.error(f"评估结果解析异常: {r}")
+                continue
+            results.append(r)
+
+        logger.info(
+            f"========== 第 {evaluation_round} 轮 - 战略目标评估完成 "
+            f"(成功 {len(results)}/{total}) =========="
+        )
         return results
 
 
