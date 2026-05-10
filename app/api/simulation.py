@@ -595,31 +595,61 @@ async def get_round_detail(project_id: int, round_num: int):
 @router.get("/project/{project_id}/round/{round_num}/llm-prompts")
 async def get_llm_prompts(project_id: int, round_num: int):
     """
-    获取指定轮次的LLM调用日志
+    获取指定轮次的LLM调用日志（汇总4类LLM调用）。
+
+    覆盖类别：
+    - interaction        行动决策（主动/响应）
+    - following          追随决策（参与+投票）
+    - goal_evaluation    战略目标评估
+    - relationship_evolution  战略关系演变
+
+    每条返回项额外注入 `category` 字段，前端可据此分组/打标。
 
     Args:
         project_id: 项目ID
         round_num: 轮次编号
 
     Returns:
-        List of LLM call logs
+        List of LLM call logs, each tagged with `category`.
     """
+    import json
     from pathlib import Path
 
-    log_file = Path(f"logs/{project_id}/llm_interaction.log")
-    if not log_file.exists():
+    # 类别 -> 日志文件名
+    category_files = {
+        "interaction": "llm_interaction.log",
+        "following": "llm_following.log",
+        "goal_evaluation": "llm_goal_evaluation.log",
+        "relationship_evolution": "llm_relationship_evolution.log",
+    }
+
+    base_dir = Path(f"logs/{project_id}")
+    if not base_dir.exists():
         return []
 
     prompts = []
-    with open(log_file, 'r', encoding='utf-8') as f:
-        for line in f:
-            try:
-                import json
-                log_entry = json.loads(line)
-                # 过滤出指定轮次的prompt
-                if log_entry.get('round_num') == round_num:
+    for category, filename in category_files.items():
+        log_file = base_dir / filename
+        if not log_file.exists():
+            continue
+        try:
+            with open(log_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        log_entry = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if log_entry.get('round_num') != round_num:
+                        continue
+                    log_entry['category'] = category
                     prompts.append(log_entry)
-            except json.JSONDecodeError:
-                continue
+        except Exception:
+            # 单个文件读取失败不影响其它类别
+            continue
 
+    # 按时间戳排序，便于前端按发生顺序展示
+    prompts.sort(key=lambda e: e.get('timestamp', ''))
     return prompts

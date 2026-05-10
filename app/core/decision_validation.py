@@ -150,8 +150,10 @@ class DecisionValidator:
             if not isinstance(action_content, str):
                 return False, f"行为 {i+1} 的 action_content 必须是字符串"
             content_len = len(action_content.strip())
-            if content_len > 0 and (content_len < 10 or content_len > 500):
-                return False, f"行为 {i+1} 的 action_content 长度需在10-500字之间（当前{content_len}字）"
+            if content_len == 0:
+                return False, f"行为 {i+1} 缺少 action_content（具体执行内容）"
+            if content_len < 50 or content_len > 300:
+                return False, f"行为 {i+1} 的 action_content 长度需在50-300字之间（当前{content_len}字）"
 
         return True, ""
 

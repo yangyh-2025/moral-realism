@@ -163,7 +163,7 @@ class DecisionEngine:
                     log_category="interaction",
                     agent_id=agent_info.agent_id,
                     agent_name=agent_info.agent_name,
-                    stage=str(action_stage),
+                    stage=action_stage.value if hasattr(action_stage, 'value') else str(action_stage),
                     round_num=info_pool.round_num
                 )
                 result.llm_raw_response = str(llm_response)
@@ -516,17 +516,49 @@ class DecisionEngine:
         return "\n".join(lines)
 
     def _format_relationships_for_prompt(self, relationships: Dict[int, str]) -> str:
-        """Format strategic relationships for prompt."""
+        """Format strategic relationships, grouped by type for better readability.
+
+        旧格式：134:盟友关系, 135:战争关系, 136:战争关系, ... （平铺，密集易读漏）
+        新格式：[战争:135,136][冲突:][盟友:134][伙伴:137]  （按类型聚合，醒目）
+        无外交关系超过5国时折叠为 [中立:共N国]，避免占用大量token。
+        """
         logger.debug(f"格式化战略关系输入: {relationships}")
         if not relationships:
             logger.debug("战略关系为空，返回'无'")
             return "无"
 
-        items = []
-        for target_id, rel_type in sorted(relationships.items()):
-            items.append(f"{target_id}:{rel_type}")
+        # 按类型分组
+        by_type: Dict[str, List[int]] = {}
+        for tid, rt in relationships.items():
+            by_type.setdefault(rt, []).append(tid)
 
-        result = ", ".join(items[:10])
+        # 输出顺序：战争>冲突>盟友>伙伴>中立（重要的放前面）
+        ordered_types = [
+            ("战争关系", "战争"),
+            ("冲突关系", "冲突"),
+            ("盟友关系", "盟友"),
+            ("伙伴关系", "伙伴"),
+            ("无外交关系", "中立"),
+        ]
+
+        parts: List[str] = []
+        for full_name, short_name in ordered_types:
+            ids = by_type.get(full_name)
+            if not ids:
+                continue
+            ids_sorted = sorted(ids)
+            if full_name == "无外交关系" and len(ids_sorted) > 5:
+                parts.append(f"[{short_name}:共{len(ids_sorted)}国]")
+            else:
+                parts.append(f"[{short_name}:{','.join(str(i) for i in ids_sorted)}]")
+
+        # 兜底：若有未在已知类型表中的关系（例如未来新增类型），也显示出来
+        unknown_types = set(by_type.keys()) - {full for full, _ in ordered_types}
+        for rt in sorted(unknown_types):
+            ids_sorted = sorted(by_type[rt])
+            parts.append(f"[{rt}:{','.join(str(i) for i in ids_sorted)}]")
+
+        result = "".join(parts) if parts else "无"
         logger.debug(f"格式化战略关系输出: {result}")
         return result
 

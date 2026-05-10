@@ -17,7 +17,9 @@ test/
 
 1. **后端**已启动并监听 `127.0.0.1:8000`
    ```bash
-   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+   python start.py    # 推荐，会同时拉起前后端
+   # 或单跑：
+   .venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
    ```
 
 2. **前端 dev 服务**已启动并监听 `127.0.0.1:3000`
@@ -25,8 +27,17 @@ test/
    cd frontend && npm run dev
    ```
 
-3. Python 依赖（已在仓库 venv 内）：`pytest`、`httpx`、`playwright`、`pytest-asyncio`
-   - 浏览器：执行过 `python -m playwright install chromium` 一次即可。
+3. Python 依赖（已装在项目 `.venv` 里）：
+   - `pytest 9.0.3`
+   - `pytest-asyncio 1.3.0`
+   - `httpx 0.28.1`
+   - `playwright 1.59.0` + Chromium 147 (~/AppData/Local/ms-playwright/)
+
+   如果需要在新的 venv 里重装：
+   ```bash
+   .venv\Scripts\pip install playwright pytest-asyncio httpx
+   .venv\Scripts\python -m playwright install chromium
+   ```
 
 如需改 URL：
 
@@ -38,7 +49,7 @@ set ABM_TEST_FRONTEND_URL=http://127.0.0.1:3000
 ## 一键运行
 
 ```bash
-python -m pytest test/ -v
+.venv\Scripts\python -m pytest test/ -v
 ```
 
 输出格式：
@@ -52,19 +63,19 @@ test_backend_smoke.py::TestRoot::test_health PASSED
 仅跑后端：
 
 ```bash
-python -m pytest test/test_backend_smoke.py -v
+.venv\Scripts\python -m pytest test/test_backend_smoke.py -v
 ```
 
 仅跑前端：
 
 ```bash
-python -m pytest test/test_frontend_smoke.py -v
+.venv\Scripts\python -m pytest test/test_frontend_smoke.py -v
 ```
 
 仅跑某一个 Test 类：
 
 ```bash
-python -m pytest test/test_backend_smoke.py::TestSimulationControl -v
+.venv\Scripts\python -m pytest test/test_backend_smoke.py::TestSimulationControl -v
 ```
 
 ## 后端覆盖（53 用例）

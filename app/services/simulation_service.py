@@ -1065,6 +1065,24 @@ class SimulationService:
             'last_round_order_info': info_pool.last_round_order_info
         }
 
+        # 预构建：每个agent的战略关系查表（自我视角的关系总览所需）
+        relationships_lookup: Dict[int, Dict[int, str]] = {
+            a.get('agent_id'): (a.get('strategic_relationships') or {})
+            for a in info_pool.all_agent_info
+        }
+
+        def _build_personal_summary_for(agent: Dict) -> str:
+            """为单个 agent 构建【你的战略关系总览】块。"""
+            return PromptTemplates.build_personal_relations_summary(
+                voter_id=agent.get('agent_id'),
+                voter_name=agent.get('agent_name', '?'),
+                voter_power=agent.get('current_total_power', 0) or 0,
+                voter_level=agent.get('power_level', '?'),
+                voter_leader_type=agent.get('leader_type'),
+                voter_relationships=relationships_lookup.get(agent.get('agent_id'), {}),
+                all_agent_info=info_pool.all_agent_info,
+            )
+
         # ========== 阶段1：并发执行领导竞争参与决策 ==========
         big_powers = [
             agent for agent in agents
@@ -1090,7 +1108,8 @@ class SimulationService:
             )
             user_prompt = PromptTemplates.build_follower_user_prompt(
                 info_pool=formatted_info_pool,
-                decision_type='participation'
+                decision_type='participation',
+                personal_summary=_build_personal_summary_for(agent),
             )
 
             async with semaphore:
@@ -1150,7 +1169,7 @@ class SimulationService:
 
         logger.info(f"领导候选人: {[a['agent_name'] for a in leader_candidates]}")
 
-        # 构建参选者信息字符串
+        # 构建参选者信息字符串（兼容用，仅在新评估字段未提供时退回使用）
         leader_candidates_info = "\n".join([
             f"  ID:{a['agent_id']} 名称:{a['agent_name']} CINC:{a['current_total_power']:.6f}"
             for a in leader_candidates
@@ -1169,10 +1188,20 @@ class SimulationService:
                 current_total_power=agent.get('current_total_power', 0),
                 power_level=agent.get('power_level')
             )
+            # 候选人评估（按当前voter视角预先核对战略关系+双向互动）
+            voter_relationships = relationships_lookup.get(agent_id, {})
+            candidates_evaluation = PromptTemplates.build_candidates_evaluation(
+                voter_id=agent_id,
+                voter_relationships=voter_relationships,
+                candidates=leader_candidates,
+                history_action_records=info_pool.history_action_records,
+            )
             user_prompt = PromptTemplates.build_follower_user_prompt(
                 info_pool=formatted_info_pool,
                 decision_type='vote',
-                leader_candidates_info=leader_candidates_info
+                leader_candidates_info=leader_candidates_info,
+                personal_summary=_build_personal_summary_for(agent),
+                candidates_evaluation=candidates_evaluation,
             )
 
             async with semaphore:

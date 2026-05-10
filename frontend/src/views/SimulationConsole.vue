@@ -253,13 +253,23 @@
                 :key="index"
                 class="decision-item"
               >
-                <span class="agent-name">{{ action.sourceAgent }}</span>
-                <span class="arrow">→</span>
-                <span :class="['action-name', action.respectSov ? 'respect-sov' : 'violate-sov']">
-                  {{ action.actionName }}
-                </span>
-                <span class="arrow">→</span>
-                <span class="target-name">{{ action.targetAgent }}</span>
+                <div class="decision-header">
+                  <span class="agent-name">{{ action.sourceAgent }}</span>
+                  <span class="arrow">→</span>
+                  <span :class="['action-name', action.respectSov ? 'respect-sov' : 'violate-sov']">
+                    {{ action.actionName }}
+                  </span>
+                  <span class="arrow">→</span>
+                  <span class="target-name">{{ action.targetAgent }}</span>
+                </div>
+                <div v-if="action.content" class="decision-content">
+                  {{ action.content }}
+                </div>
+                <div v-else class="decision-content-empty">
+                  <el-text type="info" size="small">
+                    该轮 LLM 未输出 action_content（早期轮次或旧版提示词导致）
+                  </el-text>
+                </div>
               </div>
             </div>
           </div>
@@ -296,6 +306,130 @@
             />
           </el-tab-pane>
           <el-tab-pane label="LLM响应">
+            <div style="margin-bottom: 8px;">
+              <el-tag :type="categoryTagType(selectedPrompt.category)" size="small">
+                {{ categoryLabel(selectedPrompt.category) }}
+              </el-tag>
+              <el-tag v-if="selectedPrompt.decision_type" type="info" size="small" style="margin-left: 6px;">
+                {{ selectedPrompt.decision_type }}
+              </el-tag>
+              <el-tag v-if="selectedPrompt.stage" type="warning" size="small" style="margin-left: 6px;">
+                {{ selectedPrompt.stage }}
+              </el-tag>
+            </div>
+
+            <!-- 结构化视图（按响应形态智能渲染） -->
+            <el-card shadow="never" body-style="padding: 12px;" style="margin-bottom: 10px;">
+              <template v-if="renderable(selectedPrompt.full_response)">
+                <!-- 行动决策：{decision_reason, actions: [...]} -->
+                <template v-if="hasActions(selectedPrompt.full_response)">
+                  <div style="font-weight: bold; margin-bottom: 6px;">决策总览</div>
+                  <div style="margin-bottom: 12px; color: #555;">
+                    {{ selectedPrompt.full_response.decision_reason || '（无）' }}
+                  </div>
+                  <div style="font-weight: bold; margin-bottom: 6px;">
+                    选择行为（共 {{ selectedPrompt.full_response.actions.length }} 项）
+                  </div>
+                  <el-card
+                    v-for="(act, ai) in selectedPrompt.full_response.actions"
+                    :key="ai"
+                    shadow="hover"
+                    body-style="padding: 8px 12px;"
+                    style="margin-bottom: 8px;"
+                  >
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                      <el-tag size="small">ID:{{ act.action_id }}</el-tag>
+                      <el-tag size="small" type="success">{{ act.action_name }}</el-tag>
+                      <el-tag size="small" type="info">{{ act.action_category }}</el-tag>
+                      <span style="color: #666;">→ 目标 ID:{{ act.target_agent_id }}</span>
+                    </div>
+                    <div v-if="act.cost_benefit_analysis" style="margin-top: 6px; color: #444; white-space: pre-wrap;">
+                      <b>成本收益：</b>{{ act.cost_benefit_analysis }}
+                    </div>
+                    <div v-if="act.action_content" style="margin-top: 6px; color: #444; white-space: pre-wrap;">
+                      <b>执行内容：</b>{{ act.action_content }}
+                    </div>
+                  </el-card>
+                </template>
+
+                <!-- 领导竞争参与：{decision, reason} -->
+                <template v-else-if="selectedPrompt.full_response.decision !== undefined">
+                  <div style="margin-bottom: 6px;">
+                    <b>参与决策：</b>
+                    <el-tag :type="selectedPrompt.full_response.decision === '参与' ? 'success' : 'info'" size="small">
+                      {{ selectedPrompt.full_response.decision }}
+                    </el-tag>
+                  </div>
+                  <div style="white-space: pre-wrap;"><b>理由：</b>{{ selectedPrompt.full_response.reason || '（无）' }}</div>
+                </template>
+
+                <!-- 追随投票：{follower_agent_id, follower_agent_name, reason} -->
+                <template v-else-if="selectedPrompt.full_response.follower_agent_name !== undefined || selectedPrompt.full_response.follower_agent_id !== undefined">
+                  <div style="margin-bottom: 6px;">
+                    <b>追随对象：</b>
+                    <el-tag
+                      :type="selectedPrompt.full_response.follower_agent_id ? 'success' : 'info'"
+                      size="small"
+                    >
+                      {{ selectedPrompt.full_response.follower_agent_name || '中立' }}
+                      <span v-if="selectedPrompt.full_response.follower_agent_id">（ID:{{ selectedPrompt.full_response.follower_agent_id }}）</span>
+                    </el-tag>
+                  </div>
+                  <div style="white-space: pre-wrap;"><b>理由：</b>{{ selectedPrompt.full_response.reason || '（无）' }}</div>
+                </template>
+
+                <!-- 战略目标评估：{action_effectiveness, overall_assessment, ...} -->
+                <template v-else-if="selectedPrompt.full_response.action_effectiveness !== undefined">
+                  <div style="margin-bottom: 6px;">
+                    <b>行为有效性：</b>
+                    <el-tag size="small" type="warning">{{ selectedPrompt.full_response.action_effectiveness }}/100</el-tag>
+                  </div>
+                  <div style="white-space: pre-wrap; margin-bottom: 6px;">
+                    <b>综合评估：</b>{{ selectedPrompt.full_response.overall_assessment || '（无）' }}
+                  </div>
+                  <div v-if="selectedPrompt.full_response.specific_achievements" style="white-space: pre-wrap; margin-bottom: 6px;">
+                    <b>具体成就：</b>{{ selectedPrompt.full_response.specific_achievements }}
+                  </div>
+                  <div v-if="selectedPrompt.full_response.challenges" style="white-space: pre-wrap;">
+                    <b>面临挑战：</b>{{ selectedPrompt.full_response.challenges }}
+                  </div>
+                </template>
+
+                <!-- 战略关系演变：{relationship_changes: [...]} -->
+                <template v-else-if="Array.isArray(selectedPrompt.full_response.relationship_changes)">
+                  <div style="font-weight: bold; margin-bottom: 6px;">
+                    关系变化（共 {{ selectedPrompt.full_response.relationship_changes.length }} 项）
+                  </div>
+                  <el-card
+                    v-for="(chg, ci) in selectedPrompt.full_response.relationship_changes"
+                    :key="ci"
+                    shadow="hover"
+                    body-style="padding: 8px 12px;"
+                    style="margin-bottom: 8px;"
+                  >
+                    <div>
+                      ID:{{ chg.source_agent_id }} ↔ ID:{{ chg.target_agent_id }}：
+                      <el-tag size="small" type="info">{{ chg.current_type }}</el-tag>
+                      →
+                      <el-tag size="small" type="warning">{{ chg.new_type }}</el-tag>
+                    </div>
+                    <div v-if="chg.reason" style="margin-top: 4px; color: #555; white-space: pre-wrap;">
+                      <b>理由：</b>{{ chg.reason }}
+                    </div>
+                  </el-card>
+                </template>
+
+                <!-- 兜底：未识别的响应形态 -->
+                <template v-else>
+                  <el-text type="info">未识别的响应结构，请查看下方原始 JSON</el-text>
+                </template>
+              </template>
+              <template v-else>
+                <el-text type="info">响应内容为空</el-text>
+              </template>
+            </el-card>
+
+            <el-divider content-position="left">原始 JSON</el-divider>
             <el-input
               type="textarea"
               :rows="10"
@@ -715,6 +849,34 @@ function showPromptDetailModal(prompt) {
   showPromptDetail.value = true
 }
 
+/**
+ * LLM 响应结构化展示辅助函数
+ */
+const CATEGORY_LABELS = {
+  interaction: '行动决策',
+  following: '追随决策',
+  goal_evaluation: '目标评估',
+  relationship_evolution: '关系演变',
+}
+const CATEGORY_TAG_TYPES = {
+  interaction: 'primary',
+  following: 'success',
+  goal_evaluation: 'warning',
+  relationship_evolution: 'danger',
+}
+function categoryLabel(category) {
+  return CATEGORY_LABELS[category] || category || '未知类别'
+}
+function categoryTagType(category) {
+  return CATEGORY_TAG_TYPES[category] || 'info'
+}
+function renderable(response) {
+  return response && typeof response === 'object' && Object.keys(response).length > 0
+}
+function hasActions(response) {
+  return response && Array.isArray(response.actions) && response.actions.length > 0
+}
+
 // 用于存储正在获取的轮次，避免重复请求
 const fetchingRounds = new Set()
 
@@ -765,7 +927,8 @@ async function getRoundDetail(roundNum, retryCount = 0) {
       respectSov: action.respect_sov,
       sourceAgent: action.source_agent_name,
       targetAgent: action.target_agent_name,
-      detail: action.decision_detail
+      detail: action.decision_detail,
+      content: action.action_content
     }))
 
     // 处理追随者关系
@@ -1137,8 +1300,28 @@ function handleSimulationError(data) {
   border-radius: 4px;
   font-size: 13px;
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* 决策头部：发起方 → 行为 → 目标方 */
+.decision-header {
+  display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 决策具体执行内容文本 */
+.decision-content {
+  font-size: 12px;
+  color: #606266;
+  line-height: 1.5;
+  padding: 4px 6px;
+  background: #ffffff;
+  border-left: 3px solid #409eff;
+  border-radius: 3px;
+  white-space: pre-wrap;
 }
 
 /* 参与者名称样式 */

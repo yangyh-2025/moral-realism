@@ -80,7 +80,7 @@ class RelationshipEvolutionService:
             return []
 
         # 1.5 获取上一轮关系变化记录
-        last_round_changes = await self._get_last_round_changes(project_id, round_num)
+        last_round_changes = self._get_last_round_changes(project_id, round_num)
 
         # 2. 构建LLM提示词
         system_prompt = self._build_system_prompt()
