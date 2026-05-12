@@ -1,3 +1,7 @@
+import './styles/tokens.css'
+import './styles/tailwind.css'
+import './styles/global.css'
+import './styles/element-overrides.css'
 /**
  * 应用入口文件
  * 初始化Vue应用实例，注册插件和路由，并挂载到DOM

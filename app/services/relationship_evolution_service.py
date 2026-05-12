@@ -7,7 +7,7 @@
 """
 
 import json
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 from collections import defaultdict, Counter
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession

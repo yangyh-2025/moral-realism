@@ -14,6 +14,9 @@
 - TestRoundDetail            /api/v1/simulation/{pid}/round/{n}
 - TestStatistics             /api/v1/simulation/{pid}/stats/...
 - TestAnalysis               /api/v1/analysis/{pid}/...
+- TestLLMCalls               /api/v1/llm-calls/...
+- TestAgentNeighbor          /api/v1/agent-neighbors/...
+- TestExport                 /api/v1/simulation/{pid}/export
 
 依赖 conftest.py 中的 fixtures：
 - client: 共享 httpx Client
@@ -216,9 +219,35 @@ class TestProject:
     def test_list(self, client: httpx.Client, smoke_project: dict) -> None:
         r = client.get(f"{API}/simulation/project/list")
         assert r.status_code == 200
-        projects = r.json()
-        ids = [p["project_id"] for p in projects]
-        assert smoke_project["project_id"] in ids
+        body = r.json()
+        # 列表接口已重构为分页结构：{"total": int, "items": [...]}
+        assert isinstance(body, dict), f"项目列表应当返回分页字典，实际：{type(body)}"
+        assert "total" in body and "items" in body, \
+            f"项目列表分页字段缺失：{list(body.keys())}"
+        assert isinstance(body["items"], list)
+        assert isinstance(body["total"], int)
+        # 默认分页 size=20 可能取不到当前 smoke project；用 size=100 兜底
+        r2 = client.get(
+            f"{API}/simulation/project/list",
+            params={"size": 100, "sort": "created_at_desc"},
+        )
+        assert r2.status_code == 200
+        ids = [p["project_id"] for p in r2.json()["items"]]
+        assert smoke_project["project_id"] in ids, \
+            f"smoke project {smoke_project['project_id']} 不在分页结果中"
+
+    def test_list_pagination_params(self, client: httpx.Client) -> None:
+        """分页/筛选参数校验：size 上限 100。"""
+        r = client.get(f"{API}/simulation/project/list",
+                       params={"page": 1, "size": 5})
+        assert r.status_code == 200
+        body = r.json()
+        assert len(body["items"]) <= 5
+
+        # size > 100 应 422
+        r = client.get(f"{API}/simulation/project/list",
+                       params={"size": 200})
+        assert r.status_code == 422, f"size=200 应当被 FastAPI Query(le=100) 拒绝"
 
     def test_get(self, client: httpx.Client, smoke_project: dict) -> None:
         pid = smoke_project["project_id"]
@@ -454,8 +483,12 @@ class TestSimulationControl:
 class TestRoundDetail:
     def test_round_detail_existing(self, client: httpx.Client) -> None:
         """对任一已有轮次拉取详情。优先用历史项目 2，若不存在则跳过。"""
-        # 取项目列表，找一个有轮次数据的
-        projects = client.get(f"{API}/simulation/project/list").json()
+        # 取项目列表（已重构为分页结构），找一个有轮次数据的
+        body = client.get(
+            f"{API}/simulation/project/list",
+            params={"size": 100},
+        ).json()
+        projects = body["items"] if isinstance(body, dict) else body
         valid = [p for p in projects if p.get("current_round", 0) >= 1]
         if not valid:
             pytest.skip("无已运行轮次的项目可测")
@@ -469,7 +502,11 @@ class TestRoundDetail:
 
     def test_llm_prompts(self, client: httpx.Client) -> None:
         """LLM prompt 拉取——返回列表（可能为空）。"""
-        projects = client.get(f"{API}/simulation/project/list").json()
+        body = client.get(
+            f"{API}/simulation/project/list",
+            params={"size": 100},
+        ).json()
+        projects = body["items"] if isinstance(body, dict) else body
         if not projects:
             pytest.skip("无项目可测")
         pid = projects[0]["project_id"]
@@ -588,3 +625,171 @@ class TestAnalysis:
         r = client.get(f"{API}/analysis/{pid}/report")
         assert r.status_code == 200
         assert isinstance(r.json(), dict)
+
+
+# ========================================================================
+# LLM 调用日志
+# ========================================================================
+class TestLLMCalls:
+    """LLM 调用记录查询 — /api/v1/llm-calls/..."""
+
+    def test_list_for_smoke_project(
+        self, client: httpx.Client, smoke_project: dict
+    ) -> None:
+        """smoke 项目没跑过 LLM，应返回 0 条但结构完整。"""
+        pid = smoke_project["project_id"]
+        r = client.get(f"{API}/llm-calls/project/{pid}")
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert isinstance(body, dict), \
+            f"LLM 调用列表应返回分页 dict，实际：{type(body)}"
+        assert "total" in body and "items" in body, \
+            f"分页字段缺失：{list(body.keys())}"
+        assert body["total"] == 0, f"smoke 项目应当无 LLM 调用，实际 total={body['total']}"
+        assert body["items"] == [], "items 应为空列表"
+
+    def test_list_with_filters(
+        self, client: httpx.Client, smoke_project: dict
+    ) -> None:
+        """筛选 + 分页参数都能正常 200 并返回 well-formed 分页响应。"""
+        pid = smoke_project["project_id"]
+        r = client.get(
+            f"{API}/llm-calls/project/{pid}",
+            params={
+                "call_type": "llm_interaction",
+                "page": 1,
+                "size": 10,
+                "sort": "created_at_desc",
+            },
+        )
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert isinstance(body, dict)
+        assert "total" in body and "items" in body
+        assert isinstance(body["items"], list)
+        assert len(body["items"]) <= 10
+
+    def test_list_invalid_size_clamps(
+        self, client: httpx.Client, smoke_project: dict
+    ) -> None:
+        """size 超过 100 应被 FastAPI Query(le=100) 拒绝。"""
+        pid = smoke_project["project_id"]
+        r = client.get(
+            f"{API}/llm-calls/project/{pid}", params={"size": 200}
+        )
+        assert r.status_code == 422, \
+            f"size=200 应被拒绝 (le=100)，实际 status={r.status_code}"
+
+    def test_get_detail_404(self, client: httpx.Client) -> None:
+        """不存在的 call_id 必须 404。"""
+        r = client.get(f"{API}/llm-calls/999999")
+        assert r.status_code == 404
+
+
+# ========================================================================
+# 邻接关系
+# ========================================================================
+class TestAgentNeighbor:
+    """智能体邻接关系 — /api/v1/agent-neighbors/..."""
+
+    def test_initialize(
+        self, client: httpx.Client, smoke_project_with_agents: dict
+    ) -> None:
+        pid = smoke_project_with_agents["project_id"]
+        r = client.post(f"{API}/agent-neighbors/project/{pid}/initialize")
+        assert r.status_code == 200, r.text
+        assert "message" in r.json()
+
+    def test_get_matrix(
+        self, client: httpx.Client, smoke_project_with_agents: dict
+    ) -> None:
+        """不带 agent_id 返回完整邻接矩阵 dict[source][target] -> bool。"""
+        pid = smoke_project_with_agents["project_id"]
+        # 先确保已初始化
+        client.post(f"{API}/agent-neighbors/project/{pid}/initialize")
+
+        r = client.get(f"{API}/agent-neighbors/project/{pid}")
+        assert r.status_code == 200, r.text
+        matrix = r.json()
+        assert isinstance(matrix, dict), \
+            f"邻接矩阵应为 dict，实际：{type(matrix)}"
+
+    def test_get_for_agent(
+        self, client: httpx.Client, smoke_project_with_agents: dict
+    ) -> None:
+        """带 agent_id 返回 {agent_id, neighbors} 字典。"""
+        pid = smoke_project_with_agents["project_id"]
+        aid = smoke_project_with_agents["agent_ids"][0]
+        client.post(f"{API}/agent-neighbors/project/{pid}/initialize")
+
+        r = client.get(
+            f"{API}/agent-neighbors/project/{pid}", params={"agent_id": aid}
+        )
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert body["agent_id"] == aid
+        assert "neighbors" in body
+        assert isinstance(body["neighbors"], dict)
+
+    def test_set_single_pair(
+        self, client: httpx.Client, smoke_project_with_agents: dict
+    ) -> None:
+        """POST 单对邻接关系。"""
+        pid = smoke_project_with_agents["project_id"]
+        ids = smoke_project_with_agents["agent_ids"]
+        client.post(f"{API}/agent-neighbors/project/{pid}/initialize")
+
+        r = client.post(
+            f"{API}/agent-neighbors/project/{pid}",
+            json={"source_id": ids[0], "target_id": ids[1], "is_neighbor": True},
+        )
+        assert r.status_code == 200, r.text
+        assert "message" in r.json()
+
+    def test_batch_set(
+        self, client: httpx.Client, smoke_project_with_agents: dict
+    ) -> None:
+        """批量更新两对邻接关系，响应 message 应含 "2"。"""
+        pid = smoke_project_with_agents["project_id"]
+        ids = smoke_project_with_agents["agent_ids"]
+        client.post(f"{API}/agent-neighbors/project/{pid}/initialize")
+
+        payload = {
+            "updates": [
+                {"source_id": ids[0], "target_id": ids[1], "is_neighbor": True},
+                {"source_id": ids[1], "target_id": ids[2], "is_neighbor": False},
+            ]
+        }
+        r = client.post(
+            f"{API}/agent-neighbors/project/{pid}/batch", json=payload
+        )
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert "message" in body
+        assert "2" in body["message"], \
+            f"批量消息应包含数量 2，实际：{body['message']}"
+
+
+# ========================================================================
+# 项目导出
+# ========================================================================
+class TestExport:
+    """项目导出 — /api/v1/simulation/{pid}/export 返回 ZIP 流。"""
+
+    def test_export_zip_smoke(
+        self, client: httpx.Client, smoke_project_with_agents: dict
+    ) -> None:
+        pid = smoke_project_with_agents["project_id"]
+        r = client.get(f"{API}/simulation/project/{pid}/export")
+        assert r.status_code == 200, r.text
+        ctype = r.headers.get("content-type", "")
+        assert "zip" in ctype.lower(), \
+            f"导出响应应当是 application/zip，实际：{ctype}"
+        assert len(r.content) > 0, "导出 ZIP 内容不应为空"
+        # ZIP 文件以 PK\x03\x04 开头
+        assert r.content[:2] == b"PK", \
+            f"导出内容应当是合法 ZIP（PK header），实际开头：{r.content[:4]!r}"
+
+    def test_export_not_found(self, client: httpx.Client) -> None:
+        r = client.get(f"{API}/simulation/project/999999/export")
+        assert r.status_code == 404

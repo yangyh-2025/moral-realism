@@ -379,6 +379,31 @@ class SceneService:
 
             await session.commit()
 
+        # 初始化邻接关系
+        # 用 try/except 包裹 import 以兼容 W3 尚未完成的情况
+        try:
+            from app.core.geography_data import get_default_neighbors_for_scene
+        except ImportError:
+            def get_default_neighbors_for_scene(year, agent_map):
+                return set()
+
+        from app.services.agent_neighbor_service import AgentNeighborService
+
+        # 场景 ID → 年份 映射 (与 _create_sceneN_agents 中的 YEAR 同步)
+        scene_year_map = {1: 1913, 2: 1938, 3: 1946}
+        scene_year = scene_year_map.get(scene_id)
+
+        async for session in db_config.get_session():
+            nb_service = AgentNeighborService(session)
+            if scene_year is not None:
+                default_pairs = get_default_neighbors_for_scene(
+                    year=scene_year, agent_map=agent_map
+                )
+            else:
+                default_pairs = set()
+            await nb_service.initialize_neighbors(project_id, default_pairs)
+            await session.commit()
+
         return {
             "project_id": project_id,
             "project_name": project["project_name"],
@@ -473,6 +498,178 @@ class SceneService:
         await self._set_rel(sr_service, project_id, gp3, s11, StrategicRelationshipEnum.PARTNERSHIP)
         await self._set_rel(sr_service, project_id, gp3, s12, StrategicRelationshipEnum.ALLIANCE)
         await self._set_rel(sr_service, project_id, gp3, s13, StrategicRelationshipEnum.ALLIANCE)
+
+        # ------------------------------------------------------------
+        # 中等国之间（3对）
+        # ------------------------------------------------------------
+        await self._set_rel(sr_service, project_id, mp1, mp2, StrategicRelationshipEnum.CONFLICT)      # 法↔奥匈：法俄盟友，反德反奥
+        await self._set_rel(sr_service, project_id, mp1, mp3, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔意：1902法意秘密协定
+        await self._set_rel(sr_service, project_id, mp2, mp3, StrategicRelationshipEnum.CONFLICT)      # 奥匈↔意：意大利北部领土纠纷★
+
+        # ------------------------------------------------------------
+        # 中等国甲（法国）↔ 小国（13对）
+        # ------------------------------------------------------------
+        await self._set_rel(sr_service, project_id, mp1, s1,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔奥斯曼
+        await self._set_rel(sr_service, project_id, mp1, s2,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔保加利亚
+        await self._set_rel(sr_service, project_id, mp1, s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔西班牙
+        await self._set_rel(sr_service, project_id, mp1, s4,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔比利时：保护中立国
+        await self._set_rel(sr_service, project_id, mp1, s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔希腊
+        await self._set_rel(sr_service, project_id, mp1, s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔瑞典
+        await self._set_rel(sr_service, project_id, mp1, s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔荷兰
+        await self._set_rel(sr_service, project_id, mp1, s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔罗马尼亚
+        await self._set_rel(sr_service, project_id, mp1, s9,  StrategicRelationshipEnum.ALLIANCE)      # 法↔葡萄牙：传统盟友
+        await self._set_rel(sr_service, project_id, mp1, s10, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔丹麦
+        await self._set_rel(sr_service, project_id, mp1, s11, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔瑞士
+        await self._set_rel(sr_service, project_id, mp1, s12, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔塞尔维亚：反奥匈
+        await self._set_rel(sr_service, project_id, mp1, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔挪威
+
+        # ------------------------------------------------------------
+        # 中等国乙（奥匈）↔ 小国（13对）
+        # ------------------------------------------------------------
+        await self._set_rel(sr_service, project_id, mp2, s1,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥匈↔奥斯曼：反俄反塞
+        await self._set_rel(sr_service, project_id, mp2, s2,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥匈↔保加利亚：反塞
+        await self._set_rel(sr_service, project_id, mp2, s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥匈↔西班牙
+        await self._set_rel(sr_service, project_id, mp2, s4,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 奥匈↔比利时
+        await self._set_rel(sr_service, project_id, mp2, s5,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 奥匈↔希腊
+        await self._set_rel(sr_service, project_id, mp2, s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥匈↔瑞典
+        await self._set_rel(sr_service, project_id, mp2, s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥匈↔荷兰
+        await self._set_rel(sr_service, project_id, mp2, s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥匈↔罗马尼亚：传统盟友，1913开始疏远
+        await self._set_rel(sr_service, project_id, mp2, s9,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 奥匈↔葡萄牙
+        await self._set_rel(sr_service, project_id, mp2, s10, StrategicRelationshipEnum.PARTNERSHIP)   # 奥匈↔丹麦
+        await self._set_rel(sr_service, project_id, mp2, s11, StrategicRelationshipEnum.PARTNERSHIP)   # 奥匈↔瑞士
+        await self._set_rel(sr_service, project_id, mp2, s12, StrategicRelationshipEnum.CONFLICT)      # 奥匈↔塞尔维亚★：萨拉热窝导火索
+        await self._set_rel(sr_service, project_id, mp2, s13, StrategicRelationshipEnum.NO_DIPLOMACY)  # 奥匈↔挪威
+
+        # ------------------------------------------------------------
+        # 中等国丙（意大利）↔ 小国（13对）
+        # ------------------------------------------------------------
+        await self._set_rel(sr_service, project_id, mp3, s1,  StrategicRelationshipEnum.CONFLICT)      # 意↔奥斯曼：1911意土战争★
+        await self._set_rel(sr_service, project_id, mp3, s2,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔保加利亚
+        await self._set_rel(sr_service, project_id, mp3, s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔西班牙
+        await self._set_rel(sr_service, project_id, mp3, s4,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔比利时
+        await self._set_rel(sr_service, project_id, mp3, s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔希腊
+        await self._set_rel(sr_service, project_id, mp3, s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔瑞典
+        await self._set_rel(sr_service, project_id, mp3, s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔荷兰
+        await self._set_rel(sr_service, project_id, mp3, s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔罗马尼亚
+        await self._set_rel(sr_service, project_id, mp3, s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔葡萄牙
+        await self._set_rel(sr_service, project_id, mp3, s10, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔丹麦
+        await self._set_rel(sr_service, project_id, mp3, s11, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔瑞士
+        await self._set_rel(sr_service, project_id, mp3, s12, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔塞尔维亚
+        await self._set_rel(sr_service, project_id, mp3, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔挪威
+
+        # ------------------------------------------------------------
+        # 小国之间 - 关键史实冲突（巴尔干战争系列）
+        # ------------------------------------------------------------
+        await self._set_rel(sr_service, project_id, s1,  s2,  StrategicRelationshipEnum.CONFLICT)      # 奥斯曼↔保加利亚★：巴尔干战争
+        await self._set_rel(sr_service, project_id, s1,  s5,  StrategicRelationshipEnum.CONFLICT)      # 奥斯曼↔希腊★：巴尔干战争
+        await self._set_rel(sr_service, project_id, s1,  s12, StrategicRelationshipEnum.CONFLICT)      # 奥斯曼↔塞尔维亚★：巴尔干战争
+        await self._set_rel(sr_service, project_id, s2,  s5,  StrategicRelationshipEnum.CONFLICT)      # 保↔希：马其顿问题
+        await self._set_rel(sr_service, project_id, s2,  s8,  StrategicRelationshipEnum.CONFLICT)      # 保↔罗：多布罗加问题
+        await self._set_rel(sr_service, project_id, s2,  s12, StrategicRelationshipEnum.CONFLICT)      # 保↔塞★：第二次巴尔干战争
+        await self._set_rel(sr_service, project_id, s5,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔塞：反奥斯曼
+        await self._set_rel(sr_service, project_id, s8,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔塞：反奥匈
+
+        # ------------------------------------------------------------
+        # 小国之间 - 中立国/伊比利亚/北欧（其余对子，默认 PARTNERSHIP）
+        # 共 78 对，已显式 8 对，剩余 70 对全部 PARTNERSHIP
+        # ------------------------------------------------------------
+        # s1(奥斯曼) ↔ 其余（除 s2,s5,s12）
+        await self._set_rel(sr_service, project_id, s1,  s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥斯曼↔西班牙
+        await self._set_rel(sr_service, project_id, s1,  s4,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥斯曼↔比利时
+        await self._set_rel(sr_service, project_id, s1,  s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥斯曼↔瑞典
+        await self._set_rel(sr_service, project_id, s1,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥斯曼↔荷兰
+        await self._set_rel(sr_service, project_id, s1,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥斯曼↔罗马尼亚
+        await self._set_rel(sr_service, project_id, s1,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 奥斯曼↔葡萄牙
+        await self._set_rel(sr_service, project_id, s1,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 奥斯曼↔丹麦
+        await self._set_rel(sr_service, project_id, s1,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 奥斯曼↔瑞士
+        await self._set_rel(sr_service, project_id, s1,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 奥斯曼↔挪威
+
+        # s2(保) ↔ 其余（除 s1,s5,s8,s12）
+        await self._set_rel(sr_service, project_id, s2,  s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 保↔西班牙
+        await self._set_rel(sr_service, project_id, s2,  s4,  StrategicRelationshipEnum.PARTNERSHIP)   # 保↔比利时
+        await self._set_rel(sr_service, project_id, s2,  s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 保↔瑞典
+        await self._set_rel(sr_service, project_id, s2,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 保↔荷兰
+        await self._set_rel(sr_service, project_id, s2,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 保↔葡萄牙
+        await self._set_rel(sr_service, project_id, s2,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔丹麦
+        await self._set_rel(sr_service, project_id, s2,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔瑞士
+        await self._set_rel(sr_service, project_id, s2,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔挪威
+
+        # s3(西班牙) ↔ 其余
+        await self._set_rel(sr_service, project_id, s3,  s4,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔比利时
+        await self._set_rel(sr_service, project_id, s3,  s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔希腊
+        await self._set_rel(sr_service, project_id, s3,  s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔瑞典
+        await self._set_rel(sr_service, project_id, s3,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔荷兰
+        await self._set_rel(sr_service, project_id, s3,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔罗马尼亚
+        await self._set_rel(sr_service, project_id, s3,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔葡萄牙：伊比利亚兄弟
+        await self._set_rel(sr_service, project_id, s3,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔丹麦
+        await self._set_rel(sr_service, project_id, s3,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔瑞士
+        await self._set_rel(sr_service, project_id, s3,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔塞尔维亚
+        await self._set_rel(sr_service, project_id, s3,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔挪威
+
+        # s4(比利时) ↔ 其余
+        await self._set_rel(sr_service, project_id, s4,  s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔希腊
+        await self._set_rel(sr_service, project_id, s4,  s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔瑞典
+        await self._set_rel(sr_service, project_id, s4,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔荷兰
+        await self._set_rel(sr_service, project_id, s4,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔罗马尼亚
+        await self._set_rel(sr_service, project_id, s4,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔葡萄牙
+        await self._set_rel(sr_service, project_id, s4,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔丹麦
+        await self._set_rel(sr_service, project_id, s4,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔瑞士
+        await self._set_rel(sr_service, project_id, s4,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔塞尔维亚
+        await self._set_rel(sr_service, project_id, s4,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔挪威
+
+        # s5(希腊) ↔ 其余（除 s1,s2,s12）
+        await self._set_rel(sr_service, project_id, s5,  s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 希↔瑞典
+        await self._set_rel(sr_service, project_id, s5,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 希↔荷兰
+        await self._set_rel(sr_service, project_id, s5,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 希↔罗马尼亚
+        await self._set_rel(sr_service, project_id, s5,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 希↔葡萄牙
+        await self._set_rel(sr_service, project_id, s5,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔丹麦
+        await self._set_rel(sr_service, project_id, s5,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔瑞士
+        await self._set_rel(sr_service, project_id, s5,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔挪威
+
+        # s6(瑞典) ↔ 其余
+        await self._set_rel(sr_service, project_id, s6,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔荷兰
+        await self._set_rel(sr_service, project_id, s6,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔罗马尼亚
+        await self._set_rel(sr_service, project_id, s6,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔葡萄牙
+        await self._set_rel(sr_service, project_id, s6,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔丹麦：北欧兄弟
+        await self._set_rel(sr_service, project_id, s6,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔瑞士
+        await self._set_rel(sr_service, project_id, s6,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔塞尔维亚
+        await self._set_rel(sr_service, project_id, s6,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔挪威：1905独立后和平
+
+        # s7(荷兰) ↔ 其余
+        await self._set_rel(sr_service, project_id, s7,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔罗马尼亚
+        await self._set_rel(sr_service, project_id, s7,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔葡萄牙
+        await self._set_rel(sr_service, project_id, s7,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔丹麦
+        await self._set_rel(sr_service, project_id, s7,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔瑞士
+        await self._set_rel(sr_service, project_id, s7,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔塞尔维亚
+        await self._set_rel(sr_service, project_id, s7,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔挪威
+
+        # s8(罗马尼亚) ↔ 其余（除 s2,s12）
+        await self._set_rel(sr_service, project_id, s8,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔葡萄牙
+        await self._set_rel(sr_service, project_id, s8,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔丹麦
+        await self._set_rel(sr_service, project_id, s8,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔瑞士
+        await self._set_rel(sr_service, project_id, s8,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔挪威
+
+        # s9(葡萄牙) ↔ 其余
+        await self._set_rel(sr_service, project_id, s9,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔丹麦
+        await self._set_rel(sr_service, project_id, s9,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔瑞士
+        await self._set_rel(sr_service, project_id, s9,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔塞尔维亚
+        await self._set_rel(sr_service, project_id, s9,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔挪威
+
+        # s10(丹麦) ↔ 其余
+        await self._set_rel(sr_service, project_id, s10, s11, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔瑞士
+        await self._set_rel(sr_service, project_id, s10, s12, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔塞尔维亚
+        await self._set_rel(sr_service, project_id, s10, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔挪威：北欧兄弟
+
+        # s11(瑞士) ↔ 其余
+        await self._set_rel(sr_service, project_id, s11, s12, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔塞尔维亚
+        await self._set_rel(sr_service, project_id, s11, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔挪威
+
+        # s12(塞尔维亚) ↔ s13(挪威)
+        await self._set_rel(sr_service, project_id, s12, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 塞↔挪威
+
+        # 总关系对数: 171, 已显式定义: 171对, NO_DIPLOMACY: 4对
+        # CONFLICT: 14对（含原有强国部分）, ALLIANCE: 19对, PARTNERSHIP: 134对
+        # 详细分布：强强(3) + 强中小(48) + 中中(3) + 中小(39) + 小小(78) = 171
 
     # ------------------------------------------------------------------
     # 场景2战略关系（二战前1938）
@@ -599,6 +796,370 @@ class SceneService:
         await self._set_rel(sr_service, project_id, gp3, s21, StrategicRelationshipEnum.PARTNERSHIP)
         await self._set_rel(sr_service, project_id, gp3, s22, StrategicRelationshipEnum.PARTNERSHIP)
 
+        # ------------------------------------------------------------
+        # 中等国之间（3对）
+        # ------------------------------------------------------------
+        await self._set_rel(sr_service, project_id, mp1, mp2, StrategicRelationshipEnum.CONFLICT)      # 法↔意：地中海竞争，意对突尼斯/科西嘉有诉求
+        await self._set_rel(sr_service, project_id, mp1, mp3, StrategicRelationshipEnum.ALLIANCE)      # 法↔波★：1921法波同盟
+        await self._set_rel(sr_service, project_id, mp2, mp3, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔波：友好但非盟友
+
+        # ------------------------------------------------------------
+        # 中等国甲（法国 mp1）↔ 小国（22对）
+        # ------------------------------------------------------------
+        await self._set_rel(sr_service, project_id, mp1, s1,  StrategicRelationshipEnum.CONFLICT)      # 法↔西：佛朗哥胜利在即，法支持共和派
+        await self._set_rel(sr_service, project_id, mp1, s2,  StrategicRelationshipEnum.ALLIANCE)      # 法↔捷★：1924法捷同盟
+        await self._set_rel(sr_service, project_id, mp1, s3,  StrategicRelationshipEnum.ALLIANCE)      # 法↔比★：1920法比军事协定
+        await self._set_rel(sr_service, project_id, mp1, s4,  StrategicRelationshipEnum.ALLIANCE)      # 法↔罗★：小协约后台
+        await self._set_rel(sr_service, project_id, mp1, s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔土：友好
+        await self._set_rel(sr_service, project_id, mp1, s6,  StrategicRelationshipEnum.ALLIANCE)      # 法↔南★：小协约后台
+        await self._set_rel(sr_service, project_id, mp1, s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔瑞典
+        await self._set_rel(sr_service, project_id, mp1, s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔荷：友好（荷中立）
+        await self._set_rel(sr_service, project_id, mp1, s9,  StrategicRelationshipEnum.CONFLICT)      # 法↔匈：匈牙利修约主义敌视小协约
+        await self._set_rel(sr_service, project_id, mp1, s10, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔希
+        await self._set_rel(sr_service, project_id, mp1, s11, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔葡
+        await self._set_rel(sr_service, project_id, mp1, s12, StrategicRelationshipEnum.ALLIANCE)      # 法↔卢★：1867伦敦条约担保中立
+        await self._set_rel(sr_service, project_id, mp1, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔丹
+        await self._set_rel(sr_service, project_id, mp1, s14, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔芬
+        await self._set_rel(sr_service, project_id, mp1, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔瑞士
+        await self._set_rel(sr_service, project_id, mp1, s16, StrategicRelationshipEnum.CONFLICT)      # 法↔保：保加利亚修约主义反小协约
+        await self._set_rel(sr_service, project_id, mp1, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔挪
+        await self._set_rel(sr_service, project_id, mp1, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔拉
+        await self._set_rel(sr_service, project_id, mp1, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔立
+        await self._set_rel(sr_service, project_id, mp1, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔爱尔兰
+        await self._set_rel(sr_service, project_id, mp1, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔爱沙
+        await self._set_rel(sr_service, project_id, mp1, s22, StrategicRelationshipEnum.CONFLICT)      # 法↔阿：阿尔巴尼亚是意大利保护国
+
+        # ------------------------------------------------------------
+        # 中等国乙（意大利 mp2）↔ 小国（22对）
+        # ------------------------------------------------------------
+        await self._set_rel(sr_service, project_id, mp2, s1,  StrategicRelationshipEnum.ALLIANCE)      # 意↔西★：意军支援佛朗哥
+        await self._set_rel(sr_service, project_id, mp2, s2,  StrategicRelationshipEnum.CONFLICT)      # 意↔捷：反小协约（意拒承认捷克）
+        await self._set_rel(sr_service, project_id, mp2, s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔比
+        await self._set_rel(sr_service, project_id, mp2, s4,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔罗：友好但属法系小协约
+        await self._set_rel(sr_service, project_id, mp2, s5,  StrategicRelationshipEnum.CONFLICT)      # 意↔土：意占多德卡尼斯，地中海竞争
+        await self._set_rel(sr_service, project_id, mp2, s6,  StrategicRelationshipEnum.CONFLICT)      # 意↔南：亚得里亚海/达尔马提亚之争
+        await self._set_rel(sr_service, project_id, mp2, s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔瑞典
+        await self._set_rel(sr_service, project_id, mp2, s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔荷
+        await self._set_rel(sr_service, project_id, mp2, s9,  StrategicRelationshipEnum.ALLIANCE)      # 意↔匈★：1927意匈条约，修约主义伙伴
+        await self._set_rel(sr_service, project_id, mp2, s10, StrategicRelationshipEnum.CONFLICT)      # 意↔希：科孚事件遗留+爱琴海竞争
+        await self._set_rel(sr_service, project_id, mp2, s11, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔葡
+        await self._set_rel(sr_service, project_id, mp2, s12, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔卢
+        await self._set_rel(sr_service, project_id, mp2, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔丹
+        await self._set_rel(sr_service, project_id, mp2, s14, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔芬
+        await self._set_rel(sr_service, project_id, mp2, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔瑞士
+        await self._set_rel(sr_service, project_id, mp2, s16, StrategicRelationshipEnum.ALLIANCE)      # 意↔保★：修约主义同盟
+        await self._set_rel(sr_service, project_id, mp2, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔挪
+        await self._set_rel(sr_service, project_id, mp2, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔拉
+        await self._set_rel(sr_service, project_id, mp2, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔立
+        await self._set_rel(sr_service, project_id, mp2, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔爱尔兰
+        await self._set_rel(sr_service, project_id, mp2, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔爱沙
+        await self._set_rel(sr_service, project_id, mp2, s22, StrategicRelationshipEnum.ALLIANCE)      # 意↔阿★：实际保护国，1939吞并
+
+        # ------------------------------------------------------------
+        # 中等国丙（波兰 mp3）↔ 小国（22对）
+        # ------------------------------------------------------------
+        await self._set_rel(sr_service, project_id, mp3, s1,  StrategicRelationshipEnum.PARTNERSHIP)   # 波↔西
+        await self._set_rel(sr_service, project_id, mp3, s2,  StrategicRelationshipEnum.CONFLICT)      # 波↔捷★：特申/Teschen之争
+        await self._set_rel(sr_service, project_id, mp3, s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 波↔比
+        await self._set_rel(sr_service, project_id, mp3, s4,  StrategicRelationshipEnum.ALLIANCE)      # 波↔罗★：1921波罗同盟（反苏）
+        await self._set_rel(sr_service, project_id, mp3, s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 波↔土
+        await self._set_rel(sr_service, project_id, mp3, s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 波↔南
+        await self._set_rel(sr_service, project_id, mp3, s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 波↔瑞典
+        await self._set_rel(sr_service, project_id, mp3, s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 波↔荷
+        await self._set_rel(sr_service, project_id, mp3, s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 波↔匈：友好（共同反捷）
+        await self._set_rel(sr_service, project_id, mp3, s10, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔希
+        await self._set_rel(sr_service, project_id, mp3, s11, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔葡
+        await self._set_rel(sr_service, project_id, mp3, s12, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔卢
+        await self._set_rel(sr_service, project_id, mp3, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔丹
+        await self._set_rel(sr_service, project_id, mp3, s14, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔芬：共同反苏
+        await self._set_rel(sr_service, project_id, mp3, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔瑞士
+        await self._set_rel(sr_service, project_id, mp3, s16, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔保
+        await self._set_rel(sr_service, project_id, mp3, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔挪
+        await self._set_rel(sr_service, project_id, mp3, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔拉
+        await self._set_rel(sr_service, project_id, mp3, s19, StrategicRelationshipEnum.CONFLICT)      # 波↔立★：维尔纽斯/Vilna之争
+        await self._set_rel(sr_service, project_id, mp3, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔爱尔兰
+        await self._set_rel(sr_service, project_id, mp3, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔爱沙
+        await self._set_rel(sr_service, project_id, mp3, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔阿
+
+        # ------------------------------------------------------------
+        # 小国之间（231对，C(22,2)）
+        # ------------------------------------------------------------
+        # s1(西班牙) ↔ 其余21国
+        await self._set_rel(sr_service, project_id, s1,  s2,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔捷
+        await self._set_rel(sr_service, project_id, s1,  s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔比
+        await self._set_rel(sr_service, project_id, s1,  s4,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔罗
+        await self._set_rel(sr_service, project_id, s1,  s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔土
+        await self._set_rel(sr_service, project_id, s1,  s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔南
+        await self._set_rel(sr_service, project_id, s1,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔瑞典
+        await self._set_rel(sr_service, project_id, s1,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔荷
+        await self._set_rel(sr_service, project_id, s1,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 西↔匈
+        await self._set_rel(sr_service, project_id, s1,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔希
+        await self._set_rel(sr_service, project_id, s1,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔葡★：伊比利亚兄弟，萨拉查支持佛朗哥
+        await self._set_rel(sr_service, project_id, s1,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔卢
+        await self._set_rel(sr_service, project_id, s1,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔丹
+        await self._set_rel(sr_service, project_id, s1,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔芬
+        await self._set_rel(sr_service, project_id, s1,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔瑞士
+        await self._set_rel(sr_service, project_id, s1,  s16, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔保
+        await self._set_rel(sr_service, project_id, s1,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔挪
+        await self._set_rel(sr_service, project_id, s1,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔拉
+        await self._set_rel(sr_service, project_id, s1,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔立
+        await self._set_rel(sr_service, project_id, s1,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔爱尔兰
+        await self._set_rel(sr_service, project_id, s1,  s21, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔爱沙
+        await self._set_rel(sr_service, project_id, s1,  s22, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔阿
+
+        # s2(捷克斯洛伐克) ↔ 其余20国
+        await self._set_rel(sr_service, project_id, s2,  s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔比
+        await self._set_rel(sr_service, project_id, s2,  s4,  StrategicRelationshipEnum.ALLIANCE)      # 捷↔罗★：小协约
+        await self._set_rel(sr_service, project_id, s2,  s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔土
+        await self._set_rel(sr_service, project_id, s2,  s6,  StrategicRelationshipEnum.ALLIANCE)      # 捷↔南★：小协约
+        await self._set_rel(sr_service, project_id, s2,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔瑞典
+        await self._set_rel(sr_service, project_id, s2,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔荷
+        await self._set_rel(sr_service, project_id, s2,  s9,  StrategicRelationshipEnum.CONFLICT)      # 捷↔匈★：领土争议（斯洛伐克/卢西尼亚）
+        await self._set_rel(sr_service, project_id, s2,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔希
+        await self._set_rel(sr_service, project_id, s2,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔葡
+        await self._set_rel(sr_service, project_id, s2,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔卢
+        await self._set_rel(sr_service, project_id, s2,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔丹
+        await self._set_rel(sr_service, project_id, s2,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔芬
+        await self._set_rel(sr_service, project_id, s2,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔瑞士
+        await self._set_rel(sr_service, project_id, s2,  s16, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔保
+        await self._set_rel(sr_service, project_id, s2,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔挪
+        await self._set_rel(sr_service, project_id, s2,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔拉
+        await self._set_rel(sr_service, project_id, s2,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔立
+        await self._set_rel(sr_service, project_id, s2,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔爱尔兰
+        await self._set_rel(sr_service, project_id, s2,  s21, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔爱沙
+        await self._set_rel(sr_service, project_id, s2,  s22, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔阿
+
+        # s3(比利时) ↔ 其余19国
+        await self._set_rel(sr_service, project_id, s3,  s4,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔罗
+        await self._set_rel(sr_service, project_id, s3,  s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔土
+        await self._set_rel(sr_service, project_id, s3,  s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔南
+        await self._set_rel(sr_service, project_id, s3,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔瑞典
+        await self._set_rel(sr_service, project_id, s3,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔荷★：比荷邻邦友好
+        await self._set_rel(sr_service, project_id, s3,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔匈
+        await self._set_rel(sr_service, project_id, s3,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔希
+        await self._set_rel(sr_service, project_id, s3,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔葡
+        await self._set_rel(sr_service, project_id, s3,  s12, StrategicRelationshipEnum.ALLIANCE)      # 比↔卢★：1921比卢经济联盟
+        await self._set_rel(sr_service, project_id, s3,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔丹
+        await self._set_rel(sr_service, project_id, s3,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔芬
+        await self._set_rel(sr_service, project_id, s3,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔瑞士
+        await self._set_rel(sr_service, project_id, s3,  s16, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔保
+        await self._set_rel(sr_service, project_id, s3,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔挪
+        await self._set_rel(sr_service, project_id, s3,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔拉
+        await self._set_rel(sr_service, project_id, s3,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔立
+        await self._set_rel(sr_service, project_id, s3,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔爱尔兰
+        await self._set_rel(sr_service, project_id, s3,  s21, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔爱沙
+        await self._set_rel(sr_service, project_id, s3,  s22, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔阿
+
+        # s4(罗马尼亚) ↔ 其余18国
+        await self._set_rel(sr_service, project_id, s4,  s5,  StrategicRelationshipEnum.ALLIANCE)      # 罗↔土★：1934巴尔干协约
+        await self._set_rel(sr_service, project_id, s4,  s6,  StrategicRelationshipEnum.ALLIANCE)      # 罗↔南★：小协约+巴尔干协约
+        await self._set_rel(sr_service, project_id, s4,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔瑞典
+        await self._set_rel(sr_service, project_id, s4,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔荷
+        await self._set_rel(sr_service, project_id, s4,  s9,  StrategicRelationshipEnum.CONFLICT)      # 罗↔匈★：特兰西瓦尼亚之争
+        await self._set_rel(sr_service, project_id, s4,  s10, StrategicRelationshipEnum.ALLIANCE)      # 罗↔希★：巴尔干协约
+        await self._set_rel(sr_service, project_id, s4,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔葡
+        await self._set_rel(sr_service, project_id, s4,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔卢
+        await self._set_rel(sr_service, project_id, s4,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔丹
+        await self._set_rel(sr_service, project_id, s4,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔芬：共同反苏
+        await self._set_rel(sr_service, project_id, s4,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔瑞士
+        await self._set_rel(sr_service, project_id, s4,  s16, StrategicRelationshipEnum.CONFLICT)      # 罗↔保★：多布罗加之争
+        await self._set_rel(sr_service, project_id, s4,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔挪
+        await self._set_rel(sr_service, project_id, s4,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔拉
+        await self._set_rel(sr_service, project_id, s4,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔立
+        await self._set_rel(sr_service, project_id, s4,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔爱尔兰
+        await self._set_rel(sr_service, project_id, s4,  s21, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔爱沙
+        await self._set_rel(sr_service, project_id, s4,  s22, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔阿
+
+        # s5(土耳其) ↔ 其余17国
+        await self._set_rel(sr_service, project_id, s5,  s6,  StrategicRelationshipEnum.ALLIANCE)      # 土↔南★：巴尔干协约
+        await self._set_rel(sr_service, project_id, s5,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 土↔瑞典
+        await self._set_rel(sr_service, project_id, s5,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 土↔荷
+        await self._set_rel(sr_service, project_id, s5,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 土↔匈
+        await self._set_rel(sr_service, project_id, s5,  s10, StrategicRelationshipEnum.ALLIANCE)      # 土↔希★：巴尔干协约（1930后和解）
+        await self._set_rel(sr_service, project_id, s5,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔葡
+        await self._set_rel(sr_service, project_id, s5,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔卢
+        await self._set_rel(sr_service, project_id, s5,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔丹
+        await self._set_rel(sr_service, project_id, s5,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔芬
+        await self._set_rel(sr_service, project_id, s5,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔瑞士
+        await self._set_rel(sr_service, project_id, s5,  s16, StrategicRelationshipEnum.CONFLICT)      # 土↔保：色雷斯/海峡历史敌对
+        await self._set_rel(sr_service, project_id, s5,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔挪
+        await self._set_rel(sr_service, project_id, s5,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔拉
+        await self._set_rel(sr_service, project_id, s5,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔立
+        await self._set_rel(sr_service, project_id, s5,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔爱尔兰
+        await self._set_rel(sr_service, project_id, s5,  s21, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔爱沙
+        await self._set_rel(sr_service, project_id, s5,  s22, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔阿
+
+        # s6(南斯拉夫) ↔ 其余16国
+        await self._set_rel(sr_service, project_id, s6,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 南↔瑞典
+        await self._set_rel(sr_service, project_id, s6,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 南↔荷
+        await self._set_rel(sr_service, project_id, s6,  s9,  StrategicRelationshipEnum.CONFLICT)      # 南↔匈★：伏伊伏丁那/克罗地亚问题
+        await self._set_rel(sr_service, project_id, s6,  s10, StrategicRelationshipEnum.ALLIANCE)      # 南↔希★：巴尔干协约
+        await self._set_rel(sr_service, project_id, s6,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔葡
+        await self._set_rel(sr_service, project_id, s6,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔卢
+        await self._set_rel(sr_service, project_id, s6,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔丹
+        await self._set_rel(sr_service, project_id, s6,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔芬
+        await self._set_rel(sr_service, project_id, s6,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔瑞士
+        await self._set_rel(sr_service, project_id, s6,  s16, StrategicRelationshipEnum.CONFLICT)      # 南↔保★：马其顿问题
+        await self._set_rel(sr_service, project_id, s6,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔挪
+        await self._set_rel(sr_service, project_id, s6,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔拉
+        await self._set_rel(sr_service, project_id, s6,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔立
+        await self._set_rel(sr_service, project_id, s6,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔爱尔兰
+        await self._set_rel(sr_service, project_id, s6,  s21, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔爱沙
+        await self._set_rel(sr_service, project_id, s6,  s22, StrategicRelationshipEnum.CONFLICT)      # 南↔阿：科索沃/阿尔巴尼亚族问题，阿为意保护国
+
+        # s7(瑞典) ↔ 其余15国
+        await self._set_rel(sr_service, project_id, s7,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔荷
+        await self._set_rel(sr_service, project_id, s7,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔匈
+        await self._set_rel(sr_service, project_id, s7,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔希
+        await self._set_rel(sr_service, project_id, s7,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔葡
+        await self._set_rel(sr_service, project_id, s7,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔卢
+        await self._set_rel(sr_service, project_id, s7,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔丹★：北欧兄弟
+        await self._set_rel(sr_service, project_id, s7,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔芬★：北欧兄弟
+        await self._set_rel(sr_service, project_id, s7,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔瑞士：双中立
+        await self._set_rel(sr_service, project_id, s7,  s16, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔保
+        await self._set_rel(sr_service, project_id, s7,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔挪★：北欧兄弟
+        await self._set_rel(sr_service, project_id, s7,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔拉
+        await self._set_rel(sr_service, project_id, s7,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔立
+        await self._set_rel(sr_service, project_id, s7,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔爱尔兰
+        await self._set_rel(sr_service, project_id, s7,  s21, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔爱沙
+        await self._set_rel(sr_service, project_id, s7,  s22, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔阿
+
+        # s8(荷兰) ↔ 其余14国
+        await self._set_rel(sr_service, project_id, s8,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔匈
+        await self._set_rel(sr_service, project_id, s8,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔希
+        await self._set_rel(sr_service, project_id, s8,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔葡
+        await self._set_rel(sr_service, project_id, s8,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔卢★：低地国家邻邦
+        await self._set_rel(sr_service, project_id, s8,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔丹
+        await self._set_rel(sr_service, project_id, s8,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔芬
+        await self._set_rel(sr_service, project_id, s8,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔瑞士：双中立
+        await self._set_rel(sr_service, project_id, s8,  s16, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔保
+        await self._set_rel(sr_service, project_id, s8,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔挪
+        await self._set_rel(sr_service, project_id, s8,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔拉
+        await self._set_rel(sr_service, project_id, s8,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔立
+        await self._set_rel(sr_service, project_id, s8,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔爱尔兰
+        await self._set_rel(sr_service, project_id, s8,  s21, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔爱沙
+        await self._set_rel(sr_service, project_id, s8,  s22, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔阿
+
+        # s9(匈牙利) ↔ 其余13国
+        await self._set_rel(sr_service, project_id, s9,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔希
+        await self._set_rel(sr_service, project_id, s9,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔葡
+        await self._set_rel(sr_service, project_id, s9,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔卢
+        await self._set_rel(sr_service, project_id, s9,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔丹
+        await self._set_rel(sr_service, project_id, s9,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔芬
+        await self._set_rel(sr_service, project_id, s9,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔瑞士
+        await self._set_rel(sr_service, project_id, s9,  s16, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔保：共同修约主义
+        await self._set_rel(sr_service, project_id, s9,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔挪
+        await self._set_rel(sr_service, project_id, s9,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔拉
+        await self._set_rel(sr_service, project_id, s9,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔立
+        await self._set_rel(sr_service, project_id, s9,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔爱尔兰
+        await self._set_rel(sr_service, project_id, s9,  s21, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔爱沙
+        await self._set_rel(sr_service, project_id, s9,  s22, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔阿
+
+        # s10(希腊) ↔ 其余12国
+        await self._set_rel(sr_service, project_id, s10, s11, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔葡
+        await self._set_rel(sr_service, project_id, s10, s12, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔卢
+        await self._set_rel(sr_service, project_id, s10, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔丹
+        await self._set_rel(sr_service, project_id, s10, s14, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔芬
+        await self._set_rel(sr_service, project_id, s10, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔瑞士
+        await self._set_rel(sr_service, project_id, s10, s16, StrategicRelationshipEnum.CONFLICT)      # 希↔保★：马其顿/色雷斯之争
+        await self._set_rel(sr_service, project_id, s10, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔挪
+        await self._set_rel(sr_service, project_id, s10, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔拉
+        await self._set_rel(sr_service, project_id, s10, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔立
+        await self._set_rel(sr_service, project_id, s10, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔爱尔兰
+        await self._set_rel(sr_service, project_id, s10, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔爱沙
+        await self._set_rel(sr_service, project_id, s10, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔阿
+
+        # s11(葡萄牙) ↔ 其余11国
+        await self._set_rel(sr_service, project_id, s11, s12, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔卢
+        await self._set_rel(sr_service, project_id, s11, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔丹
+        await self._set_rel(sr_service, project_id, s11, s14, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔芬
+        await self._set_rel(sr_service, project_id, s11, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔瑞士
+        await self._set_rel(sr_service, project_id, s11, s16, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔保
+        await self._set_rel(sr_service, project_id, s11, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔挪
+        await self._set_rel(sr_service, project_id, s11, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔拉
+        await self._set_rel(sr_service, project_id, s11, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔立
+        await self._set_rel(sr_service, project_id, s11, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔爱尔兰
+        await self._set_rel(sr_service, project_id, s11, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔爱沙
+        await self._set_rel(sr_service, project_id, s11, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔阿
+
+        # s12(卢森堡) ↔ 其余10国
+        await self._set_rel(sr_service, project_id, s12, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔丹
+        await self._set_rel(sr_service, project_id, s12, s14, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔芬
+        await self._set_rel(sr_service, project_id, s12, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔瑞士
+        await self._set_rel(sr_service, project_id, s12, s16, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔保
+        await self._set_rel(sr_service, project_id, s12, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔挪
+        await self._set_rel(sr_service, project_id, s12, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔拉
+        await self._set_rel(sr_service, project_id, s12, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔立
+        await self._set_rel(sr_service, project_id, s12, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔爱尔兰
+        await self._set_rel(sr_service, project_id, s12, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔爱沙
+        await self._set_rel(sr_service, project_id, s12, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔阿
+
+        # s13(丹麦) ↔ 其余9国
+        await self._set_rel(sr_service, project_id, s13, s14, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔芬★：北欧兄弟
+        await self._set_rel(sr_service, project_id, s13, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔瑞士
+        await self._set_rel(sr_service, project_id, s13, s16, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔保
+        await self._set_rel(sr_service, project_id, s13, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔挪★：北欧兄弟
+        await self._set_rel(sr_service, project_id, s13, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔拉
+        await self._set_rel(sr_service, project_id, s13, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔立
+        await self._set_rel(sr_service, project_id, s13, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔爱尔兰
+        await self._set_rel(sr_service, project_id, s13, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔爱沙
+        await self._set_rel(sr_service, project_id, s13, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔阿
+
+        # s14(芬兰) ↔ 其余8国
+        await self._set_rel(sr_service, project_id, s14, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 芬↔瑞士
+        await self._set_rel(sr_service, project_id, s14, s16, StrategicRelationshipEnum.PARTNERSHIP)   # 芬↔保
+        await self._set_rel(sr_service, project_id, s14, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 芬↔挪★：北欧兄弟
+        await self._set_rel(sr_service, project_id, s14, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 芬↔拉：波罗的海邻邦
+        await self._set_rel(sr_service, project_id, s14, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 芬↔立
+        await self._set_rel(sr_service, project_id, s14, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 芬↔爱尔兰
+        await self._set_rel(sr_service, project_id, s14, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 芬↔爱沙★：芬族兄弟
+        await self._set_rel(sr_service, project_id, s14, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 芬↔阿
+
+        # s15(瑞士) ↔ 其余7国
+        await self._set_rel(sr_service, project_id, s15, s16, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔保
+        await self._set_rel(sr_service, project_id, s15, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔挪
+        await self._set_rel(sr_service, project_id, s15, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔拉
+        await self._set_rel(sr_service, project_id, s15, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔立
+        await self._set_rel(sr_service, project_id, s15, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔爱尔兰
+        await self._set_rel(sr_service, project_id, s15, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔爱沙
+        await self._set_rel(sr_service, project_id, s15, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔阿
+
+        # s16(保加利亚) ↔ 其余6国
+        await self._set_rel(sr_service, project_id, s16, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔挪
+        await self._set_rel(sr_service, project_id, s16, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔拉
+        await self._set_rel(sr_service, project_id, s16, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔立
+        await self._set_rel(sr_service, project_id, s16, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔爱尔兰
+        await self._set_rel(sr_service, project_id, s16, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔爱沙
+        await self._set_rel(sr_service, project_id, s16, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔阿
+
+        # s17(挪威) ↔ 其余5国
+        await self._set_rel(sr_service, project_id, s17, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 挪↔拉
+        await self._set_rel(sr_service, project_id, s17, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 挪↔立
+        await self._set_rel(sr_service, project_id, s17, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 挪↔爱尔兰
+        await self._set_rel(sr_service, project_id, s17, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 挪↔爱沙
+        await self._set_rel(sr_service, project_id, s17, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 挪↔阿
+
+        # s18(拉脱维亚) ↔ 其余4国
+        await self._set_rel(sr_service, project_id, s18, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 拉↔立★：波罗的海协约（1934）
+        await self._set_rel(sr_service, project_id, s18, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 拉↔爱尔兰
+        await self._set_rel(sr_service, project_id, s18, s21, StrategicRelationshipEnum.ALLIANCE)      # 拉↔爱沙★：波罗的海协约
+        await self._set_rel(sr_service, project_id, s18, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 拉↔阿
+
+        # s19(立陶宛) ↔ 其余3国
+        await self._set_rel(sr_service, project_id, s19, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 立↔爱尔兰
+        await self._set_rel(sr_service, project_id, s19, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 立↔爱沙：波罗的海协约
+        await self._set_rel(sr_service, project_id, s19, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 立↔阿
+
+        # s20(爱尔兰) ↔ 其余2国
+        await self._set_rel(sr_service, project_id, s20, s21, StrategicRelationshipEnum.PARTNERSHIP)   # 爱尔兰↔爱沙
+        await self._set_rel(sr_service, project_id, s20, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 爱尔兰↔阿
+
+        # s21(爱沙尼亚) ↔ s22(阿尔巴尼亚)
+        await self._set_rel(sr_service, project_id, s21, s22, StrategicRelationshipEnum.PARTNERSHIP)   # 爱沙↔阿
+
+        # 场景2总关系对数: C(28,2)=378, 已显式定义: 378对
+        # 分布：强强(3) + 强中小(75) + 中中(3) + 中小(66) + 小小(231) = 378
+
     # ------------------------------------------------------------------
     # 场景3战略关系（冷战前1946）
     # ------------------------------------------------------------------
@@ -687,6 +1248,308 @@ class SceneService:
         await self._set_rel(sr_service, project_id, gp2, s18, StrategicRelationshipEnum.PARTNERSHIP)
         await self._set_rel(sr_service, project_id, gp2, s19, StrategicRelationshipEnum.CONFLICT)
         await self._set_rel(sr_service, project_id, gp2, s20, StrategicRelationshipEnum.ALLIANCE)
+
+        # ====== 中等国之间（3对） ======
+        await self._set_rel(sr_service, project_id, mp1, mp2, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔意：均西方阵营但的里雅斯特边界争议
+        await self._set_rel(sr_service, project_id, mp1, mp3, StrategicRelationshipEnum.CONFLICT)      # 法↔波：波兰苏联化，1947法波将断交
+        await self._set_rel(sr_service, project_id, mp2, mp3, StrategicRelationshipEnum.NO_DIPLOMACY)  # 意↔波：东西阵营初分，缺乏实质外交
+
+        # ====== 中等国 ↔ 小国（60对） ======
+        # mp1(法国) ↔ 小国
+        await self._set_rel(sr_service, project_id, mp1, s1,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 法↔西班牙：联合国谴责佛朗哥，外交断裂
+        await self._set_rel(sr_service, project_id, mp1, s2,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔土耳其：同西方阵营
+        await self._set_rel(sr_service, project_id, mp1, s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔捷克：1946尚未完全苏化，传统友好
+        await self._set_rel(sr_service, project_id, mp1, s4,  StrategicRelationshipEnum.ALLIANCE)      # 法↔比利时：西欧紧密盟友
+        await self._set_rel(sr_service, project_id, mp1, s5,  StrategicRelationshipEnum.ALLIANCE)      # 法↔荷兰：西欧紧密盟友
+        await self._set_rel(sr_service, project_id, mp1, s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 法↔瑞典：中立国友好往来
+        await self._set_rel(sr_service, project_id, mp1, s7,  StrategicRelationshipEnum.CONFLICT)      # 法↔南斯拉夫：铁托共产，1946对立
+        await self._set_rel(sr_service, project_id, mp1, s8,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 法↔罗马尼亚：苏联傀儡，疏远
+        await self._set_rel(sr_service, project_id, mp1, s9,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 法↔匈牙利：苏联占领下
+        await self._set_rel(sr_service, project_id, mp1, s10, StrategicRelationshipEnum.ALLIANCE)      # 法↔希腊：西方支持反共政府
+        await self._set_rel(sr_service, project_id, mp1, s11, StrategicRelationshipEnum.NO_DIPLOMACY)  # 法↔保加利亚：苏联占领下
+        await self._set_rel(sr_service, project_id, mp1, s12, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔葡萄牙：西方阵营但避免冲突
+        await self._set_rel(sr_service, project_id, mp1, s13, StrategicRelationshipEnum.ALLIANCE)      # 法↔卢森堡：西欧紧密
+        await self._set_rel(sr_service, project_id, mp1, s14, StrategicRelationshipEnum.ALLIANCE)      # 法↔丹麦：西方阵营盟友
+        await self._set_rel(sr_service, project_id, mp1, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔瑞士：永久中立友好
+        await self._set_rel(sr_service, project_id, mp1, s16, StrategicRelationshipEnum.ALLIANCE)      # 法↔挪威：西方阵营盟友
+        await self._set_rel(sr_service, project_id, mp1, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔芬兰：芬式中立，谨慎友好
+        await self._set_rel(sr_service, project_id, mp1, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔爱尔兰：中立国正常往来
+        await self._set_rel(sr_service, project_id, mp1, s19, StrategicRelationshipEnum.CONFLICT)      # 法↔阿尔巴尼亚：共产主义对立
+        await self._set_rel(sr_service, project_id, mp1, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 法↔冰岛：1944共和国西方阵营
+        # mp2(意大利) ↔ 小国
+        await self._set_rel(sr_service, project_id, mp2, s1,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 意↔西班牙：意大利已民主化与佛朗哥疏远
+        await self._set_rel(sr_service, project_id, mp2, s2,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔土耳其：同西方阵营
+        await self._set_rel(sr_service, project_id, mp2, s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔捷克：1946尚未完全苏化
+        await self._set_rel(sr_service, project_id, mp2, s4,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔比利时：西方阵营但意尚未入北约
+        await self._set_rel(sr_service, project_id, mp2, s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔荷兰：西方阵营
+        await self._set_rel(sr_service, project_id, mp2, s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 意↔瑞典：中立友好
+        await self._set_rel(sr_service, project_id, mp2, s7,  StrategicRelationshipEnum.CONFLICT)      # 意↔南斯拉夫：的里雅斯特领土争端
+        await self._set_rel(sr_service, project_id, mp2, s8,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 意↔罗马尼亚：苏联傀儡
+        await self._set_rel(sr_service, project_id, mp2, s9,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 意↔匈牙利：苏联占领
+        await self._set_rel(sr_service, project_id, mp2, s10, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔希腊：同西方阵营
+        await self._set_rel(sr_service, project_id, mp2, s11, StrategicRelationshipEnum.NO_DIPLOMACY)  # 意↔保加利亚：苏联占领
+        await self._set_rel(sr_service, project_id, mp2, s12, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔葡萄牙：西方阵营
+        await self._set_rel(sr_service, project_id, mp2, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔卢森堡：西方阵营
+        await self._set_rel(sr_service, project_id, mp2, s14, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔丹麦：西方阵营
+        await self._set_rel(sr_service, project_id, mp2, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔瑞士：永久中立友好
+        await self._set_rel(sr_service, project_id, mp2, s16, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔挪威：西方阵营
+        await self._set_rel(sr_service, project_id, mp2, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔芬兰：芬式中立
+        await self._set_rel(sr_service, project_id, mp2, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, mp2, s19, StrategicRelationshipEnum.CONFLICT)      # 意↔阿尔巴尼亚：共产+边界历史
+        await self._set_rel(sr_service, project_id, mp2, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 意↔冰岛：西方阵营
+        # mp3(波兰) ↔ 小国
+        await self._set_rel(sr_service, project_id, mp3, s1,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 波↔西班牙：佛朗哥反共，意识形态对立
+        await self._set_rel(sr_service, project_id, mp3, s2,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 波↔土耳其：东西阵营初分
+        await self._set_rel(sr_service, project_id, mp3, s3,  StrategicRelationshipEnum.PARTNERSHIP)   # 波↔捷克：均苏联阵营，但特申领土微妙
+        await self._set_rel(sr_service, project_id, mp3, s4,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 波↔比利时：东西分裂
+        await self._set_rel(sr_service, project_id, mp3, s5,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 波↔荷兰：东西分裂
+        await self._set_rel(sr_service, project_id, mp3, s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 波↔瑞典：中立国维持往来
+        await self._set_rel(sr_service, project_id, mp3, s7,  StrategicRelationshipEnum.ALLIANCE)      # 波↔南斯拉夫：1946仍同苏联阵营盟友
+        await self._set_rel(sr_service, project_id, mp3, s8,  StrategicRelationshipEnum.ALLIANCE)      # 波↔罗马尼亚：均苏联阵营
+        await self._set_rel(sr_service, project_id, mp3, s9,  StrategicRelationshipEnum.ALLIANCE)      # 波↔匈牙利：均苏联阵营
+        await self._set_rel(sr_service, project_id, mp3, s10, StrategicRelationshipEnum.CONFLICT)      # 波↔希腊：希腊反共内战对立
+        await self._set_rel(sr_service, project_id, mp3, s11, StrategicRelationshipEnum.ALLIANCE)      # 波↔保加利亚：均苏联阵营
+        await self._set_rel(sr_service, project_id, mp3, s12, StrategicRelationshipEnum.NO_DIPLOMACY)  # 波↔葡萄牙：东西分裂
+        await self._set_rel(sr_service, project_id, mp3, s13, StrategicRelationshipEnum.NO_DIPLOMACY)  # 波↔卢森堡：东西分裂
+        await self._set_rel(sr_service, project_id, mp3, s14, StrategicRelationshipEnum.NO_DIPLOMACY)  # 波↔丹麦：东西分裂
+        await self._set_rel(sr_service, project_id, mp3, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔瑞士：永久中立友好
+        await self._set_rel(sr_service, project_id, mp3, s16, StrategicRelationshipEnum.NO_DIPLOMACY)  # 波↔挪威：东西分裂
+        await self._set_rel(sr_service, project_id, mp3, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔芬兰：芬式中立，苏联阵营默契
+        await self._set_rel(sr_service, project_id, mp3, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 波↔爱尔兰：中立国正常往来
+        await self._set_rel(sr_service, project_id, mp3, s19, StrategicRelationshipEnum.ALLIANCE)      # 波↔阿尔巴尼亚：均苏联阵营
+        await self._set_rel(sr_service, project_id, mp3, s20, StrategicRelationshipEnum.NO_DIPLOMACY)  # 波↔冰岛：东西分裂
+
+        # ====== 小国之间（190对，C(20,2)） ======
+        # s1(西班牙) ↔ 其余19小国
+        await self._set_rel(sr_service, project_id, s1,  s2,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔土耳其：佛朗哥孤立
+        await self._set_rel(sr_service, project_id, s1,  s3,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔捷克：佛朗哥孤立
+        await self._set_rel(sr_service, project_id, s1,  s4,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔比利时：佛朗哥被孤立
+        await self._set_rel(sr_service, project_id, s1,  s5,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔荷兰：佛朗哥被孤立
+        await self._set_rel(sr_service, project_id, s1,  s6,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔瑞典：佛朗哥被孤立
+        await self._set_rel(sr_service, project_id, s1,  s7,  StrategicRelationshipEnum.CONFLICT)      # 西↔南斯拉夫：意识形态对立
+        await self._set_rel(sr_service, project_id, s1,  s8,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔罗马尼亚：意识形态对立
+        await self._set_rel(sr_service, project_id, s1,  s9,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔匈牙利：意识形态对立
+        await self._set_rel(sr_service, project_id, s1,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔希腊：同反共阵营
+        await self._set_rel(sr_service, project_id, s1,  s11, StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔保加利亚：意识形态对立
+        await self._set_rel(sr_service, project_id, s1,  s12, StrategicRelationshipEnum.ALLIANCE)      # 西↔葡萄牙：1939伊比利亚条约
+        await self._set_rel(sr_service, project_id, s1,  s13, StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔卢森堡：佛朗哥被孤立
+        await self._set_rel(sr_service, project_id, s1,  s14, StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔丹麦：佛朗哥被孤立
+        await self._set_rel(sr_service, project_id, s1,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔瑞士：瑞士永久中立维持外交
+        await self._set_rel(sr_service, project_id, s1,  s16, StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔挪威：佛朗哥被孤立
+        await self._set_rel(sr_service, project_id, s1,  s17, StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔芬兰：意识形态对立
+        await self._set_rel(sr_service, project_id, s1,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 西↔爱尔兰：均天主教中立
+        await self._set_rel(sr_service, project_id, s1,  s19, StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔阿尔巴尼亚：意识形态对立
+        await self._set_rel(sr_service, project_id, s1,  s20, StrategicRelationshipEnum.NO_DIPLOMACY)  # 西↔冰岛：佛朗哥被孤立
+
+        # s2(土耳其) ↔ 其余
+        await self._set_rel(sr_service, project_id, s2,  s3,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 土↔捷克：东西阵营
+        await self._set_rel(sr_service, project_id, s2,  s4,  StrategicRelationshipEnum.PARTNERSHIP)   # 土↔比利时：同西方阵营
+        await self._set_rel(sr_service, project_id, s2,  s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 土↔荷兰：同西方阵营
+        await self._set_rel(sr_service, project_id, s2,  s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 土↔瑞典：中立友好
+        await self._set_rel(sr_service, project_id, s2,  s7,  StrategicRelationshipEnum.CONFLICT)      # 土↔南斯拉夫：意识形态+巴尔干对立
+        await self._set_rel(sr_service, project_id, s2,  s8,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 土↔罗马尼亚：东西阵营
+        await self._set_rel(sr_service, project_id, s2,  s9,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 土↔匈牙利：东西阵营
+        await self._set_rel(sr_service, project_id, s2,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔希腊：同被苏联施压，1947共同接受杜鲁门援助
+        await self._set_rel(sr_service, project_id, s2,  s11, StrategicRelationshipEnum.CONFLICT)      # 土↔保加利亚：巴尔干+海峡问题
+        await self._set_rel(sr_service, project_id, s2,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔葡萄牙：同西方阵营
+        await self._set_rel(sr_service, project_id, s2,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔卢森堡：同西方阵营
+        await self._set_rel(sr_service, project_id, s2,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔丹麦：同西方阵营
+        await self._set_rel(sr_service, project_id, s2,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔瑞士：中立友好
+        await self._set_rel(sr_service, project_id, s2,  s16, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔挪威：同西方阵营
+        await self._set_rel(sr_service, project_id, s2,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔芬兰：均承压国
+        await self._set_rel(sr_service, project_id, s2,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s2,  s19, StrategicRelationshipEnum.CONFLICT)      # 土↔阿尔巴尼亚：意识形态对立
+        await self._set_rel(sr_service, project_id, s2,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 土↔冰岛：同西方阵营
+
+        # s3(捷克斯洛伐克) ↔ 其余
+        await self._set_rel(sr_service, project_id, s3,  s4,  StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔比利时：1946尚未完全苏化
+        await self._set_rel(sr_service, project_id, s3,  s5,  StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔荷兰：尚未苏化
+        await self._set_rel(sr_service, project_id, s3,  s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔瑞典：中立友好
+        await self._set_rel(sr_service, project_id, s3,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔南斯拉夫：同苏阵营
+        await self._set_rel(sr_service, project_id, s3,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔罗马尼亚：同苏阵营
+        await self._set_rel(sr_service, project_id, s3,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔匈牙利：同苏阵营
+        await self._set_rel(sr_service, project_id, s3,  s10, StrategicRelationshipEnum.NO_DIPLOMACY)  # 捷↔希腊：捷克倾苏与反共希腊对立
+        await self._set_rel(sr_service, project_id, s3,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔保加利亚：同苏阵营
+        await self._set_rel(sr_service, project_id, s3,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔葡萄牙：尚未完全分裂
+        await self._set_rel(sr_service, project_id, s3,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔卢森堡：尚未完全分裂
+        await self._set_rel(sr_service, project_id, s3,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔丹麦：尚未完全分裂
+        await self._set_rel(sr_service, project_id, s3,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔瑞士：中立友好
+        await self._set_rel(sr_service, project_id, s3,  s16, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔挪威：尚未完全分裂
+        await self._set_rel(sr_service, project_id, s3,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔芬兰：均苏联影响下
+        await self._set_rel(sr_service, project_id, s3,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s3,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔阿尔巴尼亚：同苏阵营
+        await self._set_rel(sr_service, project_id, s3,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 捷↔冰岛：中立友好
+
+        # s4(比利时) ↔ 其余
+        await self._set_rel(sr_service, project_id, s4,  s5,  StrategicRelationshipEnum.ALLIANCE)      # 比↔荷兰：比卢经济联盟、1944关税同盟
+        await self._set_rel(sr_service, project_id, s4,  s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 比↔瑞典：中立友好
+        await self._set_rel(sr_service, project_id, s4,  s7,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 比↔南斯拉夫：东西阵营
+        await self._set_rel(sr_service, project_id, s4,  s8,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 比↔罗马尼亚：东西阵营
+        await self._set_rel(sr_service, project_id, s4,  s9,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 比↔匈牙利：东西阵营
+        await self._set_rel(sr_service, project_id, s4,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔希腊：同西方阵营
+        await self._set_rel(sr_service, project_id, s4,  s11, StrategicRelationshipEnum.NO_DIPLOMACY)  # 比↔保加利亚：东西阵营
+        await self._set_rel(sr_service, project_id, s4,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔葡萄牙：同西方阵营
+        await self._set_rel(sr_service, project_id, s4,  s13, StrategicRelationshipEnum.ALLIANCE)      # 比↔卢森堡：比卢经济联盟
+        await self._set_rel(sr_service, project_id, s4,  s14, StrategicRelationshipEnum.ALLIANCE)      # 比↔丹麦：同西方阵营
+        await self._set_rel(sr_service, project_id, s4,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔瑞士：永久中立友好
+        await self._set_rel(sr_service, project_id, s4,  s16, StrategicRelationshipEnum.ALLIANCE)      # 比↔挪威：同西方阵营
+        await self._set_rel(sr_service, project_id, s4,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔芬兰：中立友好
+        await self._set_rel(sr_service, project_id, s4,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s4,  s19, StrategicRelationshipEnum.NO_DIPLOMACY)  # 比↔阿尔巴尼亚：东西阵营
+        await self._set_rel(sr_service, project_id, s4,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 比↔冰岛：西方友好
+
+        # s5(荷兰) ↔ 其余
+        await self._set_rel(sr_service, project_id, s5,  s6,  StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔瑞典：中立友好
+        await self._set_rel(sr_service, project_id, s5,  s7,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 荷↔南斯拉夫：东西阵营
+        await self._set_rel(sr_service, project_id, s5,  s8,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 荷↔罗马尼亚：东西阵营
+        await self._set_rel(sr_service, project_id, s5,  s9,  StrategicRelationshipEnum.NO_DIPLOMACY)  # 荷↔匈牙利：东西阵营
+        await self._set_rel(sr_service, project_id, s5,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔希腊：同西方阵营
+        await self._set_rel(sr_service, project_id, s5,  s11, StrategicRelationshipEnum.NO_DIPLOMACY)  # 荷↔保加利亚：东西阵营
+        await self._set_rel(sr_service, project_id, s5,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔葡萄牙：同西方阵营
+        await self._set_rel(sr_service, project_id, s5,  s13, StrategicRelationshipEnum.ALLIANCE)      # 荷↔卢森堡：比卢经济联盟
+        await self._set_rel(sr_service, project_id, s5,  s14, StrategicRelationshipEnum.ALLIANCE)      # 荷↔丹麦：同西方阵营
+        await self._set_rel(sr_service, project_id, s5,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔瑞士：永久中立友好
+        await self._set_rel(sr_service, project_id, s5,  s16, StrategicRelationshipEnum.ALLIANCE)      # 荷↔挪威：同西方阵营
+        await self._set_rel(sr_service, project_id, s5,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔芬兰：中立友好
+        await self._set_rel(sr_service, project_id, s5,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s5,  s19, StrategicRelationshipEnum.NO_DIPLOMACY)  # 荷↔阿尔巴尼亚：东西阵营
+        await self._set_rel(sr_service, project_id, s5,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 荷↔冰岛：西方友好
+
+        # s6(瑞典) ↔ 其余
+        await self._set_rel(sr_service, project_id, s6,  s7,  StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔南斯拉夫：中立友好
+        await self._set_rel(sr_service, project_id, s6,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔罗马尼亚：中立友好
+        await self._set_rel(sr_service, project_id, s6,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔匈牙利：中立友好
+        await self._set_rel(sr_service, project_id, s6,  s10, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔希腊：中立友好
+        await self._set_rel(sr_service, project_id, s6,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔保加利亚：中立友好
+        await self._set_rel(sr_service, project_id, s6,  s12, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔葡萄牙：中立友好
+        await self._set_rel(sr_service, project_id, s6,  s13, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔卢森堡：中立友好
+        await self._set_rel(sr_service, project_id, s6,  s14, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔丹麦：北欧合作
+        await self._set_rel(sr_service, project_id, s6,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔瑞士：均中立友好
+        await self._set_rel(sr_service, project_id, s6,  s16, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔挪威：北欧合作
+        await self._set_rel(sr_service, project_id, s6,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔芬兰：北欧+均中立
+        await self._set_rel(sr_service, project_id, s6,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s6,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔阿尔巴尼亚：中立维持
+        await self._set_rel(sr_service, project_id, s6,  s20, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞典↔冰岛：北欧亲缘
+
+        # s7(南斯拉夫) ↔ 其余
+        await self._set_rel(sr_service, project_id, s7,  s8,  StrategicRelationshipEnum.PARTNERSHIP)   # 南↔罗马尼亚：同苏阵营
+        await self._set_rel(sr_service, project_id, s7,  s9,  StrategicRelationshipEnum.PARTNERSHIP)   # 南↔匈牙利：同苏阵营
+        await self._set_rel(sr_service, project_id, s7,  s10, StrategicRelationshipEnum.CONFLICT)      # 南↔希腊：南支持希腊共产游击队
+        await self._set_rel(sr_service, project_id, s7,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔保加利亚：共产化盟友
+        await self._set_rel(sr_service, project_id, s7,  s12, StrategicRelationshipEnum.NO_DIPLOMACY)  # 南↔葡萄牙：东西阵营
+        await self._set_rel(sr_service, project_id, s7,  s13, StrategicRelationshipEnum.NO_DIPLOMACY)  # 南↔卢森堡：东西阵营
+        await self._set_rel(sr_service, project_id, s7,  s14, StrategicRelationshipEnum.NO_DIPLOMACY)  # 南↔丹麦：东西阵营
+        await self._set_rel(sr_service, project_id, s7,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔瑞士：永久中立友好
+        await self._set_rel(sr_service, project_id, s7,  s16, StrategicRelationshipEnum.NO_DIPLOMACY)  # 南↔挪威：东西阵营
+        await self._set_rel(sr_service, project_id, s7,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔芬兰：均苏联影响
+        await self._set_rel(sr_service, project_id, s7,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 南↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s7,  s19, StrategicRelationshipEnum.ALLIANCE)      # 南↔阿尔巴尼亚：南是阿保护国，1948才决裂
+        await self._set_rel(sr_service, project_id, s7,  s20, StrategicRelationshipEnum.NO_DIPLOMACY)  # 南↔冰岛：东西阵营
+
+        # s8(罗马尼亚) ↔ 其余
+        await self._set_rel(sr_service, project_id, s8,  s9,  StrategicRelationshipEnum.CONFLICT)      # 罗↔匈牙利：特兰西瓦尼亚归属之争
+        await self._set_rel(sr_service, project_id, s8,  s10, StrategicRelationshipEnum.NO_DIPLOMACY)  # 罗↔希腊：东西阵营
+        await self._set_rel(sr_service, project_id, s8,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔保加利亚：同苏阵营
+        await self._set_rel(sr_service, project_id, s8,  s12, StrategicRelationshipEnum.NO_DIPLOMACY)  # 罗↔葡萄牙：东西阵营
+        await self._set_rel(sr_service, project_id, s8,  s13, StrategicRelationshipEnum.NO_DIPLOMACY)  # 罗↔卢森堡：东西阵营
+        await self._set_rel(sr_service, project_id, s8,  s14, StrategicRelationshipEnum.NO_DIPLOMACY)  # 罗↔丹麦：东西阵营
+        await self._set_rel(sr_service, project_id, s8,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔瑞士：中立友好
+        await self._set_rel(sr_service, project_id, s8,  s16, StrategicRelationshipEnum.NO_DIPLOMACY)  # 罗↔挪威：东西阵营
+        await self._set_rel(sr_service, project_id, s8,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔芬兰：均苏联影响
+        await self._set_rel(sr_service, project_id, s8,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s8,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 罗↔阿尔巴尼亚：同苏阵营
+        await self._set_rel(sr_service, project_id, s8,  s20, StrategicRelationshipEnum.NO_DIPLOMACY)  # 罗↔冰岛：东西阵营
+
+        # s9(匈牙利) ↔ 其余
+        await self._set_rel(sr_service, project_id, s9,  s10, StrategicRelationshipEnum.NO_DIPLOMACY)  # 匈↔希腊：东西阵营
+        await self._set_rel(sr_service, project_id, s9,  s11, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔保加利亚：同苏阵营
+        await self._set_rel(sr_service, project_id, s9,  s12, StrategicRelationshipEnum.NO_DIPLOMACY)  # 匈↔葡萄牙：东西阵营
+        await self._set_rel(sr_service, project_id, s9,  s13, StrategicRelationshipEnum.NO_DIPLOMACY)  # 匈↔卢森堡：东西阵营
+        await self._set_rel(sr_service, project_id, s9,  s14, StrategicRelationshipEnum.NO_DIPLOMACY)  # 匈↔丹麦：东西阵营
+        await self._set_rel(sr_service, project_id, s9,  s15, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔瑞士：中立友好
+        await self._set_rel(sr_service, project_id, s9,  s16, StrategicRelationshipEnum.NO_DIPLOMACY)  # 匈↔挪威：东西阵营
+        await self._set_rel(sr_service, project_id, s9,  s17, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔芬兰：均苏联影响
+        await self._set_rel(sr_service, project_id, s9,  s18, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s9,  s19, StrategicRelationshipEnum.PARTNERSHIP)   # 匈↔阿尔巴尼亚：同苏阵营
+        await self._set_rel(sr_service, project_id, s9,  s20, StrategicRelationshipEnum.NO_DIPLOMACY)  # 匈↔冰岛：东西阵营
+
+        # s10(希腊) ↔ 其余
+        await self._set_rel(sr_service, project_id, s10, s11, StrategicRelationshipEnum.CONFLICT)      # 希↔保加利亚：巴尔干+马其顿争端
+        await self._set_rel(sr_service, project_id, s10, s12, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔葡萄牙：同西方阵营
+        await self._set_rel(sr_service, project_id, s10, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔卢森堡：同西方阵营
+        await self._set_rel(sr_service, project_id, s10, s14, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔丹麦：同西方阵营
+        await self._set_rel(sr_service, project_id, s10, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔瑞士：中立友好
+        await self._set_rel(sr_service, project_id, s10, s16, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔挪威：同西方阵营
+        await self._set_rel(sr_service, project_id, s10, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔芬兰：均承压国
+        await self._set_rel(sr_service, project_id, s10, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s10, s19, StrategicRelationshipEnum.CONFLICT)      # 希↔阿尔巴尼亚：阿支持希腊共产游击队
+        await self._set_rel(sr_service, project_id, s10, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 希↔冰岛：同西方阵营
+
+        # s11(保加利亚) ↔ 其余
+        await self._set_rel(sr_service, project_id, s11, s12, StrategicRelationshipEnum.NO_DIPLOMACY)  # 保↔葡萄牙：东西阵营
+        await self._set_rel(sr_service, project_id, s11, s13, StrategicRelationshipEnum.NO_DIPLOMACY)  # 保↔卢森堡：东西阵营
+        await self._set_rel(sr_service, project_id, s11, s14, StrategicRelationshipEnum.NO_DIPLOMACY)  # 保↔丹麦：东西阵营
+        await self._set_rel(sr_service, project_id, s11, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔瑞士：中立友好
+        await self._set_rel(sr_service, project_id, s11, s16, StrategicRelationshipEnum.NO_DIPLOMACY)  # 保↔挪威：东西阵营
+        await self._set_rel(sr_service, project_id, s11, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔芬兰：均苏联影响
+        await self._set_rel(sr_service, project_id, s11, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s11, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 保↔阿尔巴尼亚：同苏阵营
+        await self._set_rel(sr_service, project_id, s11, s20, StrategicRelationshipEnum.NO_DIPLOMACY)  # 保↔冰岛：东西阵营
+
+        # s12(葡萄牙) ↔ 其余
+        await self._set_rel(sr_service, project_id, s12, s13, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔卢森堡：同西方阵营
+        await self._set_rel(sr_service, project_id, s12, s14, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔丹麦：同西方阵营
+        await self._set_rel(sr_service, project_id, s12, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔瑞士：中立友好
+        await self._set_rel(sr_service, project_id, s12, s16, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔挪威：同西方阵营
+        await self._set_rel(sr_service, project_id, s12, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔芬兰：友好
+        await self._set_rel(sr_service, project_id, s12, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔爱尔兰：均天主教
+        await self._set_rel(sr_service, project_id, s12, s19, StrategicRelationshipEnum.NO_DIPLOMACY)  # 葡↔阿尔巴尼亚：反共萨拉查孤立
+        await self._set_rel(sr_service, project_id, s12, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 葡↔冰岛：同西方阵营
+
+        # s13(卢森堡) ↔ 其余
+        await self._set_rel(sr_service, project_id, s13, s14, StrategicRelationshipEnum.ALLIANCE)      # 卢↔丹麦：同西方阵营
+        await self._set_rel(sr_service, project_id, s13, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔瑞士：中立友好
+        await self._set_rel(sr_service, project_id, s13, s16, StrategicRelationshipEnum.ALLIANCE)      # 卢↔挪威：同西方阵营
+        await self._set_rel(sr_service, project_id, s13, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔芬兰：中立友好
+        await self._set_rel(sr_service, project_id, s13, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s13, s19, StrategicRelationshipEnum.NO_DIPLOMACY)  # 卢↔阿尔巴尼亚：东西阵营
+        await self._set_rel(sr_service, project_id, s13, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 卢↔冰岛：西方友好
+
+        # s14(丹麦) ↔ 其余
+        await self._set_rel(sr_service, project_id, s14, s15, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔瑞士：中立友好
+        await self._set_rel(sr_service, project_id, s14, s16, StrategicRelationshipEnum.ALLIANCE)      # 丹↔挪威：北欧+同西方
+        await self._set_rel(sr_service, project_id, s14, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔芬兰：北欧友好
+        await self._set_rel(sr_service, project_id, s14, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s14, s19, StrategicRelationshipEnum.NO_DIPLOMACY)  # 丹↔阿尔巴尼亚：东西阵营
+        await self._set_rel(sr_service, project_id, s14, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 丹↔冰岛：1944分离独立但邻近友好
+
+        # s15(瑞士) ↔ 其余
+        await self._set_rel(sr_service, project_id, s15, s16, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔挪威：永久中立友好
+        await self._set_rel(sr_service, project_id, s15, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔芬兰：均中立
+        await self._set_rel(sr_service, project_id, s15, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔爱尔兰：均中立
+        await self._set_rel(sr_service, project_id, s15, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔阿尔巴尼亚：永久中立友好
+        await self._set_rel(sr_service, project_id, s15, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 瑞士↔冰岛：均小国中立
+
+        # s16(挪威) ↔ 其余
+        await self._set_rel(sr_service, project_id, s16, s17, StrategicRelationshipEnum.PARTNERSHIP)   # 挪↔芬兰：北欧友好
+        await self._set_rel(sr_service, project_id, s16, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 挪↔爱尔兰：中立友好
+        await self._set_rel(sr_service, project_id, s16, s19, StrategicRelationshipEnum.NO_DIPLOMACY)  # 挪↔阿尔巴尼亚：东西阵营
+        await self._set_rel(sr_service, project_id, s16, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 挪↔冰岛：北欧亲缘
+
+        # s17(芬兰) ↔ 其余
+        await self._set_rel(sr_service, project_id, s17, s18, StrategicRelationshipEnum.PARTNERSHIP)   # 芬↔爱尔兰：均中立
+        await self._set_rel(sr_service, project_id, s17, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 芬↔阿尔巴尼亚：芬式中立维持
+        await self._set_rel(sr_service, project_id, s17, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 芬↔冰岛：北欧亲缘
+
+        # s18(爱尔兰) ↔ 其余
+        await self._set_rel(sr_service, project_id, s18, s19, StrategicRelationshipEnum.PARTNERSHIP)   # 爱↔阿尔巴尼亚：中立维持
+        await self._set_rel(sr_service, project_id, s18, s20, StrategicRelationshipEnum.PARTNERSHIP)   # 爱↔冰岛：均小岛国中立
+
+        # s19(阿尔巴尼亚) ↔ s20(冰岛)
+        await self._set_rel(sr_service, project_id, s19, s20, StrategicRelationshipEnum.NO_DIPLOMACY)  # 阿↔冰岛：东西阵营
+
+        # 总关系对数: 300, 已显式定义: 300对
+        # 中-中: 3, 中-小: 60, 小-小: 190; 强强1+强中小46+中中3+中小60+小小190=300
 
 
 # 单例实例

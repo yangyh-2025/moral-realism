@@ -15,6 +15,7 @@ from .strategic_relationship import router as strategic_relationship_router
 from .cinc import router as cinc_router
 from .analysis import router as analysis_router
 from .llm_calls import router as llm_calls_router
+from .agent_neighbor import router as agent_neighbor_router
 
 # 创建主API路由
 api_router = APIRouter(prefix="/api/v1")
@@ -29,5 +30,6 @@ api_router.include_router(strategic_relationship_router)
 api_router.include_router(cinc_router)
 api_router.include_router(analysis_router)
 api_router.include_router(llm_calls_router)
+api_router.include_router(agent_neighbor_router)
 
 __all__ = ["api_router"]

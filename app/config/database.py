@@ -119,6 +119,89 @@ async def _migrate_schema(conn) -> None:
         if col not in cols:
             await conn.execute(text(f'ALTER TABLE simulation_project ADD COLUMN {col} {ddl}'))
 
+    # ---- strategic_relationship 表去重 + UNIQUE 索引 ----
+    # 1) 检查表是否存在
+    tbl_check = await conn.execute(text(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='strategic_relationship'"
+    ))
+    if tbl_check.first():
+        # 2) 去重: 对每个 (project_id, source_agent_id, target_agent_id),
+        #    仅保留 relation_id 最大(最新)的一行, 删除其余冗余记录
+        dup_count_res = await conn.execute(text(
+            "SELECT COUNT(*) FROM strategic_relationship sr "
+            "WHERE sr.relation_id < ("
+            "  SELECT MAX(sr2.relation_id) FROM strategic_relationship sr2 "
+            "  WHERE sr2.project_id = sr.project_id "
+            "    AND sr2.source_agent_id = sr.source_agent_id "
+            "    AND sr2.target_agent_id = sr.target_agent_id"
+            ")"
+        ))
+        dup_count = dup_count_res.scalar() or 0
+        if dup_count > 0:
+            await conn.execute(text(
+                "DELETE FROM strategic_relationship "
+                "WHERE relation_id NOT IN ("
+                "  SELECT MAX(relation_id) FROM strategic_relationship "
+                "  GROUP BY project_id, source_agent_id, target_agent_id"
+                ")"
+            ))
+
+        # 3) 若尚无 uq_strategic_rel 索引则创建
+        idx_check = await conn.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='index' AND name='uq_strategic_rel'"
+        ))
+        if not idx_check.first():
+            try:
+                await conn.execute(text(
+                    "CREATE UNIQUE INDEX uq_strategic_rel "
+                    "ON strategic_relationship(project_id, source_agent_id, target_agent_id)"
+                ))
+            except Exception as _e:
+                # 若仍因隐藏重复创建失败, 仅警告不阻塞启动
+                from loguru import logger as _logger
+                _logger.warning(f"创建 uq_strategic_rel 唯一索引失败(可能仍有残留重复): {_e}")
+
+    # ---- agent_neighbor 表去重 + UNIQUE 索引 ----
+    # 仿照 strategic_relationship 的迁移模式: 启动期 dedup + 创建唯一索引
+    tbl_check_n = await conn.execute(text(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='agent_neighbor'"
+    ))
+    if tbl_check_n.first():
+        # 1) 去重: 对每个 (project_id, source_agent_id, target_agent_id),
+        #    仅保留 relation_id 最大(最新)的一行
+        dup_count_res_n = await conn.execute(text(
+            "SELECT COUNT(*) FROM agent_neighbor an "
+            "WHERE an.relation_id < ("
+            "  SELECT MAX(an2.relation_id) FROM agent_neighbor an2 "
+            "  WHERE an2.project_id = an.project_id "
+            "    AND an2.source_agent_id = an.source_agent_id "
+            "    AND an2.target_agent_id = an.target_agent_id"
+            ")"
+        ))
+        dup_count_n = dup_count_res_n.scalar() or 0
+        if dup_count_n > 0:
+            await conn.execute(text(
+                "DELETE FROM agent_neighbor "
+                "WHERE relation_id NOT IN ("
+                "  SELECT MAX(relation_id) FROM agent_neighbor "
+                "  GROUP BY project_id, source_agent_id, target_agent_id"
+                ")"
+            ))
+
+        # 2) 若尚无 uq_agent_neighbor 索引则创建
+        idx_check_n = await conn.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='index' AND name='uq_agent_neighbor'"
+        ))
+        if not idx_check_n.first():
+            try:
+                await conn.execute(text(
+                    "CREATE UNIQUE INDEX uq_agent_neighbor "
+                    "ON agent_neighbor(project_id, source_agent_id, target_agent_id)"
+                ))
+            except Exception as _e:
+                from loguru import logger as _logger
+                _logger.warning(f"创建 uq_agent_neighbor 唯一索引失败(可能仍有残留重复): {_e}")
+
     await conn.commit()
 
 

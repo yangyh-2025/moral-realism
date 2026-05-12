@@ -8,8 +8,8 @@
 test/
 ├── conftest.py             共享 fixtures（httpx Client + 临时项目 + 临时智能体）
 ├── pytest.ini              pytest 配置
-├── test_backend_smoke.py   53 条后端测试（涵盖 8 个 router + 根路径）
-├── test_frontend_smoke.py  21 条前端测试（涵盖 7 个页面）
+├── test_backend_smoke.py   65 条后端测试（涵盖 11 个 router + 根路径）
+├── test_frontend_smoke.py  31 条前端测试（涵盖 9 个页面 + 重定向别名）
 └── README.md
 ```
 
@@ -78,7 +78,7 @@ test_backend_smoke.py::TestRoot::test_health PASSED
 .venv\Scripts\python -m pytest test/test_backend_smoke.py::TestSimulationControl -v
 ```
 
-## 后端覆盖（53 用例）
+## 后端覆盖（65 用例）
 
 | 测试类 | 端点前缀 | 用例数 |
 |--------|---------|-------|
@@ -87,27 +87,32 @@ test_backend_smoke.py::TestRoot::test_health PASSED
 | TestActionConfig          | /api/v1/action-config/...          | 3 |
 | TestCinc                  | /api/v1/cinc/...                   | 7 |
 | TestSystemConfig          | /api/v1/system/config              | 2 |
-| TestProject               | /api/v1/simulation/project*        | 5 |
+| TestProject               | /api/v1/simulation/project*（含分页）| 6 |
 | TestAgent                 | /api/v1/simulation/project/{id}/agent* | 5 |
 | TestStrategicRelationship | /api/v1/strategic-relationships/...| 5 |
 | TestSimulationControl     | /api/v1/simulation/{id}/start...   | 3 |
 | TestRoundDetail           | /api/v1/simulation/{id}/round/...  | 2 |
 | TestStatistics            | /api/v1/simulation/{id}/stats/...  | 8 |
 | TestAnalysis              | /api/v1/analysis/{id}/...          | 5 |
+| TestLLMCalls              | /api/v1/llm-calls/...              | 4 |
+| TestAgentNeighbor         | /api/v1/agent-neighbors/...        | 5 |
+| TestExport                | /api/v1/simulation/{id}/export     | 2 |
 
 仿真控制测试**只验证状态切换**——不会真的跑 LLM 决策轮次（避免长时间等待与 token 消耗）。
 
-## 前端覆盖（21 用例）
+## 前端覆盖（31 用例）
 
 | 测试类 | 路由 | 验证内容 |
 |--------|------|---------|
-| TestHome                | /          | 欢迎卡 + 预置场景列表 + 详情对话框 + 跳转配置/行为集 |
-| TestBehaviorSet         | /behavior  | 20 项行为渲染 + 刷新按钮 |
-| TestSystemConfig        | /system    | 表单加载 + 保存按钮 + 重置按钮 |
-| TestSimulationConfig    | /config    | 表单加载 + 添加/重置智能体 + 创建项目校验 |
-| TestSimulationConsole   | /console   | 控制按钮齐全 + 清空日志 (需要 ?projectId=) |
-| TestSimulationResults   | /results   | 5 大图表区域 |
-| TestAcademicStatistics  | /statistics| 4 个 Tab 切换 |
+| TestHome                | /            | 欢迎卡 + 预置场景列表 + 详情对话框 + 跳转配置/行为集 |
+| TestSimulationHistory   | /history     | 历史任务列表 + 7 个状态 Tab + 排序/搜索/动作按钮 |
+| TestBehaviorSet         | /behavior    | 20 项行为渲染 + 刷新按钮 |
+| TestSystemConfig        | /system      | 表单加载 + 保存按钮 + 重置按钮 |
+| TestSimulationConfig    | /config      | 表单加载 + 添加/重置智能体 + 创建项目校验 |
+| TestSimulationConsole   | /console     | 控制按钮齐全 + 清空日志 (需要 ?projectId=) |
+| TestAnalysis            | /analysis    | 6 个 Tab（总览/CINC/行为/变化率/目标评估/导出）+ URL 同步 + 导出按钮 |
+| TestRedirectAliases     | /results,/statistics | 旧路由重定向到 /analysis |
+| TestLLMCallLog          | /llm-calls   | 5 个类型 Tab + 刷新按钮 (需要 ?projectId=) |
 
 每个用例自动捕获浏览器 `pageerror`，发生 JS 异常立即失败。
 

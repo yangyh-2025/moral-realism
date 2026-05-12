@@ -7,79 +7,66 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import SimulationConfig from '../views/SimulationConfig.vue'
 import SimulationConsole from '../views/SimulationConsole.vue'
-import SimulationResults from '../views/SimulationResults.vue'
-import AcademicStatistics from '../views/AcademicStatistics.vue'
 import BehaviorSet from '../views/BehaviorSet.vue'
 import SystemConfig from '../views/SystemConfig.vue'
 
-/**
- * 路由配置数组
- * 定义每个路径对应的组件和页面标题
- */
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: Home,
-    meta: { title: '首页 - 预置场景' }
+    meta: { title: '首页 · 预置场景' },
   },
   {
     path: '/history',
     name: 'SimulationHistory',
     component: () => import('../views/SimulationHistory.vue'),
-    meta: { title: '历史任务' }
+    meta: { title: '历史任务' },
   },
   {
     path: '/config',
     name: 'SimulationConfig',
     component: SimulationConfig,
-    meta: { title: '仿真配置' }
+    meta: { title: '仿真配置' },
   },
   {
     path: '/console',
     name: 'SimulationConsole',
     component: SimulationConsole,
-    meta: { title: '仿真控制台' }
+    meta: { title: '仿真控制台' },
   },
   {
-    path: '/results',
-    name: 'SimulationResults',
-    component: SimulationResults,
-    meta: { title: '仿真结果' }
+    path: '/analysis',
+    name: 'Analysis',
+    component: () => import('../views/Analysis.vue'),
+    meta: { title: '研究分析' },
   },
-  {
-    path: '/statistics',
-    name: 'AcademicStatistics',
-    component: AcademicStatistics,
-    meta: { title: '学术统计' }
-  },
+  // 兼容旧路径
+  { path: '/results', redirect: '/analysis' },
+  { path: '/statistics', redirect: '/analysis' },
   {
     path: '/behavior',
     name: 'BehaviorSet',
     component: BehaviorSet,
-    meta: { title: '互动行为集' }
+    meta: { title: '互动行为集' },
   },
   {
     path: '/system',
     name: 'SystemConfig',
     component: SystemConfig,
-    meta: { title: '系统配置' }
+    meta: { title: '系统配置' },
   },
   {
     path: '/llm-calls',
     name: 'LLMCallLog',
     component: () => import('../views/LLMCallLog.vue'),
-    meta: { title: 'LLM 调用记录' }
-  }
+    meta: { title: 'LLM 调用记录' },
+  },
 ]
 
-/**
- * 创建路由实例
- * 使用HTML5 History模式，路由基于环境变量配置的基础URL
- */
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes,
 })
 
 export default router

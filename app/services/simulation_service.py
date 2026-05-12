@@ -160,20 +160,40 @@ class SimulationService:
                     logger.info(f"项目 {project_id} 状态为 '{status}'，停止循环")
                     break
 
-                # 执行一轮仿真
-                try:
-                    result = await self.step_simulation(project_id, log_manager)
-                    logger.info(f"第 {result.get('round')} 轮执行完成: {result.get('message')}")
-                except Exception as e:
-                    logger.error(f"项目 {project_id} 仿真循环错误: {e}", exc_info=True)
-                    # 更新状态为错误
-                    async for session in db_config.get_session():
-                        await session.execute(
-                            update(SimulationProject)
-                            .where(SimulationProject.project_id == project_id)
-                            .values(status="错误", updated_at=datetime.now())
+                # 执行一轮仿真 (带最多2次重试)
+                max_retries = 2
+                step_success = False
+                result = None
+                for attempt in range(max_retries + 1):
+                    try:
+                        result = await self.step_simulation(project_id, log_manager)
+                        logger.info(
+                            f"第 {result.get('round')} 轮执行完成: {result.get('message')}"
                         )
-                        await session.commit()
+                        step_success = True
+                        break
+                    except Exception as e:
+                        if attempt < max_retries:
+                            logger.warning(
+                                f"项目 {project_id} 单步执行失败 "
+                                f"(尝试 {attempt + 1}/{max_retries + 1}, 原因: {e}), {2}秒后重试..."
+                            )
+                            await asyncio.sleep(2)
+                        else:
+                            logger.error(
+                                f"项目 {project_id} 仿真循环错误 "
+                                f"(已重试 {max_retries} 次仍失败): {e}",
+                                exc_info=True
+                            )
+                            # 更新状态为错误
+                            async for session in db_config.get_session():
+                                await session.execute(
+                                    update(SimulationProject)
+                                    .where(SimulationProject.project_id == project_id)
+                                    .values(status="错误", updated_at=datetime.now())
+                                )
+                                await session.commit()
+                if not step_success:
                     break
 
                 # 检查是否完成
@@ -352,8 +372,11 @@ class SimulationService:
                     logger.info(f"第 {current_round} 轮战略目标评估完成")
                     eval_message = " (含战略目标评估)"
                 except Exception as e:
-                    logger.error(f"第 {current_round} 轮战略目标评估失败: {e}", exc_info=True)
-                    eval_message = " (评估失败)"
+                    logger.warning(
+                        f"第 {current_round} 轮战略目标评估跳过 (原因: {e})",
+                        exc_info=True
+                    )
+                    eval_message = " (评估跳过)"
 
             # 10. 战略关系演变评估（每轮）
             evolve_message = ""
@@ -366,7 +389,11 @@ class SimulationService:
                     if changes:
                         evolve_message = f" (战略关系变化: {len(changes)}对)"
                 except Exception as e:
-                    logger.error(f"第 {current_round} 轮战略关系演变失败: {e}", exc_info=True)
+                    logger.warning(
+                        f"第 {current_round} 轮战略关系演变跳过 (原因: {e})",
+                        exc_info=True
+                    )
+                    evolve_message = " (关系演变跳过)"
 
             # 更新轮次
             next_round = current_round + 1

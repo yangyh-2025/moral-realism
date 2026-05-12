@@ -101,18 +101,30 @@ class StrategicRelationshipService:
         """
         source_id, target_id = self._normalize_pair(agent_a, agent_b)
 
+        # 防御性查询: 即使表中存在重复数据(历史遗留), 也仅取最新的一条;
+        # 若发现重复, 顺手删除冗余记录, 实现"读时自愈"。
         stmt = select(StrategicRelationship).where(
             and_(
                 StrategicRelationship.project_id == project_id,
                 StrategicRelationship.source_agent_id == source_id,
                 StrategicRelationship.target_agent_id == target_id
             )
-        )
+        ).order_by(StrategicRelationship.relation_id.desc())
 
         result = await self.db.execute(stmt)
-        existing = result.scalar_one_or_none()
+        all_existing = result.scalars().all()
 
-        if existing:
+        if all_existing:
+            existing = all_existing[0]
+            # 清理多余的重复记录(保留 relation_id 最大的一条)
+            if len(all_existing) > 1:
+                logger.warning(
+                    f"strategic_relationship 表存在重复记录(project={project_id}, "
+                    f"{source_id}<->{target_id}, 共{len(all_existing)}条), 自动清理 {len(all_existing)-1} 条冗余"
+                )
+                for dup in all_existing[1:]:
+                    await self.db.delete(dup)
+
             if not skip_existing:
                 existing.relationship_type = relationship_type
             return existing
@@ -175,10 +187,10 @@ class StrategicRelationshipService:
                 StrategicRelationship.source_agent_id == a,
                 StrategicRelationship.target_agent_id == b
             )
-        )
+        ).order_by(StrategicRelationship.relation_id.desc()).limit(1)
 
         result = await self.db.execute(stmt)
-        return result.scalar_one_or_none()
+        return result.scalars().first()
 
     async def get_all_relationships(self, project_id: int, agent_id: int) -> Dict[int, str]:
         """获取一个智能体与所有其他大国的战略关系"""
@@ -278,63 +290,21 @@ class StrategicRelationshipService:
         self, source_power, target_power
     ) -> bool:
         """
-        验证两个层级的智能体是否允许建立战略关系
+        验证两个层级的智能体是否允许建立战略关系。
 
-        允许的配对：
-        - 超级大国 × 大国
-        - 超级大国 × 中等强国
-        - 超级大国 × 小国
-        - 大国 × 中等强国
-        - 大国 × 小国
-
-        不允许的配对：
-        - 中等强国 × 中等强国
-        - 中等强国 × 小国
-        - 小国 × 小国
+        当前策略: **允许所有配对**。
+        历史上限制过中等强国↔中等强国 / 中等↔小国 / 小↔小, 但 1913 等史实场景
+        必须能设置巴尔干国家间(均为小国)的 CONFLICT 关系(如 塞↔奥斯曼 等),
+        故放宽为允许所有配对。
 
         Args:
-            source_power: 源智能体的国力等级（字符串或枚举）
-            target_power: 目标智能体的国力等级（字符串或枚举）
+            source_power: 源智能体的国力等级（字符串或枚举,保留参数仅用于向后兼容）
+            target_power: 目标智能体的国力等级（字符串或枚举,保留参数仅用于向后兼容）
 
         Returns:
-            bool: 是否允许建立关系
+            bool: 总是返回 True
         """
-        # 如果是枚举对象，获取值
-        if hasattr(source_power, 'value'):
-            source_value = source_power.value
-        else:
-            source_value = source_power
-
-        if hasattr(target_power, 'value'):
-            target_value = target_power.value
-        else:
-            target_value = target_power
-
-        # 定义各个层级的枚举值（使用前缀以避免中文截断问题）
-        # 超级大国: '超级大国'
-        # 大国: '大国'
-        # 中等强国: '中等强国'
-        # 小国: '小国'
-        high_level_prefixes = ['超级', '大国']
-        low_level_prefixes = ['中等', '小国']
-
-        # 检查前缀匹配
-        def is_high_level(level_str):
-            return any(level_str.startswith(prefix) for prefix in high_level_prefixes)
-
-        def is_low_level(level_str):
-            return any(level_str.startswith(prefix) for prefix in low_level_prefixes)
-
-        # 高层级 × 低层级：允许
-        if (is_high_level(source_value) and is_low_level(target_value)) or \
-           (is_high_level(target_value) and is_low_level(source_value)):
-            return True
-
-        # 高层级 × 高层级：允许
-        if is_high_level(source_value) and is_high_level(target_value):
-            return True
-
-        return False
+        return True
 
     def _normalize_pair(self, agent_a: int, agent_b: int) -> tuple:
         """确保 agent_a < agent_b，避免重复存储"""

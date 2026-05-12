@@ -21,6 +21,7 @@ from .preset_scene import PresetScene
 from .system_config import SystemConfig
 from .strategic_goal_evaluation import StrategicGoalEvaluation
 from .strategic_relationship import StrategicRelationship
+from .agent_neighbor import AgentNeighbor
 from .llm_call_log import LLMCallLog
 
 __all__ = [
@@ -36,5 +37,6 @@ __all__ = [
     "SystemConfig",
     "StrategicGoalEvaluation",
     "StrategicRelationship",
+    "AgentNeighbor",
     "LLMCallLog",
 ]

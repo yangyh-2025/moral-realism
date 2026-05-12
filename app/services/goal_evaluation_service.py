@@ -4,6 +4,7 @@
 """
 
 import asyncio
+import json
 from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,6 +18,28 @@ from app.models import (
     StrategicGoalEvaluation,
 )
 from loguru import logger
+
+
+def _serialize_field(value: Any) -> Optional[str]:
+    """
+    将 list/dict 等结构化字段序列化为字符串，避免 sqlite 绑定异常
+    (sqlite3.ProgrammingError: Error binding parameter X: type 'list' is not supported)
+
+    - None 透传
+    - str 透传
+    - list/dict 用 json.dumps(ensure_ascii=False) 转为字符串
+    - 其他类型用 str() 兜底
+    """
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (list, dict)):
+        try:
+            return json.dumps(value, ensure_ascii=False)
+        except (TypeError, ValueError):
+            return str(value)
+    return str(value)
 
 
 class GoalEvaluationService:
@@ -561,9 +584,9 @@ class GoalEvaluationService:
                     power_growth_contribution=evaluation_result.get("power_growth_contribution"),
                     action_effectiveness=evaluation_result.get("action_effectiveness"),
                     leadership_alignment=evaluation_result.get("leadership_alignment"),
-                    overall_assessment=evaluation_result.get("overall_assessment"),
-                    specific_achievements=evaluation_result.get("specific_achievements"),
-                    challenges=evaluation_result.get("challenges"),
+                    overall_assessment=_serialize_field(evaluation_result.get("overall_assessment")),
+                    specific_achievements=_serialize_field(evaluation_result.get("specific_achievements")),
+                    challenges=_serialize_field(evaluation_result.get("challenges")),
                 )
                 session.add(evaluation)
                 # 依赖生成器在 yield 后的自动 commit，不再手动调用

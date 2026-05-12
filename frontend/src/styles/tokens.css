@@ -1,0 +1,72 @@
+:root {
+  /* ===== Colors ===== */
+  --color-bg: #FFFFFF;
+  --color-surface: #FAFAF9;
+  --color-surface-2: #F4F4F3;
+  --color-border: #E7E5E4;
+  --color-border-strong: #D6D3D1;
+  --color-ink: #1C1917;
+  --color-ink-2: #44403C;
+  --color-ink-3: #78716C;
+  --color-ink-muted: #A8A29E;
+  --color-accent: #1A56DB;
+  --color-accent-soft: #DBEAFE;
+  --color-success: #15803D;
+  --color-warning: #B45309;
+  --color-danger: #B91C1C;
+  --color-info: #0E7490;
+
+  /* ===== Chart palette (8 colors) ===== */
+  --chart-1: #1A56DB;
+  --chart-2: #B45309;
+  --chart-3: #15803D;
+  --chart-4: #9333EA;
+  --chart-5: #BE123C;
+  --chart-6: #0E7490;
+  --chart-7: #65A30D;
+  --chart-8: #7C2D12;
+
+  /* ===== Fonts ===== */
+  --font-sans: "Inter", "IBM Plex Sans", "PingFang SC", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", "Source Han Code JP", monospace;
+  --font-serif: "IBM Plex Serif", "Source Han Serif SC", serif;
+
+  /* ===== Font sizes (8 levels) ===== */
+  --fs-xs: 12px;   --lh-xs: 16px;
+  --fs-sm: 13px;   --lh-sm: 18px;
+  --fs-base: 14px; --lh-base: 20px;
+  --fs-md: 16px;   --lh-md: 24px;
+  --fs-lg: 18px;   --lh-lg: 26px;
+  --fs-xl: 22px;   --lh-xl: 30px;
+  --fs-2xl: 28px;  --lh-2xl: 36px;
+  --fs-3xl: 36px;  --lh-3xl: 44px;
+
+  /* ===== Font weights ===== */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* ===== Spacing ===== */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* ===== Border radius ===== */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* ===== Shadows ===== */
+  --shadow-1: 0 1px 0 var(--color-border);
+  --shadow-2: 0 1px 2px rgba(28, 25, 23, 0.04), 0 0 0 1px var(--color-border);
+  --shadow-3: 0 8px 24px -8px rgba(28, 25, 23, 0.10);
+}

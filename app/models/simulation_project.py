@@ -95,6 +95,9 @@ class SimulationProject(Base):
     strategic_relationships = relationship(
         "StrategicRelationship", back_populates="project", cascade="all, delete-orphan"
     )
+    agent_neighbors = relationship(
+        "AgentNeighbor", back_populates="project", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<SimulationProject(id={self.project_id}, name={self.project_name}, status={self.status})>"

@@ -142,11 +142,35 @@ class DecisionEngine:
             if 'agent_id' in a
         ]
 
+        # Build alliance chain-ganging summary for previous round (Christensen-Snyder)
+        project_id = None
+        for _a in info_pool.all_agent_info:
+            if _a.get('project_id') is not None:
+                project_id = _a.get('project_id')
+                break
+        alliance_chain_summary = await self._build_alliance_chain_summary(
+            project_id=project_id,
+            agent_id=agent_info.agent_id,
+            prev_round=max(0, (info_pool.round_num or 1) - 1),
+            strategic_relationships=agent_info.strategic_relationships,
+            all_agent_info=info_pool.all_agent_info,
+            history_action_records=info_pool.history_action_records,
+        )
+
+        # Build neighbor summary for current agent (二元邻接: 从 DB 读)
+        neighbor_summary = await self._build_neighbor_summary(
+            project_id=project_id,
+            agent_info=agent_info,
+            all_agent_info=info_pool.all_agent_info,
+        )
+
         # Build system and user prompts
         system_prompt, user_prompt = self._build_prompts_for_llm(
             agent_info,
             stage_allowed_actions,
-            info_pool
+            info_pool,
+            alliance_chain_summary=alliance_chain_summary,
+            neighbor_summary=neighbor_summary
         )
 
         result = DecisionResult(success=False)
@@ -305,7 +329,9 @@ class DecisionEngine:
         self,
         agent_info: AgentInfo,
         allowed_actions: List[Dict[str, Any]],
-        info_pool: InfoPool
+        info_pool: InfoPool,
+        alliance_chain_summary: Optional[str] = None,
+        neighbor_summary: Optional[str] = None
     ) -> tuple[str, str]:
         """
         Build system and user prompts for LLM.
@@ -344,7 +370,9 @@ class DecisionEngine:
             'history_power_data': self._format_power_data_for_prompt(
                 info_pool.history_power_data
             ),
-            'last_round_order_info': str(info_pool.last_round_order_info)
+            'last_round_order_info': str(info_pool.last_round_order_info),
+            'alliance_chain_summary': alliance_chain_summary or "【上一轮联盟事件简报】上一轮无重要联盟相关事件",
+            'neighbor_summary': neighbor_summary or "【邻接关系简报】未提供邻接数据"
         }
 
         # Debug: 验证战略关系是否在info_pool中
@@ -396,6 +424,195 @@ class DecisionEngine:
         )
 
         return system_prompt + "\n\n" + user_prompt
+
+    async def _build_neighbor_summary(
+        self,
+        project_id: Optional[int],
+        agent_info: Any,
+        all_agent_info: List[Dict[str, Any]],
+    ) -> str:
+        """从 AgentNeighborService 读邻接关系, 拼成糊名简报字符串(二元: 邻国 / 非邻国)。
+
+        Args:
+            project_id: 项目ID(必须, 否则降级)
+            agent_info: AgentInfo dataclass 或 dict, 提供 agent_id/region
+            all_agent_info: 全量国家信息(用于糊名列表)
+
+        Returns:
+            多行简报字符串
+        """
+        from app.services.agent_neighbor_service import AgentNeighborService
+        from app.config.database import db_config
+
+        if isinstance(agent_info, dict):
+            self_id = agent_info.get('agent_id')
+            self_region = agent_info.get('region', '未知')
+        else:
+            self_id = getattr(agent_info, 'agent_id', None)
+            self_region = getattr(agent_info, 'region', '未知')
+
+        if not project_id or not self_id:
+            return '【邻接关系简报】未提供邻接数据'
+
+        try:
+            async with db_config.async_session_factory() as session:
+                nb_service = AgentNeighborService(session)
+                neighbors_map = await nb_service.get_all_neighbors(project_id, self_id)
+            # neighbors_map: {other_agent_id: is_neighbor: bool}
+        except Exception as e:
+            logger.warning(f"_build_neighbor_summary 查询失败: {e}")
+            return '【邻接关系简报】查询失败, 已降级'
+
+        # 拼糊名列表
+        neighbor_names: List[str] = []
+        non_neighbor_names: List[str] = []
+        for info in all_agent_info or []:
+            if isinstance(info, dict):
+                oid = info.get('agent_id')
+                name = info.get('agent_name')
+            else:
+                oid = getattr(info, 'agent_id', None)
+                name = getattr(info, 'agent_name', None)
+            if oid is None or oid == self_id or not name:
+                continue
+            if neighbors_map.get(oid, False):
+                neighbor_names.append(name)
+            else:
+                non_neighbor_names.append(name)
+
+        return (
+            f"【邻接关系简报】\n"
+            f"所属大洲: {self_region}\n"
+            f"邻国: {', '.join(neighbor_names) if neighbor_names else '(无)'}\n"
+            f"非邻国: {', '.join(non_neighbor_names) if non_neighbor_names else '(无)'}"
+        )
+
+    async def _build_alliance_chain_summary(
+        self,
+        project_id: Optional[int],
+        agent_id: int,
+        prev_round: int,
+        strategic_relationships: Dict[int, str],
+        all_agent_info: List[Dict[str, Any]],
+        history_action_records: List[Dict[str, Any]]
+    ) -> str:
+        """
+        构建上一轮同盟链式卷入(chain-ganging)事件简报。
+
+        查询逻辑：
+        - 找出当前 agent 的盟友/冲突/战争对象（来自 strategic_relationships）
+        - 找出上一轮针对这些对象的敌对动作（军事手段或信息手段）
+        - 区分「盟友被攻击」与「对手被攻击」两类事件
+        - 若 history_action_records 中已包含上一轮记录，则优先用内存数据避免重复查 DB
+        - 否则回退到 SQLAlchemy 查询数据库
+
+        Args:
+            project_id: 项目ID（用于 DB 回退查询，可为 None）
+            agent_id: 当前决策的智能体ID
+            prev_round: 上一轮轮次号（round_num - 1）
+            strategic_relationships: 当前 agent 与他国的战略关系映射
+            all_agent_info: 全量国家信息（用于名称映射 + DB 回退兜底）
+            history_action_records: 历史互动记录（含上一轮记录时优先用）
+
+        Returns:
+            格式化的事件简报字符串
+        """
+        # 分组目标
+        ally_ids = {tid for tid, rt in (strategic_relationships or {}).items() if rt == "盟友关系"}
+        foe_ids = {tid for tid, rt in (strategic_relationships or {}).items() if rt in ("冲突关系", "战争关系")}
+
+        if prev_round <= 0 or (not ally_ids and not foe_ids):
+            return "【上一轮联盟事件简报】上一轮无重要联盟相关事件"
+
+        # 名称映射
+        name_map = {
+            a.get('agent_id'): a.get('agent_name', f"国家{a.get('agent_id')}")
+            for a in (all_agent_info or [])
+        }
+
+        hostile_categories = {"军事手段", "信息手段"}
+        target_set = ally_ids | foe_ids
+
+        # 优先用内存中的历史记录
+        prev_round_records: List[Dict[str, Any]] = []
+        if history_action_records:
+            prev_round_records = [
+                r for r in history_action_records
+                if r.get('round_num') == prev_round
+                and r.get('action_category') in hostile_categories
+                and r.get('target_agent_id') in target_set
+                and r.get('source_agent_id') != agent_id
+            ]
+
+        # 回退：若内存中没有上一轮记录（如外部缓存未携带），用 SQLAlchemy 查 DB
+        if not prev_round_records and project_id is not None and history_action_records is not None and not any(
+            r.get('round_num') == prev_round for r in history_action_records
+        ):
+            try:
+                from sqlalchemy import select
+                from app.config.database import db_config
+                from app.models import ActionRecord, AgentConfig
+
+                async for session in db_config.get_session():
+                    stmt = (
+                        select(ActionRecord, AgentConfig.agent_name)
+                        .join(AgentConfig, ActionRecord.source_agent_id == AgentConfig.agent_id)
+                        .where(
+                            ActionRecord.project_id == project_id,
+                            ActionRecord.round_num == prev_round,
+                            ActionRecord.action_category.in_(list(hostile_categories)),
+                            ActionRecord.target_agent_id.in_(list(target_set)),
+                            ActionRecord.source_agent_id != agent_id,
+                        )
+                    )
+                    result = await session.execute(stmt)
+                    for ar, src_name in result.all():
+                        prev_round_records.append({
+                            'source_agent_id': ar.source_agent_id,
+                            'target_agent_id': ar.target_agent_id,
+                            'action_name': ar.action_name,
+                            'action_category': ar.action_category,
+                            'round_num': ar.round_num,
+                            'source_agent_name': src_name,
+                        })
+                    break  # 单次拿一个 session 即可
+            except Exception as e:
+                logger.warning(f"_build_alliance_chain_summary DB回退查询失败: {e}")
+
+        if not prev_round_records:
+            return "【上一轮联盟事件简报】上一轮无重要联盟相关事件"
+
+        ally_attack_lines: List[str] = []
+        foe_attack_lines: List[str] = []
+        for r in prev_round_records:
+            src_id = r.get('source_agent_id')
+            tgt_id = r.get('target_agent_id')
+            action_name = r.get('action_name', '?')
+            rnd = r.get('round_num', prev_round)
+            src_name = r.get('source_agent_name') or name_map.get(src_id, f"国家{src_id}")
+            tgt_name = name_map.get(tgt_id, f"国家{tgt_id}")
+
+            if tgt_id in ally_ids:
+                ally_attack_lines.append(
+                    f"    * {tgt_name}(ID{tgt_id}) 被 {src_name}(ID{src_id}) 实施「{action_name}」(第{rnd}轮)\n"
+                    f"      → 你与 {tgt_name} 是 ALLIANCE 关系, 本轮你对 {src_name} 采取敌对行为额外+0.3收益"
+                )
+            elif tgt_id in foe_ids:
+                foe_attack_lines.append(
+                    f"    * {tgt_name}(ID{tgt_id}) 被 {src_name}(ID{src_id}) 实施「{action_name}」(第{rnd}轮)\n"
+                    f"      → 你与 {tgt_name} 是 CONFLICT/WAR 关系, 本轮你对 {tgt_name} 施压可获+0.15趁火打劫收益"
+                )
+
+        lines = ["【上一轮联盟事件简报】"]
+        if ally_attack_lines:
+            lines.append("  - 盟友被攻击事件:")
+            lines.extend(ally_attack_lines)
+        if foe_attack_lines:
+            lines.append("  - 对手被攻击事件:")
+            lines.extend(foe_attack_lines)
+        if len(lines) == 1:
+            return "【上一轮联盟事件简报】上一轮无重要联盟相关事件"
+        return "\n".join(lines)
 
     def _build_retry_prompt(
         self,

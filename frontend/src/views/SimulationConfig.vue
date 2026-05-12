@@ -274,6 +274,79 @@
         </el-table>
       </el-card>
 
+      <!-- 邻接关系配置分隔线 -->
+      <el-divider style="margin: 30px 0;">邻接关系配置</el-divider>
+
+      <!-- 邻接关系配置卡片 -->
+      <el-card v-if="agents.length > 1" class="adjacency-card">
+        <template #header>
+          <div class="relation-header">
+            <h3>邻接关系矩阵</h3>
+            <div class="relation-actions">
+              <el-button size="small" type="success" @click="initializeAdjacency" :loading="loadingAdjacency">
+                初始化(从默认值)
+              </el-button>
+              <el-button size="small" @click="saveAdjacency" :loading="loadingAdjacency">
+                保存配置
+              </el-button>
+            </div>
+          </div>
+        </template>
+
+        <el-alert type="info" :closable="false" style="margin-bottom: 20px;">
+          勾选表示两国接壤（陆地或近海）。矩阵对称，编辑对角线上方单元格即可；该字段会注入 prompt，影响军事行为成本估算与战略可达性判断。
+        </el-alert>
+
+        <!-- 邻接矩阵表格 -->
+        <el-table :data="agents" border style="margin-top: 20px;" :max-height="600" size="small">
+          <!-- 第一列：智能体名称 -->
+          <el-table-column prop="agentName" label="智能体" width="150" fixed>
+            <template #default="{ row }">
+              <div>
+                <div>{{ row.agentName }}</div>
+                <el-tag size="small" :type="getPowerLevelType(row.powerLevel)">
+                  {{ row.powerLevel }}
+                </el-tag>
+              </div>
+            </template>
+          </el-table-column>
+
+          <!-- 动态列：每个智能体的邻接复选框 -->
+          <el-table-column
+            v-for="(targetAgent, targetIndex) in agents"
+            :key="`adj-col-${targetIndex}`"
+            :label="targetAgent.agentName"
+            min-width="90"
+            align="center"
+          >
+            <template #header>
+              <div>{{ targetAgent.agentName }}</div>
+              <el-tag size="small" :type="getPowerLevelType(targetAgent.powerLevel)">
+                {{ targetAgent.powerLevel }}
+              </el-tag>
+            </template>
+
+            <template #default="{ $index }">
+              <!-- 自身对角线 -->
+              <span v-if="$index === targetIndex" class="self-cell">-</span>
+
+              <!-- 上三角：可编辑复选框 -->
+              <el-checkbox
+                v-else-if="$index < targetIndex"
+                :model-value="getAdjacency($index, targetIndex)"
+                @change="(val) => setAdjacency($index, targetIndex, val)"
+              />
+
+              <!-- 下三角：镜像显示 -->
+              <el-icon v-else-if="getAdjacency(targetIndex, $index)" class="adj-mirror">
+                <Check />
+              </el-icon>
+              <span v-else class="adj-mirror-dot">·</span>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+
       <!-- 无智能体提示 -->
       <el-alert
         v-else
@@ -314,9 +387,11 @@
 import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Check } from '@element-plus/icons-vue'
 import { useAppStore } from '../store'
 import * as simulationApi from '../api/simulation'
 import * as relationshipApi from '../api/strategicRelationship'
+import * as adjacencyApi from '../api/agentNeighbor'
 import * as cincApi from '../api/cinc'
 
 // 获取路由实例和应用状态管理
@@ -356,6 +431,12 @@ const relationshipMatrix = ref({})
 
 // 战略关系操作加载状态
 const loadingRelations = ref(false)
+
+// 邻接关系矩阵（key: 'smallerIdx_largerIdx', value: boolean）
+const adjacencyMatrix = ref({})
+
+// 邻接关系操作加载状态
+const loadingAdjacency = ref(false)
 
 // 当前项目ID
 const currentProjectId = ref(null)
@@ -399,6 +480,8 @@ onMounted(async () => {
 
       // 加载战略关系数据
       await loadRelationships()
+      // 加载邻接关系矩阵
+      await loadAdjacency()
     } catch (error) {
       console.error('加载项目配置失败:', error)
       // 从本地存储加载配置
@@ -716,6 +799,163 @@ async function saveRelations() {
   }
 }
 
+/* ====================================================================
+ * 邻接关系（agent neighbors）相关函数
+ * ==================================================================== */
+
+/**
+ * 把 (srcIdx, tgtIdx) 规范化为 (smaller, larger, key) 三元组
+ * @param {number} idx1
+ * @param {number} idx2
+ * @returns {[number, number, string]}
+ */
+function _normalizeAdjKey(idx1, idx2) {
+  const [a, b] = idx1 < idx2 ? [idx1, idx2] : [idx2, idx1]
+  return [a, b, `${a}_${b}`]
+}
+
+/**
+ * 加载项目的邻接关系矩阵
+ */
+async function loadAdjacency() {
+  const projectId = appStore.loadProjectId()
+  if (!projectId) return
+
+  loadingAdjacency.value = true
+  try {
+    const data = await adjacencyApi.getAgentNeighbors(projectId)
+    // data 形如: { sourceAgentId: { targetAgentId: bool, ... }, ... }
+    const idToIndex = {}
+    agents.value.forEach((agent, idx) => {
+      if (agent.agentId !== undefined && agent.agentId !== null) {
+        idToIndex[agent.agentId] = idx
+      }
+    })
+
+    const matrix = {}
+    if (data && typeof data === 'object') {
+      for (const [srcId, neighbors] of Object.entries(data)) {
+        const sIdx = idToIndex[parseInt(srcId)]
+        if (sIdx === undefined) continue
+        for (const [tgtId, isN] of Object.entries(neighbors || {})) {
+          const tIdx = idToIndex[parseInt(tgtId)]
+          if (tIdx === undefined || sIdx === tIdx) continue
+          const [, , key] = _normalizeAdjKey(sIdx, tIdx)
+          matrix[key] = !!isN
+        }
+      }
+    }
+    adjacencyMatrix.value = matrix
+    console.log('Loaded adjacency (index-based):', adjacencyMatrix.value)
+  } catch (error) {
+    // 项目刚创建或后端尚未就绪时使用空矩阵
+    adjacencyMatrix.value = {}
+    console.log('No adjacency loaded (project may be new or backend not ready)', error)
+  } finally {
+    loadingAdjacency.value = false
+  }
+}
+
+/**
+ * 读取两个 agent 间的邻接布尔值
+ * @param {number} srcIdx
+ * @param {number} tgtIdx
+ * @returns {boolean}
+ */
+function getAdjacency(srcIdx, tgtIdx) {
+  const [, , key] = _normalizeAdjKey(srcIdx, tgtIdx)
+  return !!adjacencyMatrix.value[key]
+}
+
+/**
+ * 设置两个 agent 间的邻接布尔值
+ * 本地立刻更新；若项目已创建则同步 POST 到后端
+ * @param {number} srcIdx
+ * @param {number} tgtIdx
+ * @param {boolean} isNeighbor
+ */
+async function setAdjacency(srcIdx, tgtIdx, isNeighbor) {
+  const [a, b, key] = _normalizeAdjKey(srcIdx, tgtIdx)
+  adjacencyMatrix.value = { ...adjacencyMatrix.value, [key]: !!isNeighbor }
+
+  const projectId = appStore.loadProjectId()
+  const aAgent = agents.value[a]
+  const bAgent = agents.value[b]
+  if (projectId && aAgent?.agentId && bAgent?.agentId) {
+    try {
+      await adjacencyApi.setAgentNeighbor(
+        projectId,
+        aAgent.agentId,
+        bAgent.agentId,
+        !!isNeighbor
+      )
+      ElMessage.success(isNeighbor ? '已设为邻国' : '已取消邻国')
+    } catch (error) {
+      ElMessage.error(`保存邻接失败: ${error.message || error}`)
+    }
+  }
+}
+
+/**
+ * 用后端默认值初始化邻接矩阵
+ */
+async function initializeAdjacency() {
+  const projectId = appStore.loadProjectId()
+  if (!projectId) {
+    ElMessage.warning('请先创建项目')
+    return
+  }
+
+  loadingAdjacency.value = true
+  try {
+    await adjacencyApi.initializeAgentNeighbors(projectId)
+    await loadAdjacency()
+    ElMessage.success('已用默认邻接矩阵初始化')
+  } catch (error) {
+    ElMessage.error(`初始化邻接失败: ${error.message || error}`)
+    console.error('Initialize adjacency error:', error)
+  } finally {
+    loadingAdjacency.value = false
+  }
+}
+
+/**
+ * 批量保存所有邻接关系配置
+ */
+async function saveAdjacency() {
+  const projectId = appStore.loadProjectId()
+  if (!projectId) {
+    ElMessage.warning('请先创建项目')
+    return
+  }
+
+  loadingAdjacency.value = true
+  try {
+    const updates = []
+    for (const [key, isN] of Object.entries(adjacencyMatrix.value)) {
+      const [a, b] = key.split('_').map(Number)
+      const aAgent = agents.value[a]
+      const bAgent = agents.value[b]
+      if (aAgent?.agentId && bAgent?.agentId) {
+        updates.push({
+          source_id: aAgent.agentId,
+          target_id: bAgent.agentId,
+          is_neighbor: !!isN
+        })
+      }
+    }
+    if (updates.length > 0) {
+      await adjacencyApi.batchSetAgentNeighbors(projectId, updates)
+    }
+    ElMessage.success('邻接关系配置已保存')
+  } catch (error) {
+    ElMessage.error(`保存邻接失败: ${error.message || error}`)
+    console.error('Save adjacency error:', error)
+  } finally {
+    loadingAdjacency.value = false
+  }
+}
+
 /**
  * 创建仿真项目
  * 验证输入后，先创建项目，再添加所有智能体，最后跳转到仿真控制台
@@ -790,6 +1030,35 @@ async function createProject() {
           console.error('保存战略关系失败:', error)
         }
       }
+    }
+
+    // 初始化默认邻接矩阵（后端依据 scene_source 选择默认值）
+    try {
+      await adjacencyApi.initializeAgentNeighbors(projectId)
+    } catch (error) {
+      console.error('初始化邻接关系失败（可能后端未就绪）:', error)
+    }
+
+    // 把本地 adjacencyMatrix 全量批量推送（覆盖默认值）
+    try {
+      const adjUpdates = []
+      for (const [key, isN] of Object.entries(adjacencyMatrix.value)) {
+        const [a, b] = key.split('_').map(Number)
+        const aId = idMapping[a]
+        const bId = idMapping[b]
+        if (aId !== undefined && bId !== undefined) {
+          adjUpdates.push({
+            source_id: aId,
+            target_id: bId,
+            is_neighbor: !!isN
+          })
+        }
+      }
+      if (adjUpdates.length > 0) {
+        await adjacencyApi.batchSetAgentNeighbors(projectId, adjUpdates)
+      }
+    } catch (error) {
+      console.error('批量保存邻接关系失败:', error)
     }
 
     // 保存项目ID并清除临时配置
@@ -884,5 +1153,28 @@ function resetConfig() {
 .relation-actions {
   display: flex;
   gap: 10px;
+}
+
+/* 邻接关系矩阵相关样式 */
+.adjacency-card {
+  margin-top: 12px;
+}
+
+/* 自身对角线单元格 */
+.self-cell {
+  color: #909399;
+  font-weight: 600;
+}
+
+/* 下三角镜像勾选图标 */
+.adj-mirror {
+  color: #67c23a;
+  font-size: 16px;
+}
+
+/* 下三角镜像未勾选占位 */
+.adj-mirror-dot {
+  color: #c0c4cc;
+  font-size: 16px;
 }
 </style>

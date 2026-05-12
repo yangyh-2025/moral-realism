@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import DateTime, ForeignKey, Integer, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..models import Base
@@ -52,6 +52,12 @@ class StrategicRelationship(Base):
     - 小国 × 小国
     """
     __tablename__ = "strategic_relationship"
+    __table_args__ = (
+        UniqueConstraint(
+            'project_id', 'source_agent_id', 'target_agent_id',
+            name='uq_strategic_rel'
+        ),
+    )
 
     relation_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("simulation_project.project_id"), nullable=False, index=True)
