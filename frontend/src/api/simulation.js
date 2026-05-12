@@ -15,11 +15,19 @@ import request from './index'
  * @param {string} statusFilter - 状态筛选条件
  * @returns {Promise} 返回项目列表的响应数据
  */
-export function getProjects(statusFilter) {
+export function getProjects(params = {}) {
   return request({
     url: '/simulation/project/list',
     method: 'get',
-    params: { status: statusFilter }
+    params
+  })
+}
+
+export function exportProject(projectId) {
+  return request({
+    url: `/simulation/project/${projectId}/export`,
+    method: 'get',
+    responseType: 'blob'
   })
 }
 

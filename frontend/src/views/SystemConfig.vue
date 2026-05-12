@@ -220,11 +220,18 @@ async function loadConfig() {
 
 /**
  * 保存配置到后端
+ * 自动去除字符串类型配置项的首尾空白字符
  */
 async function saveConfig() {
   loading.value = true
   try {
-    await updateSystemConfig(config.value)
+    const cleaned = { ...config.value }
+    // 去除首尾空白，防止用户不小心输入空格/制表符导致 URL 解析失败
+    if (typeof cleaned.llmModelName === 'string') cleaned.llmModelName = cleaned.llmModelName.trim()
+    if (typeof cleaned.llmApiKey === 'string') cleaned.llmApiKey = cleaned.llmApiKey.trim()
+    if (typeof cleaned.llmApiBase === 'string') cleaned.llmApiBase = cleaned.llmApiBase.trim()
+    if (typeof cleaned.logLevel === 'string') cleaned.logLevel = cleaned.logLevel.trim()
+    await updateSystemConfig(cleaned)
     ElMessage.success('配置保存成功')
   } catch (error) {
     ElMessage.error('保存配置失败')

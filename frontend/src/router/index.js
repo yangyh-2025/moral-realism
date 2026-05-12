@@ -24,6 +24,12 @@ const routes = [
     meta: { title: '首页 - 预置场景' }
   },
   {
+    path: '/history',
+    name: 'SimulationHistory',
+    component: () => import('../views/SimulationHistory.vue'),
+    meta: { title: '历史任务' }
+  },
+  {
     path: '/config',
     name: 'SimulationConfig',
     component: SimulationConfig,
@@ -58,6 +64,12 @@ const routes = [
     name: 'SystemConfig',
     component: SystemConfig,
     meta: { title: '系统配置' }
+  },
+  {
+    path: '/llm-calls',
+    name: 'LLMCallLog',
+    component: () => import('../views/LLMCallLog.vue'),
+    meta: { title: 'LLM 调用记录' }
   }
 ]
 

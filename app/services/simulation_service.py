@@ -34,6 +34,7 @@ class SimulationService:
         self.running_simulations = {}  # 跟踪正在运行的仿真
         self.EVALUATION_INTERVAL = 10  # 评估间隔轮次（每10轮评估一次）
         self._last_update_results = []  # 保存CINC更新结果供_save_power_history使用
+        self._stop_flags = {}  # 项目ID -> 是否请求停止（用于快速响应终止/重置）
 
     async def _get_max_concurrency(self) -> int:
         """从系统配置读取最大并发数，默认5，范围1-20。"""
@@ -84,17 +85,14 @@ class SimulationService:
 
         logger.info(f"项目 {project_id} 有 {len(agents)} 个智能体")
 
-        # 更新项目状态为运行中
+        # 更新项目状态为运行中,首次启动时记录 started_at
         async for session in db_config.get_session():
-            await session.execute(
-                update(SimulationProject)
-                .where(SimulationProject.project_id == project_id)
-                .values(
-                    status="运行中",
-                    current_round=1,
-                    updated_at=datetime.now()
-                )
-            )
+            project = await session.get(SimulationProject, project_id)
+            project.status = "运行中"
+            project.current_round = 1
+            if project.started_at is None:
+                project.started_at = datetime.now()
+            project.updated_at = datetime.now()
             await session.commit()
 
         # 初始化日志管理器
@@ -146,6 +144,11 @@ class SimulationService:
 
         try:
             while True:
+                # 检查停止请求
+                if self._stop_flags.get(project_id, False):
+                    logger.info(f"项目 {project_id} 收到停止请求，退出循环")
+                    break
+
                 # 检查项目状态
                 project = await project_service.get_project(project_id)
                 if not project:
@@ -186,9 +189,10 @@ class SimulationService:
         except Exception as e:
             logger.error(f"项目 {project_id} 仿真循环崩溃: {e}", exc_info=True)
         finally:
-            # 清理任务引用
+            # 清理任务引用和停止标志
             if project_id in self.running_simulations:
                 del self.running_simulations[project_id]
+            self._stop_flags.pop(project_id, None)
             logger.info(f"项目 {project_id} 仿真循环结束")
 
     async def step_simulation(self, project_id: int, log_manager: Optional[SimulationLogManager] = None) -> dict:
@@ -240,11 +244,14 @@ class SimulationService:
         if current_round > total_rounds:
             logger.info(f"项目 {project_id} 已完成所有轮次")
             async for session in db_config.get_session():
-                await session.execute(
-                    update(SimulationProject)
-                    .where(SimulationProject.project_id == project_id)
-                    .values(status="已完成", updated_at=datetime.now())
-                )
+                project = await session.get(SimulationProject, project_id)
+                project.status = "已完成"
+                project.completed_at = datetime.now()
+                if project.started_at:
+                    project.duration_seconds = int(
+                        (datetime.now() - project.started_at).total_seconds()
+                    )
+                project.updated_at = datetime.now()
                 await session.commit()
             return {
                 "project_id": project_id,
@@ -270,23 +277,38 @@ class SimulationService:
                 raise ValueError(f"项目 {project_id} 中没有智能体")
 
             # 2. 执行决策生成（主动阶段）
+            if self._stop_flags.get(project_id, False):
+                logger.info(f"项目 {project_id} 收到停止请求，跳过主动决策")
+                return {"project_id": project_id, "status": "已终止", "message": "Simulation stopped by user"}
             initiative_records = await self._generate_decisions(
                 project_id, agents, current_round, round_id, phase="initiative", log_manager=log_manager
             )
 
             # 3. 执行决策生成（响应阶段）
+            if self._stop_flags.get(project_id, False):
+                logger.info(f"项目 {project_id} 收到停止请求，跳过响应决策")
+                return {"project_id": project_id, "status": "已终止", "message": "Simulation stopped by user"}
             response_records = await self._generate_decisions(
                 project_id, agents, current_round, round_id, phase="response", log_manager=log_manager
             )
 
             # 4. 更新国力（使用CINCPowerUpdateEngine）
+            if self._stop_flags.get(project_id, False):
+                logger.info(f"项目 {project_id} 收到停止请求，跳过CINC更新")
+                return {"project_id": project_id, "status": "已终止", "message": "Simulation stopped by user"}
             logger.info(f"[阶段3/6] 项目{project_id} R{current_round} CINC更新中...")
             await self._update_power(project_id, agents, initiative_records + response_records)
 
             # 4.5 保存国力历史
+            if self._stop_flags.get(project_id, False):
+                logger.info(f"项目 {project_id} 收到停止请求，跳过国力历史保存")
+                return {"project_id": project_id, "status": "已终止", "message": "Simulation stopped by user"}
             await self._save_power_history(project_id, round_id, current_round, agents, log_manager)
 
             # 5. 追随投票阶段
+            if self._stop_flags.get(project_id, False):
+                logger.info(f"项目 {project_id} 收到停止请求，跳过追随投票")
+                return {"project_id": project_id, "status": "已终止", "message": "Simulation stopped by user"}
             logger.info(f"[阶段4/6] 项目{project_id} R{current_round} 追随投票中...")
             follower_decisions = await self._generate_follower_decisions(
                 project_id, agents, round_id, current_round, log_manager
@@ -294,6 +316,9 @@ class SimulationService:
             logger.info(f"  生成 {len(follower_decisions)} 条追随决策")
 
             # 6. 秩序判定阶段
+            if self._stop_flags.get(project_id, False):
+                logger.info(f"项目 {project_id} 收到停止请求，跳过秩序判定")
+                return {"project_id": project_id, "status": "已终止", "message": "Simulation stopped by user"}
             logger.info(f"[阶段5/6] 项目{project_id} R{current_round} 秩序判定中...")
             order_result = await self._determine_order(
                 project_id, current_round,
@@ -304,15 +329,21 @@ class SimulationService:
             logger.info(f"  秩序类型: {order_result.order_type.value}")
 
             # 7. 保存追随关系到数据库
+            if self._stop_flags.get(project_id, False):
+                logger.info(f"项目 {project_id} 收到停止请求，跳过保存追随关系")
+                return {"project_id": project_id, "status": "已终止", "message": "Simulation stopped by user"}
             await self._save_follower_relations(project_id, round_id, current_round, follower_decisions, log_manager)
 
             # 8. 更新轮次记录统计信息
+            if self._stop_flags.get(project_id, False):
+                logger.info(f"项目 {project_id} 收到停止请求，跳过更新轮次统计")
+                return {"project_id": project_id, "status": "已终止", "message": "Simulation stopped by user"}
             logger.info(f"[阶段6/6] 项目{project_id} R{current_round} 更新轮次统计")
             await self._update_round_record(project_id, current_round, initiative_records + response_records, order_result)
 
             # 9. 每10轮触发一次战略目标评估
             eval_message = ""
-            if current_round % self.EVALUATION_INTERVAL == 0 and current_round > 0:
+            if not self._stop_flags.get(project_id, False) and current_round % self.EVALUATION_INTERVAL == 0 and current_round > 0:
                 try:
                     from app.services.goal_evaluation_service import get_goal_evaluation_service
                     evaluation_service = get_goal_evaluation_service(log_manager=log_manager)
@@ -326,15 +357,16 @@ class SimulationService:
 
             # 10. 战略关系演变评估（每轮）
             evolve_message = ""
-            try:
-                from app.services.relationship_evolution_service import get_relationship_evolution_service
-                evolution_service = get_relationship_evolution_service(log_manager=log_manager)
-                changes = await evolution_service.evolve_relationships(project_id, current_round)
-                logger.info(f"第 {current_round} 轮战略关系演变完成，{len(changes)} 对关系发生变化")
-                if changes:
-                    evolve_message = f" (战略关系变化: {len(changes)}对)"
-            except Exception as e:
-                logger.error(f"第 {current_round} 轮战略关系演变失败: {e}", exc_info=True)
+            if not self._stop_flags.get(project_id, False):
+                try:
+                    from app.services.relationship_evolution_service import get_relationship_evolution_service
+                    evolution_service = get_relationship_evolution_service(log_manager=log_manager)
+                    changes = await evolution_service.evolve_relationships(project_id, current_round)
+                    logger.info(f"第 {current_round} 轮战略关系演变完成，{len(changes)} 对关系发生变化")
+                    if changes:
+                        evolve_message = f" (战略关系变化: {len(changes)}对)"
+                except Exception as e:
+                    logger.error(f"第 {current_round} 轮战略关系演变失败: {e}", exc_info=True)
 
             # 更新轮次
             next_round = current_round + 1
@@ -402,6 +434,8 @@ class SimulationService:
         """
         创建轮次记录并返回 round_id
 
+        防御重复写入：若该 (project_id, round_num) 已存在则直接复用。
+
         Args:
             project_id: 项目ID
             round_num: 轮次号
@@ -410,6 +444,17 @@ class SimulationService:
             轮次ID
         """
         async for session in db_config.get_session():
+            # 先检查是否已存在（防止并发/重试导致重复）
+            existing = await session.execute(
+                select(SimulationRound).where(
+                    SimulationRound.project_id == project_id,
+                    SimulationRound.round_num == round_num
+                ).order_by(SimulationRound.round_id.desc()).limit(1)
+            )
+            existing_record = existing.scalars().first()
+            if existing_record:
+                return existing_record.round_id
+
             round_record = SimulationRound(
                 project_id=project_id,
                 round_num=round_num,
@@ -558,6 +603,7 @@ class SimulationService:
                 leader_type=agent.get('leader_type'),
                 national_interest=agent_base.national_interest,
                 strategic_relationships=strategic_relationships.get(agent_id, {}),
+                cinc_year=agent.get('cinc_year'),
                 allowed_actions=[{
                     'action_id': a.action_id,
                     'action_name': a.action_name,
@@ -1104,7 +1150,8 @@ class SimulationService:
                 agent_name=agent_name,
                 current_total_power=agent.get('current_total_power', 0),
                 power_level=agent.get('power_level'),
-                leader_type=agent.get('leader_type', '未定义')
+                leader_type=agent.get('leader_type', '未定义'),
+                cinc_year=agent.get('cinc_year')
             )
             user_prompt = PromptTemplates.build_follower_user_prompt(
                 info_pool=formatted_info_pool,
@@ -1183,10 +1230,22 @@ class SimulationService:
             """返回 (agent_id, follower_id, reason)"""
             agent_name = agent.get('agent_name')
             agent_id = agent.get('agent_id')
+            power_level = agent.get('power_level')
+
+            # 仅超级大国保持独立自主，不参与追随投票；大国/中等强国可以追随
+            if power_level == PowerLevelEnum.SUPERPOWER.value:
+                completed_counter2["n"] += 1
+                progress = f"[{completed_counter2['n']:>2d}/{total_agents}]"
+                logger.info(
+                    f"  {progress} [SKIP] {agent_name}(ID:{agent_id}) -> 中立: "
+                    f"{power_level}保持独立自主，不参与追随"
+                )
+                return agent_id, None, f"{power_level}保持独立自主，不参与追随其他国家"
+
             system_prompt = PromptTemplates.build_follower_system_prompt(
                 agent_name=agent_name,
                 current_total_power=agent.get('current_total_power', 0),
-                power_level=agent.get('power_level')
+                power_level=power_level
             )
             # 候选人评估（按当前voter视角预先核对战略关系+双向互动）
             voter_relationships = relationships_lookup.get(agent_id, {})
@@ -1258,6 +1317,45 @@ class SimulationService:
                 continue
             agent_id, follower_id, _ = result
             follower_decisions[agent_id] = follower_id
+
+        # ========== 后处理：检测并修复互相追随闭环 ==========
+        # 1. 修复互相追随：如果A追随B且B追随A，让实力更强的一方保持中立
+        agent_power_map = {
+            a.get('agent_id'): a.get('current_total_power', 0) or 0
+            for a in agents
+        }
+        mutual_pairs = []
+        for agent_id, leader_id in list(follower_decisions.items()):
+            if leader_id and follower_decisions.get(leader_id) == agent_id:
+                pair = tuple(sorted([agent_id, leader_id]))
+                if pair not in mutual_pairs:
+                    mutual_pairs.append(pair)
+                    a_power = agent_power_map.get(agent_id, 0)
+                    b_power = agent_power_map.get(leader_id, 0)
+                    # 让实力更强的保持中立（实力强的不应追随弱者）
+                    if a_power >= b_power:
+                        follower_decisions[agent_id] = None
+                        logger.warning(
+                            f"[追随修复] 解除互相追随: {agent_id} 不再追随 {leader_id} "
+                            f"({agent_id}实力更强/a_power={a_power:.4f})"
+                        )
+                    else:
+                        follower_decisions[leader_id] = None
+                        logger.warning(
+                            f"[追随修复] 解除互相追随: {leader_id} 不再追随 {agent_id} "
+                            f"({leader_id}实力更强/b_power={b_power:.4f})"
+                        )
+
+        # 2. 修复领导者追随他人：被追随的领导者不应追随其他国家
+        leaders = set(v for v in follower_decisions.values() if v is not None)
+        for leader_id in leaders:
+            if follower_decisions.get(leader_id) is not None:
+                old_follow = follower_decisions[leader_id]
+                follower_decisions[leader_id] = None
+                logger.warning(
+                    f"[追随修复] 领导者{leader_id}不应追随他人，"
+                    f"已解除对{old_follow}的追随"
+                )
 
         logger.info(
             f"========== 第 {round_num} 轮 - 追随决策完成 "
@@ -1461,10 +1559,22 @@ class SimulationService:
         """
         logger.info(f"正在暂停项目 {project_id} 仿真")
 
+        # 设置停止标志，让循环自然退出
+        self._stop_flags[project_id] = True
+
         if project_id in self.running_simulations:
             # 取消正在运行的任务
-            self.running_simulations[project_id].cancel()
-            del self.running_simulations[project_id]
+            task = self.running_simulations[project_id]
+            task.cancel()
+            try:
+                await asyncio.wait_for(task, timeout=5.0)
+            except (asyncio.TimeoutError, asyncio.CancelledError):
+                pass
+            if project_id in self.running_simulations:
+                del self.running_simulations[project_id]
+
+        # 清理停止标志
+        self._stop_flags.pop(project_id, None)
 
         # 更新状态
         async for session in db_config.get_session():
@@ -1527,18 +1637,29 @@ class SimulationService:
         """
         logger.info(f"正在停止项目 {project_id} 仿真")
 
-        if project_id in self.running_simulations:
-            self.running_simulations[project_id].cancel()
-            del self.running_simulations[project_id]
+        self._stop_flags[project_id] = True
 
-        # 更新状态
+        if project_id in self.running_simulations:
+            task = self.running_simulations[project_id]
+            task.cancel()
+            try:
+                await asyncio.wait_for(task, timeout=120.0)
+            except (asyncio.TimeoutError, asyncio.CancelledError):
+                pass
+
+        # 更新状态并记录终止时间
         async for session in db_config.get_session():
-            await session.execute(
-                update(SimulationProject)
-                .where(SimulationProject.project_id == project_id)
-                .values(status="已终止", updated_at=datetime.now())
-            )
+            project = await session.get(SimulationProject, project_id)
+            project.status = "已终止"
+            project.completed_at = datetime.now()
+            if project.started_at:
+                project.duration_seconds = int(
+                    (datetime.now() - project.started_at).total_seconds()
+                )
+            project.updated_at = datetime.now()
             await session.commit()
+
+        self._stop_flags.pop(project_id, None)
 
         return {
             "project_id": project_id,
@@ -1559,6 +1680,16 @@ class SimulationService:
             重置结果字典
         """
         logger.info(f"正在重置项目 {project_id} 仿真")
+
+        # 先停止正在运行的仿真
+        if project_id in self.running_simulations:
+            self._stop_flags[project_id] = True
+            task = self.running_simulations[project_id]
+            task.cancel()
+            try:
+                await asyncio.wait_for(task, timeout=120.0)
+            except (asyncio.TimeoutError, asyncio.CancelledError):
+                pass
 
         # 重置所有智能体的当前CINC到初始值
         async for session in db_config.get_session():
@@ -1627,18 +1758,18 @@ class SimulationService:
         # 如果用户需要重置关系，可单独调用 /strategic-relationships/{project_id}/initialize
         logger.info(f"项目 {project_id} 战略关系已保留（reset只清除运行数据）")
 
-        # 更新项目状态
+        # 更新项目状态并清空时间戳
         async for session in db_config.get_session():
-            await session.execute(
-                update(SimulationProject)
-                .where(SimulationProject.project_id == project_id)
-                .values(
-                    status="未启动",
-                    current_round=0,
-                    updated_at=datetime.now()
-                )
-            )
+            project = await session.get(SimulationProject, project_id)
+            project.status = "未启动"
+            project.current_round = 0
+            project.started_at = None
+            project.completed_at = None
+            project.duration_seconds = None
+            project.updated_at = datetime.now()
             await session.commit()
+
+        self._stop_flags.pop(project_id, None)
 
         return {
             "project_id": project_id,

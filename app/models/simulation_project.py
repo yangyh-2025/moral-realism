@@ -63,6 +63,15 @@ class SimulationProject(Base):
     leader_threshold: Mapped[float] = mapped_column(
         Float, nullable=False, default=0.6
     )  # 学术模型固定60%
+    started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=True, comment="首次启动时间"
+    )
+    completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=True, comment="完成/终止时间"
+    )
+    duration_seconds: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True, comment="实际累计运行秒数"
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=func.now()
     )

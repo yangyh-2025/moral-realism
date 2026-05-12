@@ -407,22 +407,18 @@ function updateOrderChart(data) {
     series: [{ data: leaderRatios }]
   })
 
-  // 秩序类型映射
-  const orderTypeMap = {
-    '规范接纳型': 1,
-    '不干涉型': 2,
-    '大棒威慑型': 3,
-    '恐怖平衡型': 4
-  }
+  const orderTypes = ['规范接纳型', '不干涉型', '大棒威慑型', '恐怖平衡型', '未判定']
 
   // 更新国际秩序演变图表
   chart.setOption({
     xAxis: { data: rounds },
     yAxis: {
       type: 'category',
-      data: Object.keys(orderTypeMap)
+      data: orderTypes
     },
     series: [{
+      name: '秩序类型',
+      type: 'scatter',
       data: data.map(item => ({
         value: [item.round_num, item.order_type]
       }))

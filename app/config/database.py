@@ -106,16 +106,35 @@ class DatabaseConfig:
 db_config = DatabaseConfig()
 
 
+async def _migrate_schema(conn) -> None:
+    """
+    SQLite 在线 schema 迁移:自动补全缺失的列和表。
+    幂等:重复执行无影响。
+    """
+    result = await conn.execute(text("PRAGMA table_info(simulation_project)"))
+    rows = result.all()
+    cols = {row[1] for row in rows}
+
+    for col, ddl in [("started_at", "DATETIME"), ("completed_at", "DATETIME"), ("duration_seconds", "INTEGER")]:
+        if col not in cols:
+            await conn.execute(text(f'ALTER TABLE simulation_project ADD COLUMN {col} {ddl}'))
+
+    await conn.commit()
+
+
 async def init_database() -> None:
     """
     初始化数据库表结构
 
-    创建所有模型对应的数据库表。
+    创建所有模型对应的数据库表,并执行在线迁移。
     """
     from app.models import Base
 
     async with db_config.engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    async with db_config.engine.connect() as conn:
+        await _migrate_schema(conn)
 
 
 async def init_default_data() -> None:

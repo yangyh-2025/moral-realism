@@ -5,9 +5,11 @@
 仿真控制和数据查询等功能，是整个系统的核心API入口。
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from typing import List, Optional
 from pydantic import BaseModel
+import io
 from datetime import datetime
 
 from app.services.project_service import project_service
@@ -32,6 +34,9 @@ class ProjectResponse(BaseModel):
     status: str
     respect_sov_threshold: float
     leader_threshold: float
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    duration_seconds: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 
@@ -123,18 +128,38 @@ class RoundDetailResponse(BaseModel):
 
 
 # 项目管理API
-@router.get("/project/list", response_model=List[ProjectResponse])
-async def get_projects():
+@router.get("/project/list")
+async def get_projects(
+    status: Optional[str] = Query(None, description="状态筛选"),
+    scene_source: Optional[str] = Query(None, description="场景来源筛选"),
+    keyword: Optional[str] = Query(None, description="关键词搜索(项目名/描述)"),
+    page: int = Query(1, ge=1, description="页码"),
+    size: int = Query(20, ge=1, le=100, description="每页条数"),
+    sort: str = Query("updated_at_desc", description="排序字段,如 created_at_desc"),
+):
     """
-    获取所有仿真项目列表
+    获取仿真项目列表（支持分页、筛选、排序）
 
-    返回系统中所有仿真项目的基本信息，包括项目名称、描述、当前状态等。
+    Args:
+        status: 状态筛选（可选）
+        scene_source: 场景来源筛选（可选）
+        keyword: 关键词搜索（匹配项目名或描述）（可选）
+        page: 页码（从1开始）
+        size: 每页条数
+        sort: 排序字段，格式为 "field_desc" 或 "field_asc"
 
     Returns:
-        List[ProjectResponse]: 项目列表
+        dict: {"total": int, "items": List[dict]}
     """
-    projects = await project_service.get_projects()
-    return [ProjectResponse(**p) for p in projects]
+    result = await project_service.get_projects(
+        status_filter=status,
+        scene_source=scene_source,
+        keyword=keyword,
+        page=page,
+        size=size,
+        sort=sort,
+    )
+    return result
 
 
 @router.post("/project", response_model=ProjectResponse)
@@ -215,7 +240,7 @@ async def delete_project(project_id: int):
     """
     删除仿真项目
 
-    删除指定的仿真项目，包括项目配置和相关数据。
+    删除指定的仿真项目，包括项目配置、关联数据和 logs 目录。
 
     Args:
         project_id: 项目ID
@@ -230,6 +255,34 @@ async def delete_project(project_id: int):
     if not success:
         raise HTTPException(status_code=404, detail="Project not found")
     return {"message": "Project deleted successfully"}
+
+
+@router.get("/project/{project_id}/export")
+async def export_project(project_id: int):
+    """
+    导出项目数据
+
+    将指定项目的所有数据和日志打包为 ZIP 下载。
+
+    Args:
+        project_id: 项目ID
+
+    Returns:
+        StreamingResponse: ZIP 文件流
+
+    Raises:
+        HTTPException: 项目不存在时返回404错误
+    """
+    zip_bytes = await project_service.export_project(project_id)
+    if zip_bytes is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return StreamingResponse(
+        io.BytesIO(zip_bytes),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="simulation_{project_id}_export.zip"'
+        },
+    )
 
 
 # 智能体配置API

@@ -423,7 +423,7 @@ class SceneService:
         # 强国甲(德国) ↔ 中小国家
         await self._set_rel(sr_service, project_id, gp1, mp1, StrategicRelationshipEnum.CONFLICT)
         await self._set_rel(sr_service, project_id, gp1, mp2, StrategicRelationshipEnum.ALLIANCE)
-        await self._set_rel(sr_service, project_id, gp1, mp3, StrategicRelationshipEnum.PARTNERSHIP)
+        await self._set_rel(sr_service, project_id, gp1, mp3, StrategicRelationshipEnum.ALLIANCE)
         await self._set_rel(sr_service, project_id, gp1, s1,  StrategicRelationshipEnum.ALLIANCE)
         await self._set_rel(sr_service, project_id, gp1, s2,  StrategicRelationshipEnum.PARTNERSHIP)
         await self._set_rel(sr_service, project_id, gp1, s3,  StrategicRelationshipEnum.PARTNERSHIP)
@@ -460,7 +460,7 @@ class SceneService:
         await self._set_rel(sr_service, project_id, gp3, mp1, StrategicRelationshipEnum.ALLIANCE)
         await self._set_rel(sr_service, project_id, gp3, mp2, StrategicRelationshipEnum.CONFLICT)
         await self._set_rel(sr_service, project_id, gp3, mp3, StrategicRelationshipEnum.PARTNERSHIP)
-        await self._set_rel(sr_service, project_id, gp3, s1,  StrategicRelationshipEnum.ALLIANCE)
+        await self._set_rel(sr_service, project_id, gp3, s1,  StrategicRelationshipEnum.PARTNERSHIP)
         await self._set_rel(sr_service, project_id, gp3, s2,  StrategicRelationshipEnum.PARTNERSHIP)
         await self._set_rel(sr_service, project_id, gp3, s3,  StrategicRelationshipEnum.PARTNERSHIP)
         await self._set_rel(sr_service, project_id, gp3, s4,  StrategicRelationshipEnum.ALLIANCE)

@@ -54,6 +54,25 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"LLM配置同步失败（将使用环境变量）: {e}")
 
+    # 启动期 reconcile: 上次意外退出残留的"运行中"项目改为"暂停"
+    try:
+        from sqlalchemy import update
+        from app.models.simulation_project import SimulationProject
+        async for session in db_config.get_session():
+            res = await session.execute(
+                update(SimulationProject)
+                .where(SimulationProject.status == "运行中")
+                .values(status="暂停")
+                .returning(SimulationProject.project_id)
+            )
+            fixed_ids = [r[0] for r in res.fetchall()]
+            if fixed_ids:
+                logger.warning(
+                    f"启动 reconcile:将 {len(fixed_ids)} 个残留'运行中'项目改为'暂停',项目ID={fixed_ids}"
+                )
+    except Exception as e:
+        logger.warning(f"启动 reconcile 失败: {e}")
+
     logger.info("应用启动完成")
 
     # 应用运行期间

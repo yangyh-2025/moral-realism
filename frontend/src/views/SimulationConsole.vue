@@ -562,13 +562,11 @@ onMounted(async () => {
   if (queryProjectId) {
     projectId.value = parseInt(queryProjectId)
     appStore.setProjectId(projectId.value)
-    await refreshProjectStatus()
   } else {
     // 尝试从本地存储获取项目 ID
     const storedProjectId = appStore.loadProjectId()
     if (storedProjectId) {
       projectId.value = storedProjectId
-      await refreshProjectStatus()
     } else {
       // 无项目 ID，跳转到配置页面
       ElMessage.error('未找到项目 ID，请先创建项目')
@@ -576,7 +574,27 @@ onMounted(async () => {
       return
     }
   }
-  addLog('info', `仿真控制台已初始化，项目 ID: ${projectId.value}`)
+
+  // 带重试的状态同步：确保控制台状态与后端一致
+  let synced = false
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    await refreshProjectStatus()
+    // 如果成功获取到状态（status 不是默认的'未启动'），认为同步成功
+    if (status.value !== '未启动' || currentRound.value > 0) {
+      synced = true
+      break
+    }
+    if (attempt < 3) {
+      await new Promise(r => setTimeout(r, 500))
+    }
+  }
+
+  if (!synced) {
+    addLog('warning', `状态同步异常：后端返回状态为'未启动'，请检查项目 ${projectId.value} 是否正常`)
+  } else {
+    addLog('info', `仿真控制台已初始化，项目 ID: ${projectId.value}，状态: ${status.value}`)
+  }
+
   initializeSocket()
 })
 
@@ -672,6 +690,14 @@ async function refreshProjectStatus() {
     }
   } catch (error) {
     console.error('获取项目状态失败:', error)
+    // 即使 API 失败也确保 isRunning 与当前 status 一致，防止按钮状态卡住
+    const isRunningNow = status.value === '运行中'
+    if (isRunningNow !== isRunning.value) {
+      isRunning.value = isRunningNow
+    }
+    if (!isRunningNow && pollTimer) {
+      stopPolling()
+    }
   }
 }
 

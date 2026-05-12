@@ -11,6 +11,9 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 from loguru import logger
 
+from app.config.database import db_config
+from app.models.llm_call_log import LLMCallLog
+
 
 class SimulationLogManager:
     """
@@ -102,13 +105,14 @@ class SimulationLogManager:
     ):
         """
         记录LLM调用（包含完整提示词和响应）
+        同时写入 JSONL 文件和数据库 llm_call_log 表（双写）。
 
         Args:
-            category: LLM调用类别 (interaction, following, goal_evaluation)
+            category: LLM调用类别 (interaction, following, goal_evaluation, relationship_evolution)
             full_prompt: 完整的用户提示词
             full_system_prompt: 完整的系统提示词
             full_response: 完整的LLM响应
-            **context: 额外上下文信息 (round_num, agent_id, agent_name等)
+            **context: 额外上下文信息 (round_num, agent_id, agent_name, phase, model_name, prompt_tokens, completion_tokens, latency_ms, status, error_message, response_parsed 等)
         """
         log_data = {
             "full_prompt": full_prompt,
@@ -117,6 +121,30 @@ class SimulationLogManager:
             **context
         }
         await self._write_log(f"llm_{category}", log_data)
+
+        # 同时写入数据库（fire-and-forget，失败仅 warn，不影响仿真主流程）
+        try:
+            async for session in db_config.get_session():
+                session.add(LLMCallLog(
+                    project_id=self.project_id,
+                    round_num=context.get("round_num"),
+                    call_type=f"llm_{category}",
+                    phase=context.get("phase"),
+                    agent_id=context.get("agent_id"),
+                    target_agent_id=context.get("target_agent_id"),
+                    model_name=context.get("model_name"),
+                    prompt_full=full_prompt,
+                    response_full=str(full_response) if full_response else "",
+                    response_parsed=json.dumps(context.get("response_parsed")) if context.get("response_parsed") else None,
+                    prompt_tokens=context.get("prompt_tokens"),
+                    completion_tokens=context.get("completion_tokens"),
+                    latency_ms=context.get("latency_ms"),
+                    status=context.get("status", "success"),
+                    error_message=context.get("error_message"),
+                ))
+                await session.commit()
+        except Exception as e:
+            logger.warning(f"LLM 调用 DB 落库失败(已 JSONL，不影响仿真): {e}")
 
     async def log_power_change(self, round_num: int, power_data: Dict[str, Any]):
         """

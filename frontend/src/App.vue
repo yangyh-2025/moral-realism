@@ -36,6 +36,7 @@
               class="nav-menu"
             >
               <el-menu-item index="/">首页</el-menu-item>
+              <el-menu-item index="/history">历史任务</el-menu-item>
               <el-menu-item index="/config">仿真配置</el-menu-item>
               <el-menu-item index="/console">仿真控制台</el-menu-item>
               <el-menu-item index="/results">仿真结果</el-menu-item>

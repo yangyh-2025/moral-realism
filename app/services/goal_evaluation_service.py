@@ -113,21 +113,39 @@ class GoalEvaluationService:
         # 5. 计算综合目标达成度（加权平均：国力贡献度50% + 行为有效性50%）
         goal_achievement_score = power_contribution_score * 0.5 + action_effectiveness_score * 0.5
 
+        def _normalize_text_field(value):
+            if isinstance(value, list):
+                return "\n".join(str(item) for item in value)
+            return str(value) if value is not None else ""
+
         # 6. 构建最终评估结果
         evaluation_result = {
             "goal_achievement_score": round(goal_achievement_score, 2),
             "power_growth_contribution": power_contribution_score,
             "action_effectiveness": action_effectiveness_score,
             "leadership_alignment": None,
-            "overall_assessment": llm_result.get("overall_assessment", ""),
-            "specific_achievements": llm_result.get("specific_achievements", ""),
-            "challenges": llm_result.get("challenges", "")
+            "overall_assessment": _normalize_text_field(llm_result.get("overall_assessment", "")),
+            "specific_achievements": _normalize_text_field(llm_result.get("specific_achievements", "")),
+            "challenges": _normalize_text_field(llm_result.get("challenges", ""))
         }
 
         # 7. 保存评估结果
-        await self._save_evaluation_result(
-            project_id, agent_id, evaluation_round, start_round, evaluation_round, evaluation_result
-        )
+        try:
+            await self._save_evaluation_result(
+                project_id, agent_id, evaluation_round, start_round, evaluation_round, evaluation_result
+            )
+            logger.info(
+                f"国家 {agent_id} 战略目标评估结果已保存: "
+                f"score={evaluation_result['goal_achievement_score']}, "
+                f"effectiveness={evaluation_result['action_effectiveness']}"
+            )
+        except Exception as e:
+            logger.error(
+                f"国家 {agent_id} 战略目标评估结果保存失败: {e}",
+                exc_info=True
+            )
+            # 保存失败时抛出异常，让外层 _evaluate_one 的 except 捕获并记录
+            raise
 
         return evaluation_result
 
@@ -531,41 +549,58 @@ class GoalEvaluationService:
             end_round: 评估窗口结束轮次
             evaluation_result: 评估结果字典
         """
-        async for session in db_config.get_session():
-            evaluation = StrategicGoalEvaluation(
-                project_id=project_id,
-                agent_id=agent_id,
-                evaluation_round=evaluation_round,
-                evaluation_round_start=start_round,
-                evaluation_round_end=end_round,
-                goal_achievement_score=evaluation_result.get("goal_achievement_score", 0),
-                power_growth_contribution=evaluation_result.get("power_growth_contribution"),
-                action_effectiveness=evaluation_result.get("action_effectiveness"),
-                leadership_alignment=evaluation_result.get("leadership_alignment"),  # 新版本为None
-                overall_assessment=evaluation_result.get("overall_assessment"),
-                specific_achievements=evaluation_result.get("specific_achievements"),
-                challenges=evaluation_result.get("challenges"),
-            )
-            session.add(evaluation)
-            await session.commit()
+        try:
+            async for session in db_config.get_session():
+                evaluation = StrategicGoalEvaluation(
+                    project_id=project_id,
+                    agent_id=agent_id,
+                    evaluation_round=evaluation_round,
+                    evaluation_round_start=start_round,
+                    evaluation_round_end=end_round,
+                    goal_achievement_score=evaluation_result.get("goal_achievement_score", 0),
+                    power_growth_contribution=evaluation_result.get("power_growth_contribution"),
+                    action_effectiveness=evaluation_result.get("action_effectiveness"),
+                    leadership_alignment=evaluation_result.get("leadership_alignment"),
+                    overall_assessment=evaluation_result.get("overall_assessment"),
+                    specific_achievements=evaluation_result.get("specific_achievements"),
+                    challenges=evaluation_result.get("challenges"),
+                )
+                session.add(evaluation)
+                # 依赖生成器在 yield 后的自动 commit，不再手动调用
+                # （避免 SQLAlchemy async session 双重 commit 的潜在问题）
 
-        # 记录到日志文件
+            logger.info(
+                f"[DB SAVE OK] project={project_id} agent={agent_id} "
+                f"round={evaluation_round} score={evaluation_result.get('goal_achievement_score')}"
+            )
+        except Exception as e:
+            logger.error(
+                f"[DB SAVE FAIL] project={project_id} agent={agent_id} "
+                f"round={evaluation_round}: {e}",
+                exc_info=True
+            )
+            raise
+
+        # 记录到日志文件（与数据库独立，失败不影响数据库保存）
         if self.log_manager:
-            await self.log_manager.log_goal_evaluation({
-                "project_id": project_id,
-                "agent_id": agent_id,
-                "evaluation_round": evaluation_round,
-                "start_round": start_round,
-                "end_round": end_round,
-                "goal_achievement_score": evaluation_result.get("goal_achievement_score"),
-                "power_growth_contribution": evaluation_result.get("power_growth_contribution"),
-                "action_effectiveness": evaluation_result.get("action_effectiveness"),
-                "leadership_alignment": evaluation_result.get("leadership_alignment"),
-                "overall_assessment": evaluation_result.get("overall_assessment"),
-                "specific_achievements": evaluation_result.get("specific_achievements"),
-                "challenges": evaluation_result.get("challenges"),
-                "evaluation_notes": "国力贡献度由Min-Max标准化计算，行为有效性由LLM评估"
-            })
+            try:
+                await self.log_manager.log_goal_evaluation({
+                    "project_id": project_id,
+                    "agent_id": agent_id,
+                    "evaluation_round": evaluation_round,
+                    "start_round": start_round,
+                    "end_round": end_round,
+                    "goal_achievement_score": evaluation_result.get("goal_achievement_score"),
+                    "power_growth_contribution": evaluation_result.get("power_growth_contribution"),
+                    "action_effectiveness": evaluation_result.get("action_effectiveness"),
+                    "leadership_alignment": evaluation_result.get("leadership_alignment"),
+                    "overall_assessment": evaluation_result.get("overall_assessment"),
+                    "specific_achievements": evaluation_result.get("specific_achievements"),
+                    "challenges": evaluation_result.get("challenges"),
+                    "evaluation_notes": "国力贡献度由Min-Max标准化计算，行为有效性由LLM评估"
+                })
+            except Exception as e:
+                logger.warning(f"[LOG SAVE WARN] goal_evaluations.log 写入失败: {e}")
 
     async def evaluate_all_agents(self, project_id: int, evaluation_round: int) -> List[dict]:
         """
@@ -633,7 +668,8 @@ class GoalEvaluationService:
                     completed_counter["n"] += 1
                     progress = f"[{completed_counter['n']:>2d}/{total}]"
                     logger.error(
-                        f"  {progress} [评估FAIL] {agent_name}(ID:{agent_id}): {e}"
+                        f"  {progress} [评估FAIL] {agent_name}(ID:{agent_id}): {e}",
+                        exc_info=True
                     )
                     return {
                         "agent_id": agent_id,

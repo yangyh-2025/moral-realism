@@ -246,7 +246,6 @@ class StatisticsService:
                     "leader_follower_ratio": round_data.leader_follower_ratio
                 }
                 for round_data in rounds
-                if round_data.order_type != "未判定"
             ]
 
     async def get_round_detail(self, project_id: int, round_num: int) -> Optional[dict]:
@@ -271,9 +270,9 @@ class StatisticsService:
                 select(SimulationRound).where(
                     SimulationRound.project_id == project_id,
                     SimulationRound.round_num == round_num
-                )
+                ).order_by(SimulationRound.round_id.desc()).limit(1)
             )
-            round_data = round_result.scalar_one_or_none()
+            round_data = round_result.scalars().first()
 
             if not round_data:
                 return None
@@ -458,19 +457,19 @@ class StatisticsService:
                         SimulationRound.project_id == project_id
                     ).order_by(SimulationRound.round_num.desc()).limit(1)
                 )
-                latest_round = round_result.scalar_one_or_none()
+                latest_round = round_result.scalars().first()
                 if not latest_round:
                     return {"nodes": [], "links": [], "round_num": 0}
                 target_round = latest_round.round_num
 
-            # 获取指定轮次的数据
+            # 获取指定轮次的数据（允许多条记录时取第一条，防御重复写入）
             round_result = await session.execute(
                 select(SimulationRound).where(
                     SimulationRound.project_id == project_id,
                     SimulationRound.round_num == target_round
-                )
+                ).order_by(SimulationRound.round_id.desc()).limit(1)
             )
-            round_data = round_result.scalar_one_or_none()
+            round_data = round_result.scalars().first()
             if not round_data:
                 return {"nodes": [], "links": [], "round_num": target_round}
 

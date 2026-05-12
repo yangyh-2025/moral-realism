@@ -53,6 +53,9 @@ class RelationshipEvolutionService:
         self.log_manager = log_manager
         # 存储上一轮的关系变化记录，key: project_id, value: List[Dict]
         self._last_round_changes: Dict[int, List[Dict[str, Any]]] = {}
+        # 存储初始战略关系（第1轮时的关系状态），用于历史惯性保护
+        # key: project_id, value: Dict[(source_id, target_id), relationship_type]
+        self._initial_relationships: Dict[int, Dict[Tuple[int, int], str]] = {}
 
     async def evolve_relationships(self, project_id: int, round_num: int) -> List[Dict[str, Any]]:
         """
@@ -78,6 +81,14 @@ class RelationshipEvolutionService:
         if not current_relationships:
             logger.info(f"项目 {project_id} 没有战略关系，跳过演变")
             return []
+
+        # 1.4 记录初始关系（第1轮时保存，用于历史惯性保护）
+        if round_num == 1:
+            self._initial_relationships[project_id] = {
+                (r['source_agent_id'], r['target_agent_id']): r['relationship_type']
+                for r in current_relationships
+            }
+            logger.info(f"项目 {project_id} 初始战略关系已记录，共 {len(current_relationships)} 对")
 
         # 1.5 获取上一轮关系变化记录
         last_round_changes = self._get_last_round_changes(project_id, round_num)
@@ -112,6 +123,30 @@ class RelationshipEvolutionService:
 
         # 4. 解析并应用变化
         changes = self._parse_changes(response, current_relationships)
+
+        # 4.1 前10轮历史惯性保护：初始冲突/盟友关系禁止降级
+        if round_num <= 10 and project_id in self._initial_relationships:
+            initial_rels = self._initial_relationships[project_id]
+            filtered_changes = []
+            for change in changes:
+                pair = (change['source_agent_id'], change['target_agent_id'])
+                initial_type = initial_rels.get(pair)
+                current_type = change['current_type']
+                new_type = change['new_type']
+
+                # 初始为冲突或盟友关系，且当前仍保持该类型，禁止向敌对方向降级
+                if initial_type in [StrategicRelationshipEnum.CONFLICT.value, StrategicRelationshipEnum.ALLIANCE.value]:
+                    if current_type == initial_type:
+                        current_idx = RELATIONSHIP_LEVELS.index(current_type)
+                        new_idx = RELATIONSHIP_LEVELS.index(new_type)
+                        if new_idx < current_idx:  # 向敌对方向降级
+                            logger.warning(
+                                f"前10轮历史惯性保护：禁止关系对 {pair} 从 {current_type} 降级为 {new_type}"
+                            )
+                            continue
+                filtered_changes.append(change)
+            changes = filtered_changes
+
         applied_changes = []
 
         for change in changes:
@@ -297,9 +332,10 @@ class RelationshipEvolutionService:
 1. 行为互动模式（最近3轮内）：
    - 合作类行为：发表公开声明、呼吁/请求、表达合作意向、协商/磋商、开展外交合作、开展实质性合作、提供援助、让步/屈服
    - 对抗类行为：调查、要求/索要、表达不满/不赞成、威胁、抗议、展示军事姿态、降级关系、胁迫/强制、攻击/袭击、交战/使用常规军事武力、实施非常规大规模暴力
-   - 升级阈值：两国间合作类行为 >= 2次 且 对抗类行为 = 0次 → 可考虑升级
-   - 降级阈值：两国间对抗类行为 >= 1次 且 合作类行为 <= 1次 → 可考虑降级；若出现军事攻击（攻击/袭击、交战、大规模暴力）则必须降级
-   - 混合互动：合作和对抗都有时，若对抗行为中包含军事攻击或胁迫，优先降级；否则权衡后决定
+   - 关系改善（向友好方向）：两国间合作类行为 >= 2次 且 对抗类行为 = 0次 → 可考虑改善一级（如伙伴→盟友）
+   - 关系恶化（向敌对方向）：两国间对抗类行为 >= 1次 且 合作类行为 <= 1次 → 可考虑恶化一级（如伙伴→无外交）；若出现军事攻击（攻击/袭击、交战、大规模暴力）则必须恶化
+   - 【关键】战争关系是最高敌对状态，已处于战争关系时，除非有明确的停战/和平协议行为，否则禁止向友好方向变化（战争→冲突也不允许）
+   - 混合互动：合作和对抗都有时，若对抗行为中包含军事攻击或胁迫，优先恶化；否则权衡后决定
    - 无互动：最近3轮两国间无任何互动 → 必须保持不变
 
 2. 国力对比变化：
@@ -327,6 +363,12 @@ class RelationshipEvolutionService:
    - 关系从"无外交"升级为"伙伴"后，至少需要稳定1轮才能再次变化
    - 关系从"伙伴"升级为"盟友"后，至少需要稳定2轮才能降级
    - 关系降级（友好→敌对）不受稳定期限制，但需要有明确对抗行为支撑
+
+7. 【历史惯性约束-前10轮生效】初始设置的战略关系代表深层的地缘政治结构和同盟条约，具有强大惯性：
+   - 初始为"冲突关系"的国家对：前10轮内禁止降级为"无外交关系"，除非出现明确的盟友背叛或军事攻击行为
+   - 初始为"盟友关系"的国家对：前10轮内禁止降级，除非盟友对你发动军事攻击
+   - 允许在冲突与战争之间升级（反映紧张加剧），但不允许向友好方向缓和
+   - "无外交关系"和"伙伴关系"不受此约束
 
 【输出要求】：
 - 必须输出严格的JSON格式
@@ -392,11 +434,24 @@ class RelationshipEvolutionService:
         if not power_str:
             power_str = "  无"
 
-        # 追随关系
-        follower_str = "\n".join(
-            f"  {fid}: 追随 {lid}" if lid else f"  {fid}: 中立"
-            for fid, lid in recent_followers.items()
-        ) or "  无"
+        # 追随关系（按阵营分组显示，便于LLM理解）
+        # 构建阵营映射：leader_id -> [follower_ids]
+        camps: Dict[int, List[int]] = defaultdict(list)
+        neutrals = []
+        for fid, lid in recent_followers.items():
+            if lid:
+                camps[lid].append(fid)
+            else:
+                neutrals.append(fid)
+
+        follower_lines = []
+        if camps:
+            follower_lines.append("  【阵营分布】")
+            for leader_id, followers in sorted(camps.items(), key=lambda x: -len(x[1])):
+                follower_lines.append(f"    领导者{leader_id}的阵营: {followers} (共{len(followers)}国)")
+        if neutrals:
+            follower_lines.append(f"  【中立国家】{neutrals} (共{len(neutrals)}国)")
+        follower_str = "\n".join(follower_lines) if follower_lines else "  无"
 
         # 秩序信息
         order_str = (
@@ -519,10 +574,10 @@ class RelationshipEvolutionService:
                 if new_type == current_type:
                     continue
 
-                # 验证变化是否只升降一级
-                if not self._is_valid_level_change(current_type, new_type):
+                # 验证变化是否只升降一级，且方向合理
+                if not self._is_valid_level_change(current_type, new_type, reason):
                     logger.warning(
-                        f"变化超过一级: {current_type} -> {new_type}，跳过"
+                        f"关系变化不合法: {current_type} -> {new_type}，跳过"
                     )
                     continue
 
@@ -544,12 +599,30 @@ class RelationshipEvolutionService:
 
         return changes
 
-    def _is_valid_level_change(self, current: str, new: str) -> bool:
-        """检查变化是否只升降一级"""
+    def _is_valid_level_change(self, current: str, new: str, reason: str = "") -> bool:
+        """检查变化是否只升降一级，并验证方向合理性"""
         try:
             current_idx = RELATIONSHIP_LEVELS.index(current)
             new_idx = RELATIONSHIP_LEVELS.index(new)
-            return abs(new_idx - current_idx) == 1
+
+            # 基本检查：只能变化一级
+            if abs(new_idx - current_idx) != 1:
+                return False
+
+            # 安全规则1：战争关系(最高敌对)除非有明确和平信号，否则禁止向友好方向变化
+            if current == StrategicRelationshipEnum.WAR.value and new_idx > current_idx:
+                # 检查理由中是否有明确的和平/停战信号
+                peace_keywords = ["停战", "和平", "和解", "和谈", "谈判", "协议", "缓和", "外交解决"]
+                if not any(kw in reason for kw in peace_keywords):
+                    logger.warning(
+                        f"禁止从战争关系改善为{new}：理由中未包含明确的和平信号"
+                    )
+                    return False
+
+            # 安全规则2：盟友关系禁止直接恶化到冲突或战争（必须经过中间状态）
+            # 这条由 abs==1 已保证，无需额外检查
+
+            return True
         except ValueError:
             return False
 

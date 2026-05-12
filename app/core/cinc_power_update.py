@@ -70,12 +70,12 @@ ACTION_CATEGORY_WEIGHTS: Dict[str, Dict[str, float]] = {
 # 各指标的scale_factor：将-1到+1的power_change映射到合理的指标变化量
 # 可通过系统配置覆盖（键名：cinc_scale_factors），默认保持以下值
 DEFAULT_INDICATOR_SCALE_FACTORS: Dict[str, float] = {
-    "milex": 10000.0,  # 万级
-    "milper": 1000.0,  # 千级
-    "irst": 5000.0,    # 万级
-    "pec": 10000.0,    # 万级
-    "tpop": 100000.0,  # 十万级
-    "upop": 50000.0,   # 万级
+    "milex": 2000.0,   # 千级
+    "milper": 200.0,   # 百级
+    "irst": 1000.0,    # 千级
+    "pec": 2000.0,     # 千级
+    "tpop": 20000.0,   # 万级
+    "upop": 10000.0,   # 万级
 }
 
 

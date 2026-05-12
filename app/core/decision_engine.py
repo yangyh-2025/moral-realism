@@ -39,6 +39,7 @@ class AgentInfo:
     national_interest: List[str] = field(default_factory=list)
     allowed_actions: List[Dict[str, Any]] = field(default_factory=list)
     strategic_relationships: Dict[int, str] = field(default_factory=dict)
+    cinc_year: Optional[int] = None
 
 
 @dataclass
@@ -325,7 +326,8 @@ class DecisionEngine:
             'current_total_power': agent_info.current_total_power,
             'power_level': agent_info.power_level,
             'leader_type': agent_info.leader_type or "未定义",
-            'national_interest': agent_info.national_interest
+            'national_interest': agent_info.national_interest,
+            'cinc_year': agent_info.cinc_year
         }
 
         # Generate situation summary for the agent
