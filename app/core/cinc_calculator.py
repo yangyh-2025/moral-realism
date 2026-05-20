@@ -10,10 +10,10 @@ cinc = (milex/Σmilex + milper/Σmilper + irst/Σirst + pec/Σpec + tpop/Σtpop 
 其中Σ为仿真体系内所有国家的对应指标总和。
 
 层级判定（基于CINC在仿真体系内的相对排名）：
-- 超级大国: 前10%
-- 大国: 10%-30%
-- 中等强国: 30%-60%
-- 小国: 后40%
+- 超级大国: 前5%
+- 大国: 5%-15%
+- 中等强国: 15%-35%
+- 小国: 后65%
 """
 
 from enum import Enum
@@ -34,10 +34,10 @@ CINC_INDICATORS = ["milex", "milper", "irst", "pec", "tpop", "upop"]
 
 
 # 层级判定阈值（基于排名分位数）
-SUPERPOWER_PERCENTILE = 0.10  # 前10%
-GREAT_POWER_PERCENTILE = 0.30  # 前30%
-MIDDLE_POWER_PERCENTILE = 0.60  # 前60%
-# 后40%为小国
+SUPERPOWER_PERCENTILE = 0.05   # 前5%
+GREAT_POWER_PERCENTILE = 0.15  # 前15%
+MIDDLE_POWER_PERCENTILE = 0.35 # 前35%
+# 后65%为小国
 
 
 class CINCCalculator:
@@ -127,10 +127,10 @@ class CINCCalculator:
         基于CINC在仿真体系内的相对排名判定国力层级
 
         排名规则：
-        - 前10%（含）: 超级大国
-        - 前10%-30%（含）: 大国
-        - 前30%-60%（含）: 中等强国
-        - 后40%: 小国
+        - 前5%（含）: 超级大国
+        - 前5%-15%（含）: 大国
+        - 前15%-35%（含）: 中等强国
+        - 后65%: 小国
 
         Args:
             cinc: 待判定国家的CINC值
@@ -203,10 +203,10 @@ class CINCCalculator:
     def get_power_level_description(level: PowerLevelEnum) -> str:
         """获取实力层级的描述信息"""
         descriptions = {
-            PowerLevelEnum.SUPERPOWER: "超级大国（CINC排名前10%）",
-            PowerLevelEnum.GREAT_POWER: "大国（CINC排名10%-30%）",
-            PowerLevelEnum.MIDDLE_POWER: "中等强国（CINC排名30%-60%）",
-            PowerLevelEnum.SMALL_STATE: "小国（CINC排名后40%）",
+            PowerLevelEnum.SUPERPOWER: "超级大国（CINC排名前5%）",
+            PowerLevelEnum.GREAT_POWER: "大国（CINC排名5%-15%）",
+            PowerLevelEnum.MIDDLE_POWER: "中等强国（CINC排名15%-35%）",
+            PowerLevelEnum.SMALL_STATE: "小国（CINC排名后65%）",
         }
         return descriptions.get(level, "未知层级")
 
