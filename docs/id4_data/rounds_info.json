@@ -1,0 +1,362 @@
+[
+  {
+    "round_num": 1,
+    "order_type": "不干涉型",
+    "respect_sov_ratio": 0.8320610687022901,
+    "has_leader": "false",
+    "leader_agent_id": 73,
+    "leader_follower_ratio": 0.3684210526315789
+  },
+  {
+    "round_num": 2,
+    "order_type": "不干涉型",
+    "respect_sov_ratio": 0.6330935251798561,
+    "has_leader": "false",
+    "leader_agent_id": 73,
+    "leader_follower_ratio": 0.3684210526315789
+  },
+  {
+    "round_num": 3,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.4794520547945205,
+    "has_leader": "false",
+    "leader_agent_id": 73,
+    "leader_follower_ratio": 0.42105263157894735
+  },
+  {
+    "round_num": 4,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.45806451612903226,
+    "has_leader": "false",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.5263157894736842
+  },
+  {
+    "round_num": 5,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.4,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.7368421052631579
+  },
+  {
+    "round_num": 6,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.3950617283950617,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.7894736842105263
+  },
+  {
+    "round_num": 7,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.36585365853658536,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.7368421052631579
+  },
+  {
+    "round_num": 8,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.25443786982248523,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.6842105263157895
+  },
+  {
+    "round_num": 9,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.19047619047619047,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.7368421052631579
+  },
+  {
+    "round_num": 10,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.15,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.7368421052631579
+  },
+  {
+    "round_num": 11,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.17857142857142858,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.6842105263157895
+  },
+  {
+    "round_num": 12,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.19318181818181818,
+    "has_leader": "false",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.47368421052631576
+  },
+  {
+    "round_num": 13,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.2655367231638418,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.631578947368421
+  },
+  {
+    "round_num": 14,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.24404761904761904,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.6842105263157895
+  },
+  {
+    "round_num": 15,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.2754491017964072,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.631578947368421
+  },
+  {
+    "round_num": 16,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.2,
+    "has_leader": "false",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.5789473684210527
+  },
+  {
+    "round_num": 17,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.21176470588235294,
+    "has_leader": "false",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.5263157894736842
+  },
+  {
+    "round_num": 18,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.23809523809523808,
+    "has_leader": "false",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.5789473684210527
+  },
+  {
+    "round_num": 19,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.1695906432748538,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.7368421052631579
+  },
+  {
+    "round_num": 20,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.1925133689839572,
+    "has_leader": "false",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.5789473684210527
+  },
+  {
+    "round_num": 21,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.1956521739130435,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.631578947368421
+  },
+  {
+    "round_num": 22,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.2303370786516854,
+    "has_leader": "false",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.5789473684210527
+  },
+  {
+    "round_num": 23,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.12299465240641712,
+    "has_leader": "false",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.5789473684210527
+  },
+  {
+    "round_num": 24,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.1388888888888889,
+    "has_leader": "false",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.5263157894736842
+  },
+  {
+    "round_num": 25,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.18128654970760233,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.631578947368421
+  },
+  {
+    "round_num": 26,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.19428571428571428,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.6842105263157895
+  },
+  {
+    "round_num": 27,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.13513513513513514,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.6842105263157895
+  },
+  {
+    "round_num": 28,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.14207650273224043,
+    "has_leader": "false",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.5789473684210527
+  },
+  {
+    "round_num": 29,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.13068181818181818,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.6842105263157895
+  },
+  {
+    "round_num": 30,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.16939890710382513,
+    "has_leader": "false",
+    "leader_agent_id": null,
+    "leader_follower_ratio": 0.0
+  },
+  {
+    "round_num": 31,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.11797752808988764,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.6842105263157895
+  },
+  {
+    "round_num": 32,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.18452380952380953,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.6842105263157895
+  },
+  {
+    "round_num": 33,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.16304347826086957,
+    "has_leader": "false",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.5789473684210527
+  },
+  {
+    "round_num": 34,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.16759776536312848,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.6842105263157895
+  },
+  {
+    "round_num": 35,
+    "order_type": "恐怖平衡型",
+    "respect_sov_ratio": 0.1329479768786127,
+    "has_leader": "false",
+    "leader_agent_id": 73,
+    "leader_follower_ratio": 0.21052631578947367
+  },
+  {
+    "round_num": 36,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.09659090909090909,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.6842105263157895
+  },
+  {
+    "round_num": 37,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.16216216216216217,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.6842105263157895
+  },
+  {
+    "round_num": 38,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.2073170731707317,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.631578947368421
+  },
+  {
+    "round_num": 39,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.21511627906976744,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.631578947368421
+  },
+  {
+    "round_num": 40,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.18235294117647058,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.631578947368421
+  },
+  {
+    "round_num": 41,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.17045454545454544,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.631578947368421
+  },
+  {
+    "round_num": 42,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.22674418604651161,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.631578947368421
+  },
+  {
+    "round_num": 43,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.17486338797814208,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.7368421052631579
+  },
+  {
+    "round_num": 44,
+    "order_type": "大棒威慑型",
+    "respect_sov_ratio": 0.1638418079096045,
+    "has_leader": "true",
+    "leader_agent_id": 75,
+    "leader_follower_ratio": 0.631578947368421
+  },
+  {
+    "round_num": 45,
+    "order_type": "未判定",
+    "respect_sov_ratio": 0.0,
+    "has_leader": "false",
+    "leader_agent_id": null,
+    "leader_follower_ratio": null
+  }
+]

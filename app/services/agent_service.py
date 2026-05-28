@@ -120,8 +120,14 @@ class AgentService:
             level = CINCCalculator.determine_power_level(cinc, all_cincs)
             return level.value if hasattr(level, 'value') else str(level)
 
-    async def _recalculate_all_cincs(self, project_id: int):
-        """重新计算项目内所有agent的CINC和层级"""
+    async def _recalculate_all_cincs(self, project_id: int, force_update_initial: bool = False):
+        """重新计算项目内所有agent的CINC和层级
+
+        Args:
+            project_id: 项目ID
+            force_update_initial: 是否强制更新所有agent的initial_total_power。
+                场景初始化时应设为True，确保所有agent的初始CINC基于完整体系统一计算。
+        """
         from app.core.cinc_calculator import CINCCalculator
         from app.core.cinc_calculator import PowerLevelEnum
 
@@ -146,8 +152,8 @@ class AgentService:
 
             for a in agents:
                 new_cinc = cincs.get(a.agent_id, 0.0)
-                # 仅在初始化时设置 initial_total_power
-                if a.initial_total_power == 0.0:
+                # 仅在初始化时设置 initial_total_power，或强制更新时覆盖
+                if a.initial_total_power == 0.0 or force_update_initial:
                     a.initial_total_power = new_cinc
                 a.current_total_power = new_cinc
                 level = levels.get(a.agent_id, PowerLevelEnum.SMALL_STATE)

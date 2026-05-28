@@ -70,12 +70,12 @@ ACTION_CATEGORY_WEIGHTS: Dict[str, Dict[str, float]] = {
 # 各指标的scale_factor：将-1到+1的power_change映射到合理的指标变化量
 # 可通过系统配置覆盖（键名：cinc_scale_factors），默认保持以下值
 DEFAULT_INDICATOR_SCALE_FACTORS: Dict[str, float] = {
-    "milex": 2000.0,   # 千级
-    "milper": 200.0,   # 百级
-    "irst": 1000.0,    # 千级
-    "pec": 2000.0,     # 千级
-    "tpop": 20000.0,   # 万级
-    "upop": 10000.0,   # 万级
+    "milex": 800.0,    # 千级（从2000降至800，降低单次军事冲击）
+    "milper": 80.0,    # 百级（从200降至80）
+    "irst": 800.0,     # 千级（从1000降至800）
+    "pec": 1600.0,     # 千级（从2000降至1600）
+    "tpop": 20000.0,   # 万级（不变，战争对人口直接影响较小）
+    "upop": 10000.0,   # 万级（不变）
 }
 
 
@@ -222,17 +222,23 @@ class CINCPowerUpdateEngine:
         max_action_change: float = 1.0,
         enable_logging: bool = True,
         scale_factors: Optional[Dict[str, float]] = None,
+        indicator_floor_ratio: float = 0.15,
+        max_cinc_change_rate: float = 0.30,
     ):
         """
         Args:
             max_action_change: 单次行为power_change的硬约束（-1到+1）
             enable_logging: 是否启用日志
             scale_factors: 自定义CINC指标scale factors（可选）
+            indicator_floor_ratio: 指标软下限比例（默认15%初始值）
+            max_cinc_change_rate: CINC单轮最大变化率（默认±30%）
         """
         self.max_action_change = max_action_change
         self.enable_logging = enable_logging
         self._scale_factors = scale_factors or DEFAULT_INDICATOR_SCALE_FACTORS.copy()
-        # 智能体状态：{agent_id: {6项指标 + cinc + power_level + name}}
+        self.indicator_floor_ratio = indicator_floor_ratio
+        self.max_cinc_change_rate = max_cinc_change_rate
+        # 智能体状态：{agent_id: {6项指标 + cinc + power_level + name + initial_*}}
         self._agents: Dict[int, Dict[str, Any]] = {}
         # 国力历史
         self._power_history: Dict[int, List[PowerHistoryEntry]] = {}
@@ -240,7 +246,9 @@ class CINCPowerUpdateEngine:
 
         logger.info(
             f"CINCPowerUpdateEngine initialized "
-            f"(max_action_change={max_action_change})"
+            f"(max_action_change={max_action_change}, "
+            f"floor_ratio={indicator_floor_ratio}, "
+            f"max_change_rate={max_cinc_change_rate})"
         )
 
     def load_agents(self, agents: List[Dict[str, Any]]) -> None:
@@ -268,6 +276,11 @@ class CINCPowerUpdateEngine:
                 "cinc": float(agent.get("cinc", 0)),
                 "power_level": agent.get("power_level", PowerLevelEnum.SMALL_STATE),
             }
+            # 保存初始指标值用于软下限计算
+            for ind in CINC_INDICATORS:
+                init_key = f"initial_{ind}"
+                if init_key not in self._agents[aid]:
+                    self._agents[aid][init_key] = self._agents[aid][ind]
             self._power_history.setdefault(aid, [])
 
         logger.info(f"Loaded {len(self._agents)} agents into CINC engine")
@@ -373,16 +386,37 @@ class CINCPowerUpdateEngine:
             aid: agent["power_level"] for aid, agent in self._agents.items()
         }
 
-        # Step 2: 聚合并应用指标变化
+        # Step 2: 聚合并应用指标变化（带软下限保护）
         agent_changes = self._aggregate_round_changes(action_records)
 
         for aid, (change, _) in agent_changes.items():
             agent = self._agents[aid]
             for ind in CINC_INDICATORS:
                 delta = getattr(change, f"{ind}_delta", 0.0)
-                new_val = agent[ind] + delta
-                # 确保指标不为负
-                agent[ind] = max(0.0, new_val)
+                current = agent[ind]
+
+                # 软下限保护：指标不能低于初始值的15%
+                init_key = f"initial_{ind}"
+                initial = agent.get(init_key, current)
+                if init_key not in agent:
+                    agent[init_key] = current
+                    initial = current
+
+                floor = initial * self.indicator_floor_ratio
+
+                if delta < 0:  # 负向变化才衰减
+                    if current > floor:
+                        distance = (current - floor) / max(initial - floor, 1.0)
+                        attenuation = min(1.0, distance ** 0.5)
+                        effective_delta = delta * attenuation
+                    else:
+                        effective_delta = 0.0
+                else:
+                    effective_delta = delta
+
+                new_val = current + effective_delta
+                # 硬保底线为软下限的50%（绝对底线）
+                agent[ind] = max(floor * 0.5, new_val)
 
         # Step 3: 全局重算CINC
         agents_indicators = [
@@ -394,7 +428,30 @@ class CINCPowerUpdateEngine:
         ]
         new_cincs = CINCCalculator.calculate_all_cincs(agents_indicators)
 
-        # Step 4: 全局重算层级
+        # === 新增：CINC变化率上限截断 ===
+        for aid in list(new_cincs.keys()):
+            old = old_cincs.get(aid, new_cincs[aid])
+            new = new_cincs[aid]
+            if old > 0:
+                rate = (new - old) / old
+                if rate > self.max_cinc_change_rate:
+                    new_cincs[aid] = old * (1 + self.max_cinc_change_rate)
+                    if self.enable_logging:
+                        logger.warning(
+                            f"国家{self._agents[aid]['agent_name']} CINC正向变化"
+                            f"{rate:+.1%} 超过上限{self.max_cinc_change_rate:.1%}，"
+                            f"截断至 {new_cincs[aid]:.6f}"
+                        )
+                elif rate < -self.max_cinc_change_rate:
+                    new_cincs[aid] = old * (1 - self.max_cinc_change_rate)
+                    if self.enable_logging:
+                        logger.warning(
+                            f"国家{self._agents[aid]['agent_name']} CINC负向变化"
+                            f"{rate:+.1%} 超过下限-{self.max_cinc_change_rate:.1%}，"
+                            f"截断至 {new_cincs[aid]:.6f}"
+                        )
+
+        # Step 4: 全局重算层级（使用截断后的CINC）
         new_levels = CINCCalculator.determine_all_power_levels(new_cincs)
 
         # Step 5: 应用结果并记录
@@ -410,9 +467,9 @@ class CINCPowerUpdateEngine:
             agent["power_level"] = new_level
 
             cinc_change = new_cinc - old_cinc
-            # 对数变化率（百分点），避免极小起点放大效应
-            if old_cinc > 0 and new_cinc > 0:
-                change_rate = math.log(new_cinc / old_cinc) * 100.0
+            # 使用常规百分比变化率，避免对数在接近0时爆炸
+            if old_cinc > 1e-6:
+                change_rate = (new_cinc - old_cinc) / old_cinc * 100.0
             else:
                 change_rate = 0.0
             passive = action_count == 0

@@ -1,0 +1,104 @@
+[
+  {
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 4492
+  },
+  {
+    "action_name": "开展外交合作",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 609
+  },
+  {
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 551
+  },
+  {
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 473
+  },
+  {
+    "action_name": "表达不满/不赞成",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 393
+  },
+  {
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 344
+  },
+  {
+    "action_name": "交战/使用常规军事武力",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 284
+  },
+  {
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 238
+  },
+  {
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 155
+  },
+  {
+    "action_name": "协商/磋商",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 87
+  },
+  {
+    "action_name": "发表公开声明",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 81
+  },
+  {
+    "action_name": "降级关系",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 14
+  },
+  {
+    "action_name": "呼吁/请求",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 10
+  },
+  {
+    "action_name": "要求/索要",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 3
+  },
+  {
+    "action_name": "拒绝",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 3
+  },
+  {
+    "action_name": "攻击/袭击",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 2
+  },
+  {
+    "action_name": "抗议",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 1
+  }
+]

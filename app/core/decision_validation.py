@@ -157,6 +157,66 @@ class DecisionValidator:
 
         return True, ""
 
+    def validate_action_prerequisites(
+        self,
+        action: Dict[str, Any],
+        strategic_relationships: Dict[int, str],
+        action_history: List[Dict[str, Any]]
+    ) -> Tuple[bool, str]:
+        """
+        验证行为是否满足前置条件（关系状态、历史互动等）。
+
+        Args:
+            action: 行为字典，包含 action_id, action_name, target_agent_id
+            strategic_relationships: 当前agent与各国的战略关系映射 {target_id: relationship_type}
+            action_history: 历史行为记录列表
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        action_id = action.get('action_id')
+        target_id = action.get('target_agent_id')
+
+        # 获取行为名称
+        standard_action = self.behavior_id_map.get(action_id)
+        if not standard_action:
+            return True, ""  # 不在标准行为集中，由validate_behavior_set处理
+        action_name = standard_action.get('action_name', '')
+
+        rel = strategic_relationships.get(target_id, "无外交关系")
+
+        # 规则1: 交战/使用常规军事武力 仅在冲突/战争关系下可选
+        if action_name == "交战/使用常规军事武力":
+            if rel not in ["冲突关系", "战争关系"]:
+                return False, (
+                    f"交战行为要求与目标国(ID:{target_id})的关系为冲突或战争，"
+                    f"当前关系为'{rel}'。请先选择'展示军事姿态'或'威胁'铺垫。"
+                )
+
+        # 规则2: 攻击/袭击 仅在冲突/战争关系下可选
+        if action_name == "攻击/袭击":
+            if rel not in ["冲突关系", "战争关系"]:
+                return False, (
+                    f"攻击行为要求与目标国(ID:{target_id})的关系为冲突或战争，"
+                    f"当前关系为'{rel}'。"
+                )
+
+        # 规则3: 胁迫/强制 需要至少1轮的展示军事姿态或威胁铺垫
+        if action_name == "胁迫/强制":
+            # 检查最近5轮是否有对目标国的军事姿态或威胁
+            recent_prelude = [
+                r for r in action_history
+                if r.get('target_agent_id') == target_id
+                and r.get('action_name') in ['展示军事姿态', '威胁']
+            ]
+            if not recent_prelude:
+                return False, (
+                    f"胁迫/强制行为需要对目标国(ID:{target_id})"
+                    f"有过'展示军事姿态'或'威胁'作为铺垫。请先选择较低烈度行为。"
+                )
+
+        return True, ""
+
     def validate_full_decision(
         self,
         decision: Dict[str, Any],
@@ -164,7 +224,9 @@ class DecisionValidator:
         allowed_actions: List[Dict[str, Any]],
         all_agent_ids: List[int],
         national_interests: List[str],
-        action_stage: str = "initiative"
+        action_stage: str = "initiative",
+        strategic_relationships: Dict[int, str] = None,
+        action_history: List[Dict[str, Any]] = None
     ) -> Tuple[bool, List[str]]:
         """
         Execute full three-tier validation.
@@ -176,6 +238,8 @@ class DecisionValidator:
             all_agent_ids: List of all valid agent IDs
             national_interests: List of national interests
             action_stage: Current action stage
+            strategic_relationships: 当前agent与各国的战略关系映射
+            action_history: 历史行为记录列表
 
         Returns:
             Tuple of (is_valid, list_of_error_messages)
@@ -204,6 +268,18 @@ class DecisionValidator:
         if not is_valid:
             errors.append(f"[Tier 2 基础校验] {error}")
             return False, errors
+
+        # Tier 3: Action prerequisites validation (新增)
+        if strategic_relationships and action_history is not None:
+            for action in decision.get('actions', []):
+                is_valid, error = self.validate_action_prerequisites(
+                    action, strategic_relationships, action_history
+                )
+                if not is_valid:
+                    errors.append(f"[Tier 3 前置条件校验] {error}")
+
+            if errors:
+                return False, errors
 
         return True, []
 

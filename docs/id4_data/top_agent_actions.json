@@ -1,0 +1,1170 @@
+[
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 74,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 35
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 75,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 29
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 74,
+    "action_name": "交战/使用常规军事武力",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 25
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 76,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 20
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 82,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 20
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 76,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 19
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 77,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 19
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 77,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 19
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 75,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 18
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 74,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 17
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 82,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 17
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 77,
+    "action_name": "开展外交合作",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 16
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 85,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 16
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 76,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 12
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 75,
+    "action_name": "交战/使用常规军事武力",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 11
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 82,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 10
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 76,
+    "action_name": "交战/使用常规军事武力",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 9
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 83,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 9
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 81,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 8
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 90,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 7
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 74,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 5
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 81,
+    "action_name": "交战/使用常规军事武力",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 5
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 81,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 5
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 85,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 5
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 87,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 5
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 89,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 5
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 83,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 4
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 91,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 4
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 75,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 3
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 79,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 3
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 84,
+    "action_name": "开展外交合作",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 3
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 84,
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 3
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 91,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 3
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 78,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 78,
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 79,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 81,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 2
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 81,
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 86,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 2
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 86,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 2
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 86,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 2
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 89,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 74,
+    "action_name": "降级关系",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 75,
+    "action_name": "降级关系",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 76,
+    "action_name": "表达不满/不赞成",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 78,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 80,
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 81,
+    "action_name": "表达不满/不赞成",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 85,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 89,
+    "action_name": "开展外交合作",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 90,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 90,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 73,
+    "target_agent_id": 91,
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 73,
+    "action_name": "交战/使用常规军事武力",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 56
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 77,
+    "action_name": "交战/使用常规军事武力",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 53
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 79,
+    "action_name": "交战/使用常规军事武力",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 47
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 78,
+    "action_name": "交战/使用常规军事武力",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 39
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 75,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 27
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 73,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 25
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 79,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 21
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 77,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 12
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 84,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 12
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 89,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 11
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 77,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 10
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 75,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 8
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 77,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 7
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 79,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 7
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 80,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 6
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 73,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 5
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 75,
+    "action_name": "开展外交合作",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 5
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 78,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 5
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 80,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 5
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 73,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 4
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 84,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 4
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 89,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 4
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 76,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 3
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 78,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 3
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 76,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 80,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 2
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 76,
+    "action_name": "开展外交合作",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 77,
+    "action_name": "发表公开声明",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 78,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 79,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 79,
+    "action_name": "攻击/袭击",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 79,
+    "action_name": "要求/索要",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 80,
+    "action_name": "降级关系",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 82,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 84,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 84,
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 89,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 74,
+    "target_agent_id": 91,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 73,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 47
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 74,
+    "action_name": "开展外交合作",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 44
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 77,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 40
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 73,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 21
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 74,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 21
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 78,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 19
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 76,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 18
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 74,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 16
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 76,
+    "action_name": "开展外交合作",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 15
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 77,
+    "action_name": "表达不满/不赞成",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 15
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 79,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 15
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 77,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 14
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 82,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 13
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 78,
+    "action_name": "表达不满/不赞成",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 12
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 76,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 10
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 73,
+    "action_name": "表达不满/不赞成",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 8
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 73,
+    "action_name": "发表公开声明",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 7
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 77,
+    "action_name": "发表公开声明",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 6
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 78,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 6
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 79,
+    "action_name": "展示军事姿态",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 6
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 91,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 5
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 79,
+    "action_name": "表达不满/不赞成",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 4
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 80,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 4
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 84,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 4
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 73,
+    "action_name": "交战/使用常规军事武力",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 3
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 76,
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 3
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 84,
+    "action_name": "表达不满/不赞成",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 3
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 89,
+    "action_name": "威胁",
+    "action_category": "信息手段",
+    "respect_sov": false,
+    "count": 3
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 74,
+    "action_name": "协商/磋商",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 77,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 2
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 80,
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 82,
+    "action_name": "协商/磋商",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 82,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 83,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 91,
+    "action_name": "开展外交合作",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 2
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 73,
+    "action_name": "降级关系",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 76,
+    "action_name": "协商/磋商",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 77,
+    "action_name": "交战/使用常规军事武力",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 77,
+    "action_name": "拒绝",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 77,
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 77,
+    "action_name": "降级关系",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 78,
+    "action_name": "协商/磋商",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 78,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 79,
+    "action_name": "胁迫/强制",
+    "action_category": "军事手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 80,
+    "action_name": "呼吁/请求",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 80,
+    "action_name": "开展实质性合作",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 80,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 80,
+    "action_name": "表达不满/不赞成",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 84,
+    "action_name": "开展外交合作",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 84,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 84,
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 89,
+    "action_name": "开展外交合作",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 89,
+    "action_name": "表达不满/不赞成",
+    "action_category": "外交手段",
+    "respect_sov": false,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 89,
+    "action_name": "表达合作意向",
+    "action_category": "外交手段",
+    "respect_sov": true,
+    "count": 1
+  },
+  {
+    "source_agent_id": 75,
+    "target_agent_id": 91,
+    "action_name": "提供援助",
+    "action_category": "经济手段",
+    "respect_sov": true,
+    "count": 1
+  }
+]

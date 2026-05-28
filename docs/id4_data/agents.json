@@ -1,0 +1,173 @@
+[
+  {
+    "agent_id": 73,
+    "agent_name": "强国甲",
+    "country_code": 255,
+    "initial_total_power": 0.236963,
+    "current_total_power": 0.094185,
+    "power_level": "大国",
+    "leader_type": "霸权型"
+  },
+  {
+    "agent_id": 74,
+    "agent_name": "强国乙",
+    "country_code": 365,
+    "initial_total_power": 0.189221,
+    "current_total_power": 0.107706,
+    "power_level": "大国",
+    "leader_type": "强权型"
+  },
+  {
+    "agent_id": 75,
+    "agent_name": "强国丙",
+    "country_code": 200,
+    "initial_total_power": 0.187181,
+    "current_total_power": 0.196845,
+    "power_level": "超级大国",
+    "leader_type": "王道型"
+  },
+  {
+    "agent_id": 76,
+    "agent_name": "中等国甲",
+    "country_code": 220,
+    "initial_total_power": 0.106469,
+    "current_total_power": 0.073574,
+    "power_level": "中等强国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 77,
+    "agent_name": "中等国乙",
+    "country_code": 300,
+    "initial_total_power": 0.073395,
+    "current_total_power": 0.017233,
+    "power_level": "小国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 78,
+    "agent_name": "中等国丙",
+    "country_code": 325,
+    "initial_total_power": 0.05207,
+    "current_total_power": 0.02191,
+    "power_level": "小国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 79,
+    "agent_name": "小国甲",
+    "country_code": 640,
+    "initial_total_power": 0.026175,
+    "current_total_power": 0.007046,
+    "power_level": "小国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 82,
+    "agent_name": "小国丁",
+    "country_code": 211,
+    "initial_total_power": 0.024398,
+    "current_total_power": 0.021788,
+    "power_level": "小国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 81,
+    "agent_name": "小国丙",
+    "country_code": 230,
+    "initial_total_power": 0.023739,
+    "current_total_power": 0.034533,
+    "power_level": "小国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 80,
+    "agent_name": "小国乙",
+    "country_code": 355,
+    "initial_total_power": 0.020345,
+    "current_total_power": 0.055377,
+    "power_level": "小国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 84,
+    "agent_name": "小国己",
+    "country_code": 380,
+    "initial_total_power": 0.011323,
+    "current_total_power": 0.005393,
+    "power_level": "小国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 85,
+    "agent_name": "小国庚",
+    "country_code": 210,
+    "initial_total_power": 0.011274,
+    "current_total_power": 0.044687,
+    "power_level": "小国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 83,
+    "agent_name": "小国戊",
+    "country_code": 350,
+    "initial_total_power": 0.009864,
+    "current_total_power": 0.013632,
+    "power_level": "小国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 86,
+    "agent_name": "小国辛",
+    "country_code": 360,
+    "initial_total_power": 0.008176,
+    "current_total_power": 0.07071,
+    "power_level": "中等强国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 87,
+    "agent_name": "小国壬",
+    "country_code": 235,
+    "initial_total_power": 0.005704,
+    "current_total_power": 0.079662,
+    "power_level": "中等强国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 89,
+    "agent_name": "小国子",
+    "country_code": 225,
+    "initial_total_power": 0.004148,
+    "current_total_power": 0.004622,
+    "power_level": "小国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 88,
+    "agent_name": "小国癸",
+    "country_code": 390,
+    "initial_total_power": 0.004134,
+    "current_total_power": 0.085058,
+    "power_level": "中等强国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 90,
+    "agent_name": "小国丑",
+    "country_code": 345,
+    "initial_total_power": 0.002788,
+    "current_total_power": 0.021835,
+    "power_level": "小国",
+    "leader_type": null
+  },
+  {
+    "agent_id": 91,
+    "agent_name": "小国寅",
+    "country_code": 385,
+    "initial_total_power": 0.002634,
+    "current_total_power": 0.044204,
+    "power_level": "小国",
+    "leader_type": null
+  }
+]

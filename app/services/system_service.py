@@ -19,8 +19,9 @@ from app.models import SystemConfig
 
 
 # 系统配置默认值（首次启动或DB无值时使用）
+# LLM 配置优先使用 .env，无 .env 则留空由用户在系统配置页面填写
 DEFAULT_CONFIG: Dict[str, Any] = {
-    "llm_model_name": os.getenv("LLM_MODEL", "gpt-4"),
+    "llm_model_name": os.getenv("LLM_MODEL", ""),
     "llm_api_key": os.getenv("OPENAI_API_KEY", ""),
     "llm_api_base": os.getenv("OPENAI_API_BASE", ""),
     "llm_timeout": int(os.getenv("LLM_TIMEOUT", "60")),
@@ -113,7 +114,7 @@ class SystemConfigService:
 
             new_cfg = LLMConfig(
                 provider="openai",
-                model_name=self._config.get("llm_model_name", "gpt-4"),
+                model_name=self._config.get("llm_model_name", ""),
                 api_key=self._config.get("llm_api_key", ""),
                 api_base=self._config.get("llm_api_base", "") or "",
                 max_tokens=int(os.getenv("LLM_MAX_TOKENS", "2000")),

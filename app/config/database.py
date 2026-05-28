@@ -603,7 +603,7 @@ async def _init_system_config(session: AsyncSession) -> None:
     configs = [
         {
             "config_key": "llm_model_name",
-            "config_value": "gpt-4-turbo",
+            "config_value": "",
             "config_desc": "LLM模型名称",
         },
         {

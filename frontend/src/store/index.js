@@ -27,7 +27,7 @@ export const useAppStore = defineStore('app', () => {
 
   // 系统配置数据
   const systemConfig = ref({
-    llmModelName: 'gpt-4', // LLM模型名称
+    llmModelName: '', // LLM模型名称（由用户在系统配置中填写）
     llmApiKey: '', // LLM API密钥
     llmApiBase: '', // LLM API基础地址
     llmTimeout: 120, // LLM超时时间（秒）

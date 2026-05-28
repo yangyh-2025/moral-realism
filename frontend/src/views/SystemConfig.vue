@@ -50,7 +50,7 @@
 
         <!-- LLM模型名称 -->
         <el-form-item label="LLM 模型名称">
-          <el-input v-model="config.llmModelName" placeholder="例如：gpt-4" />
+          <el-input v-model="config.llmModelName" placeholder="请输入模型名称" />
           <div class="hint">OpenAI 模型名称或其他兼容模型的名称</div>
         </el-form-item>
 
@@ -185,7 +185,7 @@ import { getSystemConfig, updateSystemConfig } from '@/api/system'
 
 // 系统配置默认值
 const config = ref({
-  llmModelName: 'gpt-4',
+  llmModelName: '',
   llmApiKey: '',
   llmApiBase: '',
   llmTimeout: 120,
@@ -246,7 +246,7 @@ async function saveConfig() {
  */
 function resetConfig() {
   config.value = {
-    llmModelName: 'gpt-4',
+    llmModelName: '',
     llmApiKey: '',
     llmApiBase: '',
     llmTimeout: 120,

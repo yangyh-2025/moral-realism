@@ -262,6 +262,10 @@ class SceneService:
         """
         从CINC数据创建智能体的通用方法
 
+        修复：先批量保存所有agent的6项指标（不触发CINC重算），
+        待所有agent入库后再统一计算CINC，确保所有agent的initial_total_power
+        基于相同规模的完整体系统一计算。
+
         Args:
             project_id: 项目ID
             loader: CINC数据加载器
@@ -271,21 +275,32 @@ class SceneService:
         Returns:
             {index: agent_id}
         """
+        from app.models import AgentConfig
+        from app.config.database import db_config
+
         agent_map: Dict[int, int] = {}
+        raw_records: List[Tuple[int, str, Optional[str], Any]] = []
+
+        # 第一步：收集所有CINC原始数据
         for idx, (alias, abb, leader) in enumerate(countries, start=1):
             record = loader.get_record_by_abb(abb, year)
             if record is None:
-                # 兜底：用最近年份的数据
                 for offset in [1, -1, 2, -2, 3, -3]:
                     record = loader.get_record_by_abb(abb, year + offset)
                     if record:
                         break
             if record is None:
                 continue
+            raw_records.append((idx, alias, leader, record))
 
-            result = await agent_service.add_agent(
-                project_id,
-                AgentConfigRequest(
+        if not raw_records:
+            return agent_map
+
+        # 第二步：批量保存所有agent（不计算CINC，initial/current均设为0）
+        async for session in db_config.get_session():
+            for idx, alias, leader, record in raw_records:
+                agent = AgentConfig(
+                    project_id=project_id,
                     agent_name=alias,
                     region="欧洲",
                     milex=record.milex,
@@ -294,12 +309,34 @@ class SceneService:
                     pec=record.pec,
                     tpop=record.tpop,
                     upop=record.upop,
+                    initial_total_power=0.0,
+                    current_total_power=0.0,
+                    power_level="小国",
                     country_code=record.ccode,
                     cinc_year=year,
                     leader_type=leader,
-                ),
-            )
-            agent_map[idx] = result["agent_id"]
+                )
+                session.add(agent)
+            await session.commit()
+
+            # 刷新以获取agent_id
+            for idx, alias, leader, record in raw_records:
+                # 通过名称和项目ID查询刚添加的agent
+                from sqlalchemy import select
+                result = await session.execute(
+                    select(AgentConfig).where(
+                        AgentConfig.project_id == project_id,
+                        AgentConfig.agent_name == alias,
+                    )
+                )
+                agent = result.scalar_one_or_none()
+                if agent:
+                    agent_map[idx] = agent.agent_id
+
+        # 第三步：所有agent入库后，统一计算CINC（force_update_initial=True）
+        await agent_service._recalculate_all_cincs(
+            project_id, force_update_initial=True
+        )
 
         return agent_map
 

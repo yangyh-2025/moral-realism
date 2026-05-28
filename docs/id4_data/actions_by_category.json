@@ -1,0 +1,27 @@
+[
+  {
+    "category": "信息手段",
+    "respect_sov": false,
+    "count": 4492
+  },
+  {
+    "category": "军事手段",
+    "respect_sov": false,
+    "count": 1103
+  },
+  {
+    "category": "外交手段",
+    "respect_sov": false,
+    "count": 397
+  },
+  {
+    "category": "外交手段",
+    "respect_sov": true,
+    "count": 1042
+  },
+  {
+    "category": "经济手段",
+    "respect_sov": true,
+    "count": 706
+  }
+]

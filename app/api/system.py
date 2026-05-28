@@ -71,7 +71,7 @@ def _config_dict_to_response(config_dict: dict) -> SystemConfigResponse:
             return None
 
     return SystemConfigResponse(
-        llmModelName=config_dict.get("llm_model_name", "gpt-4"),
+        llmModelName=config_dict.get("llm_model_name", ""),
         llmApiKey=config_dict.get("llm_api_key", ""),
         llmApiBase=config_dict.get("llm_api_base"),
         llmTimeout=safe_int(config_dict.get("llm_timeout"), 60),

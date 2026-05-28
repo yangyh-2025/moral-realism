@@ -730,6 +730,57 @@ class SimulationService:
             f"(产生 {len(records)} 条行为记录) ==========\n"
         )
 
+        # 后处理：行为前置条件硬性过滤（兜底，防止LLM输出不合规行为）
+        filtered_records = []
+        for record in records:
+            action_name = record.get('action_name', '')
+            source_id = record.get('source_agent_id')
+            target_id = record.get('target_agent_id')
+
+            # 获取source与target的战略关系
+            source_rels = strategic_relationships.get(source_id, {})
+            rel = source_rels.get(target_id, '无外交关系')
+
+            # 规则1: 交战/使用常规军事武力 仅在冲突/战争关系下允许
+            if action_name == '交战/使用常规军事武力' and rel not in ['冲突关系', '战争关系']:
+                logger.warning(
+                    f"[后处理过滤] 交战行为不合规: 国家{source_id}->{target_id}, "
+                    f"关系='{rel}'(需要冲突/战争)，已过滤"
+                )
+                continue
+
+            # 规则2: 攻击/袭击 仅在冲突/战争关系下允许
+            if action_name == '攻击/袭击' and rel not in ['冲突关系', '战争关系']:
+                logger.warning(
+                    f"[后处理过滤] 攻击行为不合规: 国家{source_id}->{target_id}, "
+                    f"关系='{rel}'(需要冲突/战争)，已过滤"
+                )
+                continue
+
+            # 规则3: 胁迫/强制 需要历史铺垫
+            if action_name == '胁迫/强制':
+                has_prelude = any(
+                    r.get('source_agent_id') == source_id
+                    and r.get('target_agent_id') == target_id
+                    and r.get('action_name') in ['展示军事姿态', '威胁']
+                    for r in history_action_records
+                )
+                if not has_prelude:
+                    logger.warning(
+                        f"[后处理过滤] 胁迫行为不合规: 国家{source_id}->{target_id}, "
+                        f"缺少展示军事姿态/威胁铺垫，已过滤"
+                    )
+                    continue
+
+            filtered_records.append(record)
+
+        if len(filtered_records) < len(records):
+            logger.info(
+                f"[后处理过滤] 原{len(records)}条记录，过滤后{len(filtered_records)}条，"
+                f"过滤掉{len(records) - len(filtered_records)}条不合规行为"
+            )
+        records = filtered_records
+
         # 保存记录到数据库
         if records:
             async for session in db_config.get_session():

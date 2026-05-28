@@ -40,7 +40,7 @@ class LLMConfig:
     - 重试策略配置
     """
     provider: str = "openai"  # LLM服务提供商
-    model_name: str = "gpt-4"  # 模型名称
+    model_name: str = ""  # 模型名称（由用户在系统配置中填写）
     api_key: str = ""  # API密钥
     api_base: str = ""  # 可选的自定义API基础URL
     max_tokens: int = 2000  # 最大生成令牌数
@@ -92,7 +92,7 @@ class LLMService:
         """
         return LLMConfig(
             provider=os.getenv("LLM_PROVIDER", "openai"),
-            model_name=os.getenv("LLM_MODEL", "gpt-4"),
+            model_name=os.getenv("LLM_MODEL", ""),
             api_key=os.getenv("OPENAI_API_KEY", ""),
             api_base=os.getenv("OPENAI_API_BASE", ""),
             max_tokens=int(os.getenv("LLM_MAX_TOKENS", "2000")),

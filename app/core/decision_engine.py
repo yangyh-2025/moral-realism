@@ -699,14 +699,16 @@ class DecisionEngine:
             if 'agent_id' in agent
         ]
 
-        # Execute full validation
+        # Execute full validation (含新增Tier 3行为前置条件校验)
         is_valid, errors = self.validator.validate_full_decision(
             decision=decision,
             agent_info=agent_dict,
             allowed_actions=allowed_actions,
             all_agent_ids=all_agent_ids,
             national_interests=agent_info.national_interest,
-            action_stage=action_stage.value
+            action_stage=action_stage.value,
+            strategic_relationships=agent_info.strategic_relationships,
+            action_history=info_pool.history_action_records
         )
 
         return is_valid, errors
