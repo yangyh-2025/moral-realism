@@ -1,0 +1,384 @@
+{
+  "project_id": 5,
+  "total_rounds": 50,
+  "total_actions": 8349,
+  "total_agents": 19,
+  "total_follower_records": 969,
+  "per_agent_action_counts": {
+    "92_Germany": 477,
+    "93_Russia": 452,
+    "94_UK": 453,
+    "95_France": 418,
+    "96_Italy": 475,
+    "97_Austria-Hungary": 450,
+    "98_Ottoman Empire": 476,
+    "99_Bulgaria": 398,
+    "100_Spain": 403,
+    "101_Belgium": 436,
+    "102_Greece": 456,
+    "103_Sweden": 404,
+    "104_Netherlands": 424,
+    "105_Romania": 426,
+    "106_Portugal": 440,
+    "107_Denmark": 453,
+    "108_Switzerland": 376,
+    "109_Serbia": 484,
+    "110_Norway": 448
+  },
+  "per_round_follower_counts": {
+    "1": 17,
+    "2": 16,
+    "3": 17,
+    "4": 17,
+    "5": 17,
+    "6": 17,
+    "7": 17,
+    "8": 17,
+    "9": 17,
+    "10": 34,
+    "11": 16,
+    "12": 17,
+    "13": 17,
+    "14": 17,
+    "15": 17,
+    "16": 17,
+    "17": 17,
+    "18": 16,
+    "19": 17,
+    "20": 15,
+    "21": 15,
+    "22": 15,
+    "23": 14,
+    "24": 15,
+    "25": 16,
+    "26": 16,
+    "27": 14,
+    "28": 14,
+    "29": 14,
+    "30": 15,
+    "31": 15,
+    "32": 15,
+    "33": 14,
+    "34": 0,
+    "35": 15,
+    "36": 15,
+    "37": 15,
+    "38": 14,
+    "39": 15,
+    "40": 14,
+    "41": 12,
+    "42": 8,
+    "43": 12,
+    "44": 11,
+    "45": 8,
+    "46": 9,
+    "47": 10,
+    "48": 11,
+    "49": 12,
+    "50": 0
+  },
+  "round_order_types": {
+    "1": "不干涉型",
+    "2": "大棒威慑型",
+    "3": "大棒威慑型",
+    "4": "大棒威慑型",
+    "5": "大棒威慑型",
+    "6": "大棒威慑型",
+    "7": "大棒威慑型",
+    "8": "大棒威慑型",
+    "9": "大棒威慑型",
+    "10": "大棒威慑型",
+    "11": "大棒威慑型",
+    "12": "大棒威慑型",
+    "13": "大棒威慑型",
+    "14": "大棒威慑型",
+    "15": "大棒威慑型",
+    "16": "大棒威慑型",
+    "17": "大棒威慑型",
+    "18": "大棒威慑型",
+    "19": "大棒威慑型",
+    "20": "大棒威慑型",
+    "21": "大棒威慑型",
+    "22": "大棒威慑型",
+    "23": "大棒威慑型",
+    "24": "大棒威慑型",
+    "25": "大棒威慑型",
+    "26": "大棒威慑型",
+    "27": "大棒威慑型",
+    "28": "大棒威慑型",
+    "29": "大棒威慑型",
+    "30": "大棒威慑型",
+    "31": "大棒威慑型",
+    "32": "大棒威慑型",
+    "33": "大棒威慑型",
+    "34": "恐怖平衡型",
+    "35": "大棒威慑型",
+    "36": "大棒威慑型",
+    "37": "大棒威慑型",
+    "38": "大棒威慑型",
+    "39": "大棒威慑型",
+    "40": "大棒威慑型",
+    "41": "大棒威慑型",
+    "42": "恐怖平衡型",
+    "43": "大棒威慑型",
+    "44": "恐怖平衡型",
+    "45": "恐怖平衡型",
+    "46": "恐怖平衡型",
+    "47": "恐怖平衡型",
+    "48": "恐怖平衡型",
+    "49": "恐怖平衡型",
+    "50": "恐怖平衡型"
+  },
+  "leaders_by_round": {
+    "1": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "false"
+    },
+    "2": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "3": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "4": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "5": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "6": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "7": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "8": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "9": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "10": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "11": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "12": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "13": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "14": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "15": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "16": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "17": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "18": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "19": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "20": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "21": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "22": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "23": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "24": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "25": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "26": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "27": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "28": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "29": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "30": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "31": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "32": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "33": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "34": {
+      "leader_agent_id": null,
+      "leader_name": null,
+      "has_leader": "false"
+    },
+    "35": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "36": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "37": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "38": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "39": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "40": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "41": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "42": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "false"
+    },
+    "43": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "true"
+    },
+    "44": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "false"
+    },
+    "45": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "false"
+    },
+    "46": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "false"
+    },
+    "47": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "false"
+    },
+    "48": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "false"
+    },
+    "49": {
+      "leader_agent_id": 94,
+      "leader_name": "UK",
+      "has_leader": "false"
+    },
+    "50": {
+      "leader_agent_id": null,
+      "leader_name": null,
+      "has_leader": "false"
+    }
+  }
+}

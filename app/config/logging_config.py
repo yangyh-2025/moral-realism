@@ -32,7 +32,7 @@ def setup_logging(
     if log_to_file:
         log_path.mkdir(parents=True, exist_ok=True)
 
-    # 控制台输出配置 - 彩色格式化输出
+    # 控制台输出配置 - 彩色格式化输出（flush=True 确保子进程管道下实时输出）
     logger.add(
         sys.stdout,
         format=(

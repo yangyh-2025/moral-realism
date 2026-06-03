@@ -1,0 +1,1010 @@
+{
+  "project_id": 5,
+  "validation_type": "F1 Score Validation V2",
+  "simulation_description": "Pre-WWI 1913 Europe ABM (ID5)",
+  "num_agents": 19,
+  "total_rounds_evaluated": 50,
+  "key_distinctions": [
+    "追随≠同盟: ground truth based on historical diplomatic behavior, not alliance blocs",
+    "Great powers (DE/RU/UK) are leaders (None), not followers",
+    "All non-superpower countries have a following target based on historical diplomatic ties"
+  ],
+  "dimension1_following_f1": {
+    "overall": {
+      "tp": 423,
+      "fp": 285,
+      "fn": 139,
+      "tn": 103,
+      "precision": 0.5975,
+      "recall": 0.7527,
+      "f1": 0.6661
+    },
+    "per_round": [
+      {
+        "round": 1,
+        "tp": 11,
+        "fp": 6,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.6471,
+        "recall": 1.0,
+        "f1": 0.7857
+      },
+      {
+        "round": 2,
+        "tp": 7,
+        "fp": 9,
+        "fn": 1,
+        "tn": 2,
+        "precision": 0.4375,
+        "recall": 0.875,
+        "f1": 0.5833
+      },
+      {
+        "round": 3,
+        "tp": 9,
+        "fp": 8,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.5294,
+        "recall": 1.0,
+        "f1": 0.6923
+      },
+      {
+        "round": 4,
+        "tp": 8,
+        "fp": 9,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.4706,
+        "recall": 1.0,
+        "f1": 0.64
+      },
+      {
+        "round": 5,
+        "tp": 10,
+        "fp": 7,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.5882,
+        "recall": 1.0,
+        "f1": 0.7407
+      },
+      {
+        "round": 6,
+        "tp": 10,
+        "fp": 7,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.5882,
+        "recall": 1.0,
+        "f1": 0.7407
+      },
+      {
+        "round": 7,
+        "tp": 9,
+        "fp": 8,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.5294,
+        "recall": 1.0,
+        "f1": 0.6923
+      },
+      {
+        "round": 8,
+        "tp": 10,
+        "fp": 7,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.5882,
+        "recall": 1.0,
+        "f1": 0.7407
+      },
+      {
+        "round": 9,
+        "tp": 10,
+        "fp": 7,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.5882,
+        "recall": 1.0,
+        "f1": 0.7407
+      },
+      {
+        "round": 10,
+        "tp": 10,
+        "fp": 7,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.5882,
+        "recall": 1.0,
+        "f1": 0.7407
+      },
+      {
+        "round": 11,
+        "tp": 9,
+        "fp": 7,
+        "fn": 1,
+        "tn": 2,
+        "precision": 0.5625,
+        "recall": 0.9,
+        "f1": 0.6923
+      },
+      {
+        "round": 12,
+        "tp": 11,
+        "fp": 6,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.6471,
+        "recall": 1.0,
+        "f1": 0.7857
+      },
+      {
+        "round": 13,
+        "tp": 11,
+        "fp": 6,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.6471,
+        "recall": 1.0,
+        "f1": 0.7857
+      },
+      {
+        "round": 14,
+        "tp": 10,
+        "fp": 7,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.5882,
+        "recall": 1.0,
+        "f1": 0.7407
+      },
+      {
+        "round": 15,
+        "tp": 11,
+        "fp": 6,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.6471,
+        "recall": 1.0,
+        "f1": 0.7857
+      },
+      {
+        "round": 16,
+        "tp": 10,
+        "fp": 7,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.5882,
+        "recall": 1.0,
+        "f1": 0.7407
+      },
+      {
+        "round": 17,
+        "tp": 11,
+        "fp": 6,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.6471,
+        "recall": 1.0,
+        "f1": 0.7857
+      },
+      {
+        "round": 18,
+        "tp": 9,
+        "fp": 7,
+        "fn": 0,
+        "tn": 3,
+        "precision": 0.5625,
+        "recall": 1.0,
+        "f1": 0.72
+      },
+      {
+        "round": 19,
+        "tp": 10,
+        "fp": 7,
+        "fn": 0,
+        "tn": 2,
+        "precision": 0.5882,
+        "recall": 1.0,
+        "f1": 0.7407
+      },
+      {
+        "round": 20,
+        "tp": 9,
+        "fp": 6,
+        "fn": 2,
+        "tn": 2,
+        "precision": 0.6,
+        "recall": 0.8182,
+        "f1": 0.6923
+      },
+      {
+        "round": 21,
+        "tp": 10,
+        "fp": 5,
+        "fn": 2,
+        "tn": 2,
+        "precision": 0.6667,
+        "recall": 0.8333,
+        "f1": 0.7407
+      },
+      {
+        "round": 22,
+        "tp": 9,
+        "fp": 6,
+        "fn": 2,
+        "tn": 2,
+        "precision": 0.6,
+        "recall": 0.8182,
+        "f1": 0.6923
+      },
+      {
+        "round": 23,
+        "tp": 9,
+        "fp": 5,
+        "fn": 3,
+        "tn": 2,
+        "precision": 0.6429,
+        "recall": 0.75,
+        "f1": 0.6923
+      },
+      {
+        "round": 24,
+        "tp": 9,
+        "fp": 6,
+        "fn": 2,
+        "tn": 2,
+        "precision": 0.6,
+        "recall": 0.8182,
+        "f1": 0.6923
+      },
+      {
+        "round": 25,
+        "tp": 10,
+        "fp": 6,
+        "fn": 1,
+        "tn": 2,
+        "precision": 0.625,
+        "recall": 0.9091,
+        "f1": 0.7407
+      },
+      {
+        "round": 26,
+        "tp": 10,
+        "fp": 6,
+        "fn": 1,
+        "tn": 2,
+        "precision": 0.625,
+        "recall": 0.9091,
+        "f1": 0.7407
+      },
+      {
+        "round": 27,
+        "tp": 9,
+        "fp": 5,
+        "fn": 3,
+        "tn": 2,
+        "precision": 0.6429,
+        "recall": 0.75,
+        "f1": 0.6923
+      },
+      {
+        "round": 28,
+        "tp": 9,
+        "fp": 5,
+        "fn": 3,
+        "tn": 2,
+        "precision": 0.6429,
+        "recall": 0.75,
+        "f1": 0.6923
+      },
+      {
+        "round": 29,
+        "tp": 9,
+        "fp": 5,
+        "fn": 3,
+        "tn": 2,
+        "precision": 0.6429,
+        "recall": 0.75,
+        "f1": 0.6923
+      },
+      {
+        "round": 30,
+        "tp": 9,
+        "fp": 6,
+        "fn": 2,
+        "tn": 2,
+        "precision": 0.6,
+        "recall": 0.8182,
+        "f1": 0.6923
+      },
+      {
+        "round": 31,
+        "tp": 9,
+        "fp": 6,
+        "fn": 2,
+        "tn": 2,
+        "precision": 0.6,
+        "recall": 0.8182,
+        "f1": 0.6923
+      },
+      {
+        "round": 32,
+        "tp": 9,
+        "fp": 6,
+        "fn": 2,
+        "tn": 2,
+        "precision": 0.6,
+        "recall": 0.8182,
+        "f1": 0.6923
+      },
+      {
+        "round": 33,
+        "tp": 9,
+        "fp": 5,
+        "fn": 3,
+        "tn": 2,
+        "precision": 0.6429,
+        "recall": 0.75,
+        "f1": 0.6923
+      },
+      {
+        "round": 34,
+        "tp": 0,
+        "fp": 0,
+        "fn": 16,
+        "tn": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      {
+        "round": 35,
+        "tp": 9,
+        "fp": 6,
+        "fn": 2,
+        "tn": 2,
+        "precision": 0.6,
+        "recall": 0.8182,
+        "f1": 0.6923
+      },
+      {
+        "round": 36,
+        "tp": 9,
+        "fp": 6,
+        "fn": 2,
+        "tn": 2,
+        "precision": 0.6,
+        "recall": 0.8182,
+        "f1": 0.6923
+      },
+      {
+        "round": 37,
+        "tp": 9,
+        "fp": 6,
+        "fn": 2,
+        "tn": 2,
+        "precision": 0.6,
+        "recall": 0.8182,
+        "f1": 0.6923
+      },
+      {
+        "round": 38,
+        "tp": 9,
+        "fp": 5,
+        "fn": 3,
+        "tn": 2,
+        "precision": 0.6429,
+        "recall": 0.75,
+        "f1": 0.6923
+      },
+      {
+        "round": 39,
+        "tp": 9,
+        "fp": 6,
+        "fn": 2,
+        "tn": 2,
+        "precision": 0.6,
+        "recall": 0.8182,
+        "f1": 0.6923
+      },
+      {
+        "round": 40,
+        "tp": 9,
+        "fp": 5,
+        "fn": 3,
+        "tn": 2,
+        "precision": 0.6429,
+        "recall": 0.75,
+        "f1": 0.6923
+      },
+      {
+        "round": 41,
+        "tp": 7,
+        "fp": 5,
+        "fn": 5,
+        "tn": 2,
+        "precision": 0.5833,
+        "recall": 0.5833,
+        "f1": 0.5833
+      },
+      {
+        "round": 42,
+        "tp": 5,
+        "fp": 3,
+        "fn": 9,
+        "tn": 2,
+        "precision": 0.625,
+        "recall": 0.3571,
+        "f1": 0.4545
+      },
+      {
+        "round": 43,
+        "tp": 7,
+        "fp": 5,
+        "fn": 5,
+        "tn": 2,
+        "precision": 0.5833,
+        "recall": 0.5833,
+        "f1": 0.5833
+      },
+      {
+        "round": 44,
+        "tp": 7,
+        "fp": 4,
+        "fn": 6,
+        "tn": 2,
+        "precision": 0.6364,
+        "recall": 0.5385,
+        "f1": 0.5833
+      },
+      {
+        "round": 45,
+        "tp": 5,
+        "fp": 3,
+        "fn": 9,
+        "tn": 2,
+        "precision": 0.625,
+        "recall": 0.3571,
+        "f1": 0.4545
+      },
+      {
+        "round": 46,
+        "tp": 5,
+        "fp": 4,
+        "fn": 8,
+        "tn": 2,
+        "precision": 0.5556,
+        "recall": 0.3846,
+        "f1": 0.4545
+      },
+      {
+        "round": 47,
+        "tp": 6,
+        "fp": 4,
+        "fn": 7,
+        "tn": 2,
+        "precision": 0.6,
+        "recall": 0.4615,
+        "f1": 0.5217
+      },
+      {
+        "round": 48,
+        "tp": 6,
+        "fp": 5,
+        "fn": 6,
+        "tn": 2,
+        "precision": 0.5455,
+        "recall": 0.5,
+        "f1": 0.5217
+      },
+      {
+        "round": 49,
+        "tp": 6,
+        "fp": 6,
+        "fn": 5,
+        "tn": 2,
+        "precision": 0.5,
+        "recall": 0.5455,
+        "f1": 0.5217
+      },
+      {
+        "round": 50,
+        "tp": 0,
+        "fp": 0,
+        "fn": 16,
+        "tn": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    ],
+    "per_agent_accuracy": {
+      "Germany": 1.0,
+      "Russia": 0.06,
+      "UK": 1.0,
+      "France": 0.94,
+      "Italy": 0.16,
+      "Austria-Hungary": 0.12,
+      "Ottoman Empire": 0.24,
+      "Bulgaria": 0.02,
+      "Spain": 0.94,
+      "Belgium": 0.96,
+      "Greece": 0.94,
+      "Sweden": 0.02,
+      "Netherlands": 0.0,
+      "Romania": 0.78,
+      "Portugal": 0.86,
+      "Denmark": 0.86,
+      "Switzerland": 0.0,
+      "Serbia": 0.82,
+      "Norway": 0.8
+    },
+    "per_agent_detail": {
+      "Germany": {
+        "agent_id": 92,
+        "expected_prewar": "Neutral",
+        "expected_war": "Neutral",
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 50,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 1.0
+      },
+      "Russia": {
+        "agent_id": 93,
+        "expected_prewar": "Neutral",
+        "expected_war": "Neutral",
+        "tp": 0,
+        "fp": 47,
+        "fn": 0,
+        "tn": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.06
+      },
+      "UK": {
+        "agent_id": 94,
+        "expected_prewar": "Neutral",
+        "expected_war": "Neutral",
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 50,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 1.0
+      },
+      "France": {
+        "agent_id": 95,
+        "expected_prewar": "UK",
+        "expected_war": "UK",
+        "tp": 47,
+        "fp": 0,
+        "fn": 3,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 0.94,
+        "f1": 0.9691,
+        "accuracy": 0.94
+      },
+      "Italy": {
+        "agent_id": 96,
+        "expected_prewar": "Germany",
+        "expected_war": "UK",
+        "tp": 8,
+        "fp": 12,
+        "fn": 30,
+        "tn": 0,
+        "precision": 0.4,
+        "recall": 0.2105,
+        "f1": 0.2759,
+        "accuracy": 0.16
+      },
+      "Austria-Hungary": {
+        "agent_id": 97,
+        "expected_prewar": "Germany",
+        "expected_war": "Germany",
+        "tp": 6,
+        "fp": 15,
+        "fn": 29,
+        "tn": 0,
+        "precision": 0.2857,
+        "recall": 0.1714,
+        "f1": 0.2143,
+        "accuracy": 0.12
+      },
+      "Ottoman Empire": {
+        "agent_id": 98,
+        "expected_prewar": "Germany",
+        "expected_war": "Germany",
+        "tp": 12,
+        "fp": 18,
+        "fn": 20,
+        "tn": 0,
+        "precision": 0.4,
+        "recall": 0.375,
+        "f1": 0.3871,
+        "accuracy": 0.24
+      },
+      "Bulgaria": {
+        "agent_id": 99,
+        "expected_prewar": "Germany",
+        "expected_war": "Germany",
+        "tp": 1,
+        "fp": 47,
+        "fn": 2,
+        "tn": 0,
+        "precision": 0.0208,
+        "recall": 0.3333,
+        "f1": 0.0392,
+        "accuracy": 0.02
+      },
+      "Spain": {
+        "agent_id": 100,
+        "expected_prewar": "UK",
+        "expected_war": "UK",
+        "tp": 47,
+        "fp": 1,
+        "fn": 2,
+        "tn": 0,
+        "precision": 0.9792,
+        "recall": 0.9592,
+        "f1": 0.9691,
+        "accuracy": 0.94
+      },
+      "Belgium": {
+        "agent_id": 101,
+        "expected_prewar": "UK",
+        "expected_war": "UK",
+        "tp": 48,
+        "fp": 0,
+        "fn": 2,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 0.96,
+        "f1": 0.9796,
+        "accuracy": 0.96
+      },
+      "Greece": {
+        "agent_id": 102,
+        "expected_prewar": "UK",
+        "expected_war": "UK",
+        "tp": 47,
+        "fp": 0,
+        "fn": 3,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 0.94,
+        "f1": 0.9691,
+        "accuracy": 0.94
+      },
+      "Sweden": {
+        "agent_id": 103,
+        "expected_prewar": "Germany",
+        "expected_war": "Germany",
+        "tp": 1,
+        "fp": 46,
+        "fn": 3,
+        "tn": 0,
+        "precision": 0.0213,
+        "recall": 0.25,
+        "f1": 0.0392,
+        "accuracy": 0.02
+      },
+      "Netherlands": {
+        "agent_id": 104,
+        "expected_prewar": "Germany",
+        "expected_war": "Germany",
+        "tp": 0,
+        "fp": 45,
+        "fn": 5,
+        "tn": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.0
+      },
+      "Romania": {
+        "agent_id": 105,
+        "expected_prewar": "Russia",
+        "expected_war": "UK",
+        "tp": 39,
+        "fp": 4,
+        "fn": 7,
+        "tn": 0,
+        "precision": 0.907,
+        "recall": 0.8478,
+        "f1": 0.8764,
+        "accuracy": 0.78
+      },
+      "Portugal": {
+        "agent_id": 106,
+        "expected_prewar": "UK",
+        "expected_war": "UK",
+        "tp": 43,
+        "fp": 0,
+        "fn": 7,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 0.86,
+        "f1": 0.9247,
+        "accuracy": 0.86
+      },
+      "Denmark": {
+        "agent_id": 107,
+        "expected_prewar": "UK",
+        "expected_war": "UK",
+        "tp": 43,
+        "fp": 0,
+        "fn": 7,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 0.86,
+        "f1": 0.9247,
+        "accuracy": 0.86
+      },
+      "Switzerland": {
+        "agent_id": 108,
+        "expected_prewar": "Germany",
+        "expected_war": "Germany",
+        "tp": 0,
+        "fp": 45,
+        "fn": 5,
+        "tn": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.0
+      },
+      "Serbia": {
+        "agent_id": 109,
+        "expected_prewar": "Russia",
+        "expected_war": "UK",
+        "tp": 41,
+        "fp": 5,
+        "fn": 4,
+        "tn": 0,
+        "precision": 0.8913,
+        "recall": 0.9111,
+        "f1": 0.9011,
+        "accuracy": 0.82
+      },
+      "Norway": {
+        "agent_id": 110,
+        "expected_prewar": "UK",
+        "expected_war": "UK",
+        "tp": 40,
+        "fp": 0,
+        "fn": 10,
+        "tn": 0,
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.8889,
+        "accuracy": 0.8
+      }
+    }
+  },
+  "dimension2_action_f1": {
+    "overall": {
+      "macro_f1": 0.2097,
+      "per_category": {
+        "Diplomatic": {
+          "tp": 164,
+          "fp": 48,
+          "fn": 336,
+          "precision": 0.7736,
+          "recall": 0.328,
+          "f1": 0.4607
+        },
+        "Economic": {
+          "tp": 0,
+          "fp": 77,
+          "fn": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        },
+        "Military": {
+          "tp": 117,
+          "fp": 52,
+          "fn": 333,
+          "precision": 0.6923,
+          "recall": 0.26,
+          "f1": 0.378
+        },
+        "Information": {
+          "tp": 0,
+          "fp": 492,
+          "fn": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0
+        }
+      }
+    },
+    "per_country": {
+      "Germany": {
+        "agent_id": 92,
+        "expected_primary": "Military",
+        "expected_secondary": "Diplomatic",
+        "accuracy": 0.72,
+        "total_rounds_evaluated": 50,
+        "correct_count": 36.0
+      },
+      "Russia": {
+        "agent_id": 93,
+        "expected_primary": "Military",
+        "expected_secondary": "Diplomatic",
+        "accuracy": 0.97,
+        "total_rounds_evaluated": 50,
+        "correct_count": 48.5
+      },
+      "UK": {
+        "agent_id": 94,
+        "expected_primary": "Diplomatic",
+        "expected_secondary": "Military",
+        "accuracy": 0.46,
+        "total_rounds_evaluated": 50,
+        "correct_count": 23.0
+      },
+      "France": {
+        "agent_id": 95,
+        "expected_primary": "Diplomatic",
+        "expected_secondary": "Military",
+        "accuracy": 0.35,
+        "total_rounds_evaluated": 50,
+        "correct_count": 17.5
+      },
+      "Italy": {
+        "agent_id": 96,
+        "expected_primary": "Military",
+        "expected_secondary": "Diplomatic",
+        "accuracy": 0.03,
+        "total_rounds_evaluated": 50,
+        "correct_count": 1.5
+      },
+      "Austria-Hungary": {
+        "agent_id": 97,
+        "expected_primary": "Military",
+        "expected_secondary": "Diplomatic",
+        "accuracy": 0.09,
+        "total_rounds_evaluated": 50,
+        "correct_count": 4.5
+      },
+      "Ottoman Empire": {
+        "agent_id": 98,
+        "expected_primary": "Military",
+        "expected_secondary": "Diplomatic",
+        "accuracy": 0.06,
+        "total_rounds_evaluated": 50,
+        "correct_count": 3.0
+      },
+      "Bulgaria": {
+        "agent_id": 99,
+        "expected_primary": "Military",
+        "expected_secondary": "Diplomatic",
+        "accuracy": 0.53,
+        "total_rounds_evaluated": 50,
+        "correct_count": 26.5
+      },
+      "Spain": {
+        "agent_id": 100,
+        "expected_primary": "Diplomatic",
+        "expected_secondary": "Military",
+        "accuracy": 0.49,
+        "total_rounds_evaluated": 50,
+        "correct_count": 24.5
+      },
+      "Belgium": {
+        "agent_id": 101,
+        "expected_primary": "Diplomatic",
+        "expected_secondary": "Military",
+        "accuracy": 0.15,
+        "total_rounds_evaluated": 50,
+        "correct_count": 7.5
+      },
+      "Greece": {
+        "agent_id": 102,
+        "expected_primary": "Military",
+        "expected_secondary": "Diplomatic",
+        "accuracy": 0.13,
+        "total_rounds_evaluated": 50,
+        "correct_count": 6.5
+      },
+      "Sweden": {
+        "agent_id": 103,
+        "expected_primary": "Diplomatic",
+        "expected_secondary": "Military",
+        "accuracy": 0.62,
+        "total_rounds_evaluated": 50,
+        "correct_count": 31.0
+      },
+      "Netherlands": {
+        "agent_id": 104,
+        "expected_primary": "Diplomatic",
+        "expected_secondary": "Economic",
+        "accuracy": 0.41,
+        "total_rounds_evaluated": 50,
+        "correct_count": 20.5
+      },
+      "Romania": {
+        "agent_id": 105,
+        "expected_primary": "Military",
+        "expected_secondary": "Diplomatic",
+        "accuracy": 0.26,
+        "total_rounds_evaluated": 50,
+        "correct_count": 13.0
+      },
+      "Portugal": {
+        "agent_id": 106,
+        "expected_primary": "Diplomatic",
+        "expected_secondary": "Military",
+        "accuracy": 0.25,
+        "total_rounds_evaluated": 50,
+        "correct_count": 12.5
+      },
+      "Denmark": {
+        "agent_id": 107,
+        "expected_primary": "Diplomatic",
+        "expected_secondary": "Economic",
+        "accuracy": 0.26,
+        "total_rounds_evaluated": 50,
+        "correct_count": 13
+      },
+      "Switzerland": {
+        "agent_id": 108,
+        "expected_primary": "Diplomatic",
+        "expected_secondary": "Economic",
+        "accuracy": 0.6,
+        "total_rounds_evaluated": 50,
+        "correct_count": 30.0
+      },
+      "Serbia": {
+        "agent_id": 109,
+        "expected_primary": "Military",
+        "expected_secondary": "Diplomatic",
+        "accuracy": 0.03,
+        "total_rounds_evaluated": 50,
+        "correct_count": 1.5
+      },
+      "Norway": {
+        "agent_id": 110,
+        "expected_primary": "Diplomatic",
+        "expected_secondary": "Economic",
+        "accuracy": 0.27,
+        "total_rounds_evaluated": 50,
+        "correct_count": 13.5
+      }
+    }
+  },
+  "combined_f1": 0.4379,
+  "agent_mapping": {
+    "92": "Germany",
+    "93": "Russia",
+    "94": "UK",
+    "95": "France",
+    "96": "Italy",
+    "97": "Austria-Hungary",
+    "98": "Ottoman Empire",
+    "99": "Bulgaria",
+    "100": "Spain",
+    "101": "Belgium",
+    "102": "Greece",
+    "103": "Sweden",
+    "104": "Netherlands",
+    "105": "Romania",
+    "106": "Portugal",
+    "107": "Denmark",
+    "108": "Switzerland",
+    "109": "Serbia",
+    "110": "Norway"
+  }
+}

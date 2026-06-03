@@ -440,8 +440,13 @@ async def start_simulation(project_id: int):
     Returns:
         dict: 启动结果
     """
-    result = await simulation_service.start_simulation(project_id)
-    return result
+    try:
+        result = await simulation_service.start_simulation(project_id)
+        print(f">>> [DIAG] API start_simulation 返回: {result}", flush=True)
+        return result
+    except Exception as e:
+        print(f">>> [DIAG] API start_simulation 异常: {e}", flush=True)
+        raise
 
 
 @router.post("/{project_id}/step")

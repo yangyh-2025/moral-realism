@@ -117,6 +117,10 @@ def start_servers():
             '--reload'
         ]
 
+        # 强制无缓冲输出，确保子进程日志实时显示
+        unbuffered_env = os.environ.copy()
+        unbuffered_env['PYTHONUNBUFFERED'] = '1'
+
         # Start frontend server command
         frontend_cmd = [
             NPM_CMD,
@@ -136,7 +140,8 @@ def start_servers():
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
-            universal_newlines=True
+            universal_newlines=True,
+            env=unbuffered_env
         )
 
         print('Starting frontend server...')
@@ -183,16 +188,27 @@ def start_servers():
             # Check if any process has exited
             for name, process in processes:
                 if process.poll() is not None:
+                    exit_code = process.poll()
                     print()
                     print('=' * 60)
-                    print(f'\033[91m{name} server stopped unexpectedly (exit code: {process.poll()})\033[0m')
+                    print(f'\033[91m{name} server stopped (exit code: {exit_code})\033[0m')
                     print('=' * 60)
-                    # Terminate other process
-                    for other_name, other_process in processes:
-                        if other_name != name and other_process.poll() is None:
-                            print(f'Stopping {other_name} server...')
-                            other_process.terminate()
-                    return
+
+                    if name == 'Backend':
+                        # 后端退出 → 停止前端
+                        for other_name, other_process in processes:
+                            if other_name != name and other_process.poll() is None:
+                                print(f'Stopping {other_name} server...')
+                                other_process.terminate()
+                        return
+                    else:
+                        # 前端退出 → 后端继续运行
+                        print(f'Backend continues running at {BACKEND_URL}')
+                        print(f'API Docs: {DOCS_URL}')
+                        print('Press Ctrl+C to stop backend.')
+                        # 移除已退出的进程，只监控后端
+                        processes = [('Backend', backend_process)]
+                        break
 
             time.sleep(0.1)
 

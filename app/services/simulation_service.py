@@ -60,6 +60,7 @@ class SimulationService:
         Returns:
             启动结果字典
         """
+        print(f"\n>>> [DIAG] start_simulation 被调用: project_id={project_id}", flush=True)
         logger.info(f"正在启动项目 {project_id} 的仿真")
 
         # 获取项目信息
@@ -140,6 +141,7 @@ class SimulationService:
             project_id: 项目ID
             log_manager: 日志管理器实例
         """
+        print(f"\n>>> [DIAG] 仿真循环启动: project_id={project_id}", flush=True)
         logger.info(f"开始项目 {project_id} 的仿真循环")
 
         try:
@@ -279,6 +281,7 @@ class SimulationService:
                 "message": "仿真已完成所有轮次"
             }
 
+        print(f"\n>>> [DIAG] 第 {current_round}/{total_rounds} 轮开始执行", flush=True)
         logger.info(
             f"\n{'='*58}\n"
             f"  项目 {project_id} - 第 {current_round}/{total_rounds} 轮 开始执行\n"
@@ -1155,9 +1158,10 @@ class SimulationService:
         """
         生成LLM驱动的追随投票决策（并发执行）
 
-        学术模型要求：
-        阶段1：大模型驱动超级大国与大国决定是否参与领导竞争
-        阶段2：大模型驱动所有国家（包括参选者）选择追随对象或中立
+        追随机制设计：
+        - 追随是被动的：所有国家均可被追随，无需参选
+        - 所有国家（包括大国和小国）均可成为被追随者
+        - 各国通过LLM决策选择追随谁或保持中立
 
         Args:
             project_id: 项目ID
@@ -1169,7 +1173,6 @@ class SimulationService:
         Returns:
             追随关系字典 {follower_id: leader_id}
         """
-        from app.core.agent_base import PowerLevelEnum
         from app.services.llm_service import get_llm_service
         from app.core.prompt_templates import PromptTemplates
         from app.core.decision_engine import get_decision_engine
@@ -1207,102 +1210,20 @@ class SimulationService:
                 all_agent_info=info_pool.all_agent_info,
             )
 
-        # ========== 阶段1：并发执行领导竞争参与决策 ==========
-        big_powers = [
-            agent for agent in agents
-            if agent.get('power_level') in [
-                PowerLevelEnum.SUPERPOWER.value,
-                PowerLevelEnum.GREAT_POWER.value
-            ]
-        ]
+        # 所有国家均可被追随（被动追随，无需参选）
+        all_targets = agents
 
-        semaphore = asyncio.Semaphore(max_concurrent)
-        completed_counter = {"n": 0}
-        total_big = len(big_powers)
-
-        async def _decide_participation(agent: Dict) -> Tuple[Dict, bool, str]:
-            """返回 (agent, 是否参与, reason)"""
-            agent_name = agent.get('agent_name')
-            agent_id = agent.get('agent_id')
-            system_prompt = PromptTemplates.build_follower_system_prompt(
-                agent_name=agent_name,
-                current_total_power=agent.get('current_total_power', 0),
-                power_level=agent.get('power_level'),
-                leader_type=agent.get('leader_type', '未定义'),
-                cinc_year=agent.get('cinc_year')
-            )
-            user_prompt = PromptTemplates.build_follower_user_prompt(
-                info_pool=formatted_info_pool,
-                decision_type='participation',
-                personal_summary=_build_personal_summary_for(agent),
-            )
-
-            async with semaphore:
-                try:
-                    response = await llm_service.call_llm_async(
-                        user_prompt,
-                        system_prompt=system_prompt,
-                        log_manager=log_manager,
-                        log_category="following",
-                        round_num=round_num,
-                        agent_id=agent_id,
-                        agent_name=agent_name,
-                        decision_type="leadership_participation"
-                    )
-                    decision = response.get('decision', '不参与')
-                    reason = response.get('reason', '')
-                    is_participating = (decision == '参与')
-
-                    completed_counter["n"] += 1
-                    progress = f"[{completed_counter['n']:>2d}/{total_big}]"
-                    status = "参与" if is_participating else "不参与"
-                    logger.info(
-                        f"  {progress} [阶段1] {agent_name}(ID:{agent_id}) -> {status}: {reason[:60]}"
-                    )
-                    return agent, is_participating, reason
-                except Exception as e:
-                    completed_counter["n"] += 1
-                    progress = f"[{completed_counter['n']:>2d}/{total_big}]"
-                    logger.error(
-                        f"  {progress} [阶段1-FAIL] {agent_name}(ID:{agent_id}): {e}"
-                    )
-                    return agent, False, str(e)
-
-        if big_powers:
-            logger.info(
-                f"========== 第 {round_num} 轮 - 追随决策阶段1开始 "
-                f"(共{total_big}个大国/超级大国, 并发度{max_concurrent}) =========="
-            )
-            participation_results = await asyncio.gather(
-                *[_decide_participation(agent) for agent in big_powers],
-                return_exceptions=True
-            )
-        else:
-            participation_results = []
-
-        leader_candidates = []
-        for result in participation_results:
-            if isinstance(result, Exception):
-                continue
-            agent, is_participating, _ = result
-            if is_participating:
-                leader_candidates.append(agent)
-
-        if not leader_candidates:
-            logger.info("无领导候选人 - 所有国家保持中立")
-            return {agent.get('agent_id'): None for agent in agents}
-
-        logger.info(f"领导候选人: {[a['agent_name'] for a in leader_candidates]}")
-
-        # 构建参选者信息字符串（兼容用，仅在新评估字段未提供时退回使用）
-        leader_candidates_info = "\n".join([
-            f"  ID:{a['agent_id']} 名称:{a['agent_name']} CINC:{a['current_total_power']:.6f}"
-            for a in leader_candidates
+        # 构建所有可追随目标的信息字符串
+        all_targets_info = "\n".join([
+            f"  ID:{a['agent_id']} 名称:{a['agent_name']} "
+            f"CINC:{a['current_total_power']:.6f} 层级:{a.get('power_level', '?')}"
+            for a in all_targets
         ])
 
-        # ========== 阶段2：并发执行追随投票决策 ==========
+        # ========== 追随投票决策（单阶段，所有国家并发） ==========
+        semaphore = asyncio.Semaphore(max_concurrent)
         total_agents = len(agents)
-        completed_counter2 = {"n": 0}
+        completed_counter = {"n": 0}
 
         async def _decide_vote(agent: Dict) -> Tuple[int, Optional[int], str]:
             """返回 (agent_id, follower_id, reason)"""
@@ -1310,33 +1231,25 @@ class SimulationService:
             agent_id = agent.get('agent_id')
             power_level = agent.get('power_level')
 
-            # 仅超级大国保持独立自主，不参与追随投票；大国/中等强国可以追随
-            if power_level == PowerLevelEnum.SUPERPOWER.value:
-                completed_counter2["n"] += 1
-                progress = f"[{completed_counter2['n']:>2d}/{total_agents}]"
-                logger.info(
-                    f"  {progress} [SKIP] {agent_name}(ID:{agent_id}) -> 中立: "
-                    f"{power_level}保持独立自主，不参与追随"
-                )
-                return agent_id, None, f"{power_level}保持独立自主，不参与追随其他国家"
-
             system_prompt = PromptTemplates.build_follower_system_prompt(
                 agent_name=agent_name,
                 current_total_power=agent.get('current_total_power', 0),
-                power_level=power_level
+                power_level=power_level,
+                leader_type=agent.get('leader_type', '未定义'),
+                cinc_year=agent.get('cinc_year')
             )
-            # 候选人评估（按当前voter视角预先核对战略关系+双向互动）
+            # 所有国家评估（按当前voter视角预先核对战略关系+双向互动）
             voter_relationships = relationships_lookup.get(agent_id, {})
             candidates_evaluation = PromptTemplates.build_candidates_evaluation(
                 voter_id=agent_id,
                 voter_relationships=voter_relationships,
-                candidates=leader_candidates,
+                candidates=all_targets,
                 history_action_records=info_pool.history_action_records,
             )
             user_prompt = PromptTemplates.build_follower_user_prompt(
                 info_pool=formatted_info_pool,
                 decision_type='vote',
-                leader_candidates_info=leader_candidates_info,
+                leader_candidates_info=all_targets_info,
                 personal_summary=_build_personal_summary_for(agent),
                 candidates_evaluation=candidates_evaluation,
             )
@@ -1357,31 +1270,32 @@ class SimulationService:
                     follower_name = response.get('follower_agent_name', '中立')
                     reason = response.get('reason', '')
 
-                    completed_counter2["n"] += 1
-                    progress = f"[{completed_counter2['n']:>2d}/{total_agents}]"
+                    completed_counter["n"] += 1
+                    progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
 
-                    # 验证follower_id是否在参选者中
-                    if follower_id and any(a['agent_id'] == follower_id for a in leader_candidates):
+                    # 验证follower_id是否为有效目标（不能追随自己）
+                    valid_ids = {a['agent_id'] for a in all_targets}
+                    if follower_id and follower_id != agent_id and follower_id in valid_ids:
                         logger.info(
-                            f"  {progress} [阶段2] {agent_name}(ID:{agent_id}) -> "
+                            f"  {progress} {agent_name}(ID:{agent_id}) -> "
                             f"追随 {follower_name}(ID:{follower_id})"
                         )
                         return agent_id, follower_id, reason
                     else:
                         logger.info(
-                            f"  {progress} [阶段2] {agent_name}(ID:{agent_id}) -> 中立"
+                            f"  {progress} {agent_name}(ID:{agent_id}) -> 中立"
                         )
                         return agent_id, None, reason
                 except Exception as e:
-                    completed_counter2["n"] += 1
-                    progress = f"[{completed_counter2['n']:>2d}/{total_agents}]"
+                    completed_counter["n"] += 1
+                    progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
                     logger.error(
-                        f"  {progress} [阶段2-FAIL] {agent_name}(ID:{agent_id}): {e}"
+                        f"  {progress} [FAIL] {agent_name}(ID:{agent_id}): {e}"
                     )
                     return agent_id, None, str(e)
 
         logger.info(
-            f"========== 第 {round_num} 轮 - 追随决策阶段2开始 "
+            f"========== 第 {round_num} 轮 - 追随投票开始 "
             f"(共{total_agents}国, 并发度{max_concurrent}) =========="
         )
         vote_results = await asyncio.gather(
@@ -1396,8 +1310,8 @@ class SimulationService:
             agent_id, follower_id, _ = result
             follower_decisions[agent_id] = follower_id
 
-        # ========== 后处理：检测并修复互相追随闭环 ==========
-        # 1. 修复互相追随：如果A追随B且B追随A，让实力更强的一方保持中立
+        # ========== 后处理：修复互相追随闭环 ==========
+        # 如果A追随B且B追随A，让实力更强的一方保持中立
         agent_power_map = {
             a.get('agent_id'): a.get('current_total_power', 0) or 0
             for a in agents
@@ -1410,7 +1324,6 @@ class SimulationService:
                     mutual_pairs.append(pair)
                     a_power = agent_power_map.get(agent_id, 0)
                     b_power = agent_power_map.get(leader_id, 0)
-                    # 让实力更强的保持中立（实力强的不应追随弱者）
                     if a_power >= b_power:
                         follower_decisions[agent_id] = None
                         logger.warning(
@@ -1424,20 +1337,21 @@ class SimulationService:
                             f"({leader_id}实力更强/b_power={b_power:.4f})"
                         )
 
-        # 2. 修复领导者追随他人：被追随的领导者不应追随其他国家
-        leaders = set(v for v in follower_decisions.values() if v is not None)
-        for leader_id in leaders:
-            if follower_decisions.get(leader_id) is not None:
-                old_follow = follower_decisions[leader_id]
-                follower_decisions[leader_id] = None
-                logger.warning(
-                    f"[追随修复] 领导者{leader_id}不应追随他人，"
-                    f"已解除对{old_follow}的追随"
-                )
+        # 汇总统计
+        total_following = sum(1 for v in follower_decisions.values() if v is not None)
+        total_neutral = sum(1 for v in follower_decisions.values() if v is None)
+        leader_ids = set(v for v in follower_decisions.values() if v is not None)
+        leader_names = []
+        agent_name_map = {a.get('agent_id'): a.get('agent_name', '?') for a in agents}
+        for lid in leader_ids:
+            followers_of_lid = sum(1 for v in follower_decisions.values() if v == lid)
+            leader_names.append(f"{agent_name_map.get(lid, '?')}(ID:{lid}):{followers_of_lid}追随")
 
         logger.info(
-            f"========== 第 {round_num} 轮 - 追随决策完成 "
-            f"(共 {len(follower_decisions)} 个智能体) =========="
+            f"========== 第 {round_num} 轮 - 追随决策完成 ==========\n"
+            f"  追随: {total_following}国 | 中立: {total_neutral}国\n"
+            f"  被追随者分布: {leader_names if leader_names else '无'}\n"
+            f"====================================================="
         )
         return follower_decisions
 

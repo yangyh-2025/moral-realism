@@ -791,8 +791,8 @@ class DecisionEngine:
         """Format action history for prompt, aggregated by relationship pair.
 
         历史记录长度控制策略：
-        - 最近10轮的记录做详细聚合（按关系对统计 + 最近5条详细记录）
-        - 超过10轮的早期记录只做极简统计（关系对级别的合作/对抗次数）
+        - 最近5轮的记录做详细聚合（按关系对统计 + 最近5条详细记录）
+        - 超过5轮的早期记录只做极简统计（关系对级别的合作/对抗次数）
 
         若 agent_id 为 None（追随决策、关系演变等非单 agent 视角），按 (source, target)
         关系对全局聚合；否则按当前 agent 的 outgoing/incoming 视角聚合。
@@ -812,7 +812,7 @@ class DecisionEngine:
             round_groups[record.get('round_num', 0)].append(record)
 
         all_rounds = sorted(round_groups.keys())
-        recent_rounds_set = set(all_rounds[-10:]) if len(all_rounds) > 10 else set(all_rounds)
+        recent_rounds_set = set(all_rounds[-5:]) if len(all_rounds) > 5 else set(all_rounds)
 
         recent_records = [r for r in history if r.get('round_num', 0) in recent_rounds_set]
         older_records = [r for r in history if r.get('round_num', 0) not in recent_rounds_set]
@@ -928,8 +928,8 @@ class DecisionEngine:
         if not power_data:
             return "无国力变化历史"
 
-        # Show last 10 rounds
-        recent_data = power_data[-10:] if len(power_data) > 10 else power_data
+        # Show last 5 rounds
+        recent_data = power_data[-5:] if len(power_data) > 5 else power_data
 
         lines = []
         for data in recent_data:
