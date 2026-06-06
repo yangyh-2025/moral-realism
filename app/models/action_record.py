@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, func, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..models import Base
@@ -70,6 +70,12 @@ class ActionRecord(Base):
     source_agent = relationship("AgentConfig", foreign_keys=[source_agent_id], back_populates="initiated_actions")
     target_agent = relationship("AgentConfig", foreign_keys=[target_agent_id], back_populates="targetted_actions")
     action_config = relationship("ActionConfig", back_populates="action_records")
+
+    # 复合索引：加速按项目+轮次的历史查询
+    __table_args__ = (
+        Index('ix_action_record_project_round', 'project_id', 'round_num'),
+        Index('ix_action_record_project_round_stage', 'project_id', 'round_num', 'action_stage'),
+    )
 
     def __repr__(self) -> str:
         return f"<ActionRecord(id={self.record_id}, action={self.action_name}, stage={self.action_stage})>"

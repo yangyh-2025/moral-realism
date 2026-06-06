@@ -23,6 +23,12 @@ NPM_CMD = r'C:\Program Files\nodejs\npm.cmd'
 
 def check_venv():
     """Check if virtual environment exists"""
+    # 设置Python的stdout/stderr编码为UTF-8，避免中文乱码
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
     if not VENV_PYTHON.exists():
         print('ERROR: Virtual environment does not exist')
         print(f'  Expected path: {VENV_PYTHON}')
@@ -77,13 +83,15 @@ def open_browser():
 def read_output(process, name, color_code='\033[0m'):
     """实时读取并显示进程输出"""
     try:
-        while True:
-            line = process.stdout.readline()
+        for line in iter(process.stdout.readline, ''):
             if not line:
                 break
-            print(f'{color_code}[{name}] {line.rstrip()}\033[0m')
-    except:
-        pass
+            # 移除末尾换行符并打印
+            cleaned = line.rstrip('\n\r')
+            if cleaned:
+                print(f'{color_code}[{name}] {cleaned}\033[0m', flush=True)
+    except Exception as e:
+        print(f'{color_code}[{name}] Output reader error: {e}\033[0m')
 
 
 def start_servers():
@@ -117,9 +125,10 @@ def start_servers():
             '--reload'
         ]
 
-        # 强制无缓冲输出，确保子进程日志实时显示
+        # 强制无缓冲输出 + UTF-8编码，确保子进程日志实时显示且中文不乱码
         unbuffered_env = os.environ.copy()
         unbuffered_env['PYTHONUNBUFFERED'] = '1'
+        unbuffered_env['PYTHONIOENCODING'] = 'utf-8'
 
         # Start frontend server command
         frontend_cmd = [
@@ -141,6 +150,8 @@ def start_servers():
             text=True,
             bufsize=1,
             universal_newlines=True,
+            encoding='utf-8',
+            errors='replace',
             env=unbuffered_env
         )
 
@@ -152,7 +163,9 @@ def start_servers():
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
-            universal_newlines=True
+            universal_newlines=True,
+            encoding='utf-8',
+            errors='replace'
         )
 
         print()

@@ -227,14 +227,8 @@ class CINCCalculator:
         polarity, polar_ids = CINCCalculator._detect_polarity(power_shares)
 
         # 找到当前cinc对应的agent_id
-        # 由于all_cincs是列表，需要找到cinc在其中的位置
-        target_id = None
-        for aid, c in agent_cincs.items():
-            if abs(c - cinc) < 1e-9:
-                target_id = aid
-                break
-        if target_id is None:
-            target_id = 0  # fallback
+        # 使用最近邻匹配而非精确浮点比较，避免重复CINC值时误分类
+        target_id = min(agent_cincs.keys(), key=lambda aid: abs(agent_cincs[aid] - cinc))
 
         target_share = power_shares.get(target_id, 0.0)
 

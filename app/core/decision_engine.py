@@ -50,6 +50,7 @@ class InfoPool:
     history_power_data: List[Dict[str, Any]] = field(default_factory=list)
     last_round_order_info: Dict[str, Any] = field(default_factory=dict)
     round_num: int = 1  # 当前轮次
+    current_issue: str = ""  # 当前轮次的突出议题背景
 
 
 @dataclass

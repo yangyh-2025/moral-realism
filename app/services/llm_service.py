@@ -96,7 +96,7 @@ class LLMService:
             api_key=os.getenv("OPENAI_API_KEY", ""),
             api_base=os.getenv("OPENAI_API_BASE", ""),
             max_tokens=int(os.getenv("LLM_MAX_TOKENS", "2000")),
-            temperature=float(os.getenv("LLM_TEMPERATURE", "0.7")),
+            temperature=float(os.getenv("LLM_TEMPERATURE", "0.35")),
             timeout=int(os.getenv("LLM_TIMEOUT", "60")),
             max_retries=int(os.getenv("LLM_MAX_RETRIES", "3")),
             retry_delay=float(os.getenv("LLM_RETRY_DELAY", "1.0"))

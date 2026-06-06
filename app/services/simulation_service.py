@@ -7,7 +7,7 @@ from typing import Optional, List, Dict, Any, Tuple
 import asyncio
 import math
 from datetime import datetime
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from loguru import logger
 
 from app.config.database import db_config
@@ -60,7 +60,7 @@ class SimulationService:
         Returns:
             启动结果字典
         """
-        print(f"\n>>> [DIAG] start_simulation 被调用: project_id={project_id}", flush=True)
+        logger.debug(f"start_simulation 被调用: project_id={project_id}")
         logger.info(f"正在启动项目 {project_id} 的仿真")
 
         # 获取项目信息
@@ -141,7 +141,7 @@ class SimulationService:
             project_id: 项目ID
             log_manager: 日志管理器实例
         """
-        print(f"\n>>> [DIAG] 仿真循环启动: project_id={project_id}", flush=True)
+        logger.debug(f"仿真循环启动: project_id={project_id}")
         logger.info(f"开始项目 {project_id} 的仿真循环")
 
         try:
@@ -281,7 +281,7 @@ class SimulationService:
                 "message": "仿真已完成所有轮次"
             }
 
-        print(f"\n>>> [DIAG] 第 {current_round}/{total_rounds} 轮开始执行", flush=True)
+        logger.debug(f"第 {current_round}/{total_rounds} 轮开始执行")
         logger.info(
             f"\n{'='*58}\n"
             f"  项目 {project_id} - 第 {current_round}/{total_rounds} 轮 开始执行\n"
@@ -923,6 +923,138 @@ class SimulationService:
                     'leader_follower_ratio': 0.0
                 }
 
+    @staticmethod
+    def _get_issue_context(scene_source: str, round_num: int, agents: list = None) -> str:
+        """
+        从历史地面真值 v2 JSON 中读取当轮的主导议题，并将所有真实国名替换为糊名。
+
+        每轮仿真模拟3个月，历史v2数据为每轮预设了独立的主导议题描述。
+        为防止智能体通过议题中的国名推断身份，所有真实国名会被替换为智能体糊名。
+        """
+        import json, os, re
+
+        # Map scene_source to history file
+        history_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "data", "history"
+        )
+        if "1913" in scene_source or "一战" in scene_source:
+            filename = "scene1_prewar_1913.json"
+        elif "1938" in scene_source or "二战" in scene_source:
+            filename = "scene2_prewar_1938.json"
+        elif "1946" in scene_source or "冷战" in scene_source:
+            filename = "scene3_prewar_1946.json"
+        else:
+            return ""
+
+        try:
+            filepath = os.path.join(history_dir, filename)
+            with open(filepath, 'r', encoding='utf-8') as f:
+                history = json.load(f)
+            rnd = history['rounds'].get(str(round_num), {})
+            issue = rnd.get('dominant_issue', '')
+            if not issue:
+                return ""
+
+            # Build real-name → blind-name substitution map from agents
+            # country_code → real English name
+            _cc_to_real = [
+                (255, "Germany"), (365, "Russia"), (200, "UK"), (220, "France"),
+                (300, "Austria-Hungary"), (325, "Italy"), (640, "Ottoman Empire"),
+                (355, "Bulgaria"), (230, "Spain"), (211, "Belgium"), (350, "Greece"),
+                (380, "Sweden"), (210, "Netherlands"), (360, "Romania"),
+                (235, "Portugal"), (390, "Denmark"), (225, "Switzerland"),
+                (345, "Serbia"), (385, "Norway"),
+                (315, "Czechoslovakia"), (290, "Poland"), (310, "Hungary"),
+                (375, "Finland"), (212, "Luxembourg"), (366, "Latvia"),
+                (368, "Lithuania"), (205, "Ireland"), (365, "Estonia"),
+                (339, "Albania"), (395, "Iceland"),
+            ]
+            name_map = {}
+            if agents:
+                for a in agents:
+                    cc = a.get('country_code')
+                    blind = a.get('agent_name', '')
+                    if cc and blind:
+                        for ccode, real in _cc_to_real:
+                            if cc == ccode:
+                                name_map[real] = blind
+                                # Also map short/derived forms
+                                _extras = {
+                                    "UK": ["British", "Britain"],
+                                    "Germany": ["German"],
+                                    "Russia": ["Russian", "USSR", "Soviet", "Soviet Union"],
+                                    "France": ["French"],
+                                    "Italy": ["Italian"],
+                                    "Ottoman Empire": ["Ottoman", "Turkey"],
+                                    "Austria-Hungary": ["A-H"],
+                                    "Serbia": ["Yugoslavia"],
+                                    "Czechoslovakia": ["Czech"],
+                                    "Finland": ["Finnish"],
+                                }
+                                for extra in _extras.get(real, []):
+                                    name_map[extra] = blind
+                                # Don't break — same ccode can map to multiple real names
+                                # (e.g. ccode 345 → Serbia AND Yugoslavia;
+                                #        ccode 640 → Ottoman Empire AND Turkey)
+
+            # Add organization/institution anonymization
+            _org_map = [
+                ("NATO", "西方军事同盟"),
+                ("Warsaw Pact", "东方军事同盟"),
+                ("COMECON", "东方经济组织"),
+                ("Cominform", "东方政治组织"),
+                ("ECSC", "欧洲经济合作组织"),
+                ("EEC", "欧洲经济共同体"),
+                ("EURATOM", "欧洲原子能组织"),
+                ("WEU", "西欧防务组织"),
+                ("FRG", "西方阵营德国"),
+                ("GDR", "东方阵营德国"),
+                ("UN", "国际组织"),
+            ]
+            for real, blind in _org_map:
+                name_map[real] = blind
+
+            # Apply substitutions (longest first)
+            issue_anon = issue
+            for real_name in sorted(name_map.keys(), key=len, reverse=True):
+                issue_anon = issue_anon.replace(real_name, name_map[real_name])
+
+            # Blind faction/camp names
+            _faction_map = [
+                ("Entente", "协约阵营"),
+                ("Allies", "盟军阵营"),
+                ("Central Powers", "同盟阵营"),
+                ("Axis", "轴心阵营"),
+                ("NATO", "西方军事同盟"),
+                ("Warsaw Pact", "东方军事同盟"),
+                ("Little Entente", "区域性同盟"),
+                ("Triple Alliance", "三国军事同盟"),
+                ("Franco-Russian Alliance", "双边军事同盟"),
+                ("Franco-Russian", "双边军事同盟"),
+                ("Anglo-German", "双边"),
+                ("Greco-Turkish", "双边"),
+                ("Polish-Soviet", "双边"),
+                ("Tito-Stalin", "双边"),
+                ("Molotov-Ribbentrop", "双边"),
+                ("Nazi-Soviet", "双边"),
+                ("Anglo-Soviet", "双边"),
+                ("Anglo-Polish", "双边"),
+            ]
+            for real, blind in _faction_map:
+                issue_anon = issue_anon.replace(real, blind)
+
+            return (
+                "【当前轮次议题背景】\n"
+                f"当前为第{round_num}轮（每轮=3个月）。\n"
+                f"本轮主导国际议题：{issue_anon}\n"
+                "追随某国意味着在这一议题上与该国协调立场，而非结成战略同盟。"
+                "你的追随决策应基于你在这轮议题上的国家利益。"
+            )
+        except Exception:
+            pass
+        return ""
+
     async def _build_complete_info_pool(
         self,
         project_id: int,
@@ -952,6 +1084,11 @@ class SimulationService:
         history_power_data = await self._get_power_history(project_id, round_num)
         last_round_order_info = await self._get_last_round_order(project_id, round_num)
 
+        # 获取当前议题背景
+        project = await project_service.get_project(project_id)
+        scene_source = project.get('scene_source', '') if project else ''
+        current_issue = self._get_issue_context(scene_source, round_num, agents)
+
         # 构建完整的智能体信息（包含战略关系）
         all_agent_info = [
             {
@@ -973,7 +1110,8 @@ class SimulationService:
             history_action_records=history_action_records,
             history_power_data=history_power_data,
             last_round_order_info=last_round_order_info,
-            round_num=round_num
+            round_num=round_num,
+            current_issue=current_issue
         )
 
     async def _update_power(
@@ -1236,7 +1374,8 @@ class SimulationService:
                 current_total_power=agent.get('current_total_power', 0),
                 power_level=power_level,
                 leader_type=agent.get('leader_type', '未定义'),
-                cinc_year=agent.get('cinc_year')
+                cinc_year=agent.get('cinc_year'),
+                initial_total_power=agent.get('initial_total_power', 0)
             )
             # 所有国家评估（按当前voter视角预先核对战略关系+双向互动）
             voter_relationships = relationships_lookup.get(agent_id, {})
@@ -1252,6 +1391,7 @@ class SimulationService:
                 leader_candidates_info=all_targets_info,
                 personal_summary=_build_personal_summary_for(agent),
                 candidates_evaluation=candidates_evaluation,
+                current_issue=info_pool.current_issue,
             )
 
             async with semaphore:
@@ -1311,7 +1451,7 @@ class SimulationService:
             follower_decisions[agent_id] = follower_id
 
         # ========== 后处理：修复互相追随闭环 ==========
-        # 如果A追随B且B追随A，让实力更强的一方保持中立
+        # 如果A追随B且B追随A，让实力更弱的一方变为中立（强者更有领导资格）
         agent_power_map = {
             a.get('agent_id'): a.get('current_total_power', 0) or 0
             for a in agents
@@ -1325,17 +1465,38 @@ class SimulationService:
                     a_power = agent_power_map.get(agent_id, 0)
                     b_power = agent_power_map.get(leader_id, 0)
                     if a_power >= b_power:
-                        follower_decisions[agent_id] = None
-                        logger.warning(
-                            f"[追随修复] 解除互相追随: {agent_id} 不再追随 {leader_id} "
-                            f"({agent_id}实力更强/a_power={a_power:.4f})"
-                        )
-                    else:
+                        # agent_id更强，让leader_id(弱者)变为中立
                         follower_decisions[leader_id] = None
                         logger.warning(
                             f"[追随修复] 解除互相追随: {leader_id} 不再追随 {agent_id} "
-                            f"({leader_id}实力更强/b_power={b_power:.4f})"
+                            f"({leader_id}实力更弱/b_power={b_power:.4f})"
                         )
+                    else:
+                        # leader_id更强，让agent_id(弱者)变为中立
+                        follower_decisions[agent_id] = None
+                        logger.warning(
+                            f"[追随修复] 解除互相追随: {agent_id} 不再追随 {leader_id} "
+                            f"({agent_id}实力更弱/a_power={a_power:.4f})"
+                        )
+
+        # ========== 后处理：大国/超级大国独立性保障 ==========
+        # 大国和超级大国作为体系领导者，应始终保持独立决策，不追随其他国家
+        # 这符合国际关系理论中"极"的定义：大国是被追随者，而非追随者
+        great_power_count = 0
+        for agent in agents:
+            agent_id = agent.get('agent_id')
+            power_level = agent.get('power_level', '')
+            # 大国或超级大国应保持独立
+            if power_level in ('大国', '超级大国') and follower_decisions.get(agent_id) is not None:
+                old_leader = follower_decisions[agent_id]
+                follower_decisions[agent_id] = None
+                great_power_count += 1
+                logger.info(
+                    f"[大国独立] {agent.get('agent_name')}(ID:{agent_id}) "
+                    f"实力层级={power_level}, 不应追随, 已强制设为中立"
+                )
+        if great_power_count > 0:
+            logger.warning(f"[大国独立] 本轮共修正 {great_power_count} 个大国的追随决策为中立")
 
         # 汇总统计
         total_following = sum(1 for v in follower_decisions.values() if v is not None)
@@ -1683,66 +1844,22 @@ class SimulationService:
             except (asyncio.TimeoutError, asyncio.CancelledError):
                 pass
 
-        # 重置所有智能体的当前CINC到初始值
+        # 重置所有智能体的当前CINC到初始值 + 批量清空运行数据
         async for session in db_config.get_session():
+            # 重置智能体CINC
             result = await session.execute(
                 select(AgentConfig).where(AgentConfig.project_id == project_id)
             )
             agents = result.scalars().all()
-
             for agent in agents:
                 agent.current_total_power = agent.initial_total_power
                 agent.updated_at = datetime.now()
 
-            await session.commit()
-
-        # 清空行为记录
-        async for session in db_config.get_session():
-            result = await session.execute(
-                select(ActionRecord).where(ActionRecord.project_id == project_id)
-            )
-            records = result.scalars().all()
-
-            for record in records:
-                await session.delete(record)
-
-            await session.commit()
-
-        # 清空追随关系（必须在删除轮次记录之前）
-        async for session in db_config.get_session():
-            result = await session.execute(
-                select(FollowerRelation).where(FollowerRelation.project_id == project_id)
-            )
-            relations = result.scalars().all()
-
-            for relation in relations:
-                await session.delete(relation)
-
-            await session.commit()
-
-        # 清空轮次记录
-        async for session in db_config.get_session():
-            result = await session.execute(
-                select(SimulationRound).where(SimulationRound.project_id == project_id)
-            )
-            rounds = result.scalars().all()
-
-            for round_record in rounds:
-                await session.delete(round_record)
-
-            await session.commit()
-
-        # 清空国力历史记录
-        async for session in db_config.get_session():
-            result = await session.execute(
-                select(AgentPowerHistory).where(AgentPowerHistory.project_id == project_id)
-            )
-            histories = result.scalars().all()
-
-            for history in histories:
-                await session.delete(history)
-
-            await session.commit()
+            # 批量删除运行数据（单条SQL代替逐行SELECT+DELETE）
+            await session.execute(delete(ActionRecord).where(ActionRecord.project_id == project_id))
+            await session.execute(delete(FollowerRelation).where(FollowerRelation.project_id == project_id))
+            await session.execute(delete(AgentPowerHistory).where(AgentPowerHistory.project_id == project_id))
+            await session.execute(delete(SimulationRound).where(SimulationRound.project_id == project_id))
 
         # 注意：不重置战略关系 - 战略关系属于项目配置（用户/场景预设的初始关系），
         # 不属于运行数据。重置仿真只应清除运行数据（轮次/行为/追随关系/国力历史/CINC变化），

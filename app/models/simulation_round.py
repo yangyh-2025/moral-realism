@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, func, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..models import Base
@@ -67,6 +67,11 @@ class SimulationRound(Base):
     project = relationship("SimulationProject", back_populates="rounds")
     actions = relationship("ActionRecord", back_populates="round")
     follower_relations = relationship("FollowerRelation", back_populates="round")
+
+    # 唯一约束：每个项目的每轮只能有一条记录
+    __table_args__ = (
+        UniqueConstraint('project_id', 'round_num', name='uq_simulation_round'),
+    )
 
     def __repr__(self) -> str:
         return f"<SimulationRound(id={self.round_id}, round_num={self.round_num}, order_type={self.order_type})>"

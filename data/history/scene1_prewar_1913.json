@@ -1,0 +1,5320 @@
+{
+  "scene_id": 1,
+  "scene_name": "一战前欧洲(1913)",
+  "description": "一战前欧洲(1913), 1913Q1 to 1925Q2, 19 countries, 50 rounds. Each round=3 months. Following is issue-specific leadership preference (NOT alliance).",
+  "time_span": "1913-Q1 ~ 1925-Q2",
+  "total_rounds": 50,
+  "num_countries": 19,
+  "rounds_per_year": 4,
+  "countries": [
+    {
+      "index": 1,
+      "name": "Germany",
+      "code": "GMY"
+    },
+    {
+      "index": 2,
+      "name": "Russia",
+      "code": "RUS"
+    },
+    {
+      "index": 3,
+      "name": "UK",
+      "code": "UKG"
+    },
+    {
+      "index": 4,
+      "name": "France",
+      "code": "FRN"
+    },
+    {
+      "index": 5,
+      "name": "Austria-Hungary",
+      "code": "AUH"
+    },
+    {
+      "index": 6,
+      "name": "Italy",
+      "code": "ITA"
+    },
+    {
+      "index": 7,
+      "name": "Ottoman Empire",
+      "code": "TUR"
+    },
+    {
+      "index": 8,
+      "name": "Bulgaria",
+      "code": "BUL"
+    },
+    {
+      "index": 9,
+      "name": "Spain",
+      "code": "SPN"
+    },
+    {
+      "index": 10,
+      "name": "Belgium",
+      "code": "BEL"
+    },
+    {
+      "index": 11,
+      "name": "Greece",
+      "code": "GRC"
+    },
+    {
+      "index": 12,
+      "name": "Sweden",
+      "code": "SWD"
+    },
+    {
+      "index": 13,
+      "name": "Netherlands",
+      "code": "NTH"
+    },
+    {
+      "index": 14,
+      "name": "Romania",
+      "code": "ROM"
+    },
+    {
+      "index": 15,
+      "name": "Portugal",
+      "code": "POR"
+    },
+    {
+      "index": 16,
+      "name": "Denmark",
+      "code": "DEN"
+    },
+    {
+      "index": 17,
+      "name": "Switzerland",
+      "code": "SWZ"
+    },
+    {
+      "index": 18,
+      "name": "Serbia",
+      "code": "YUG"
+    },
+    {
+      "index": 19,
+      "name": "Norway",
+      "code": "NOR"
+    }
+  ],
+  "great_powers": [
+    1,
+    2,
+    3
+  ],
+  "following_definition": "追随!=同盟: 追随是对某国在特定议题上的领导偏好, 不等同于战略同盟关系。盟友可能在经济议题上追随敌对阵营的领导者, 这是正常的外交现象。每轮的追随基于该轮最突出议题上的政策协调对象。",
+  "key_issue_specific_cases": {
+    "France(4)": "Ally=Russia(2), follows UK(3) on naval/colonial issues. July Crisis(R7) temporarily follows Russia on security.",
+    "Italy(6)": "Triple Alliance member with Germany(1), follows UK(3) on colonial/naval issues - classic issue-based defection.",
+    "Netherlands(13)": "Economic ties to Germany(1), follows UK(3) on sea power/trade issues.",
+    "Switzerland(17)": "German-speaking economic ties to Germany(1), follows UK(3) on security balance issues."
+  },
+  "rounds": {
+    "1": {
+      "round": 1,
+      "quarter": "1913Q1",
+      "dominant_issue": "London Conference - Balkan territorial settlement, UK leads diplomacy",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": null,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "2": {
+      "round": 2,
+      "quarter": "1913Q2",
+      "dominant_issue": "Second Balkan War - Bulgaria vs Serbia/Greece, Russia backs Slavic alliance",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": null,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "3": {
+      "round": 3,
+      "quarter": "1913Q3",
+      "dominant_issue": "Treaty of Bucharest - Balkan territorial resettlement, A-H vs Russia for influence",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "4": {
+      "round": 4,
+      "quarter": "1913Q4",
+      "dominant_issue": "Liman von Sanders crisis - German military mission to Ottoman, Russia-Germany tension",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Information"
+        },
+        "2": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "5": {
+      "round": 5,
+      "quarter": "1914Q1",
+      "dominant_issue": "Anglo-German naval race peaks - UK dominates maritime order, Germany accelerates shipbuilding",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Information"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "6": {
+      "round": 6,
+      "quarter": "1914Q2",
+      "dominant_issue": "Colonial competition & alliance consolidation - Franco-Russian alliance strengthens",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "4": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "7": {
+      "round": 7,
+      "quarter": "1914Q3",
+      "dominant_issue": "July Crisis - diplomatic crisis management, states choose between war and peace",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 2,
+        "5": 1,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "2": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "6": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "8": {
+      "round": 8,
+      "quarter": "1914Q4",
+      "dominant_issue": "WWI outbreak - mobilization and initial battles, alliance camps coordinate militarily",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": null,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "9": {
+      "round": 9,
+      "quarter": "1915Q1",
+      "dominant_issue": "Ottoman enters war & Gallipoli - Entente vs Central Powers camps solidify",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "10": {
+      "round": 10,
+      "quarter": "1915Q2",
+      "dominant_issue": "Italy joins Entente (Treaty of London) - Italy now follows UK on war strategy",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "11": {
+      "round": 11,
+      "quarter": "1915Q3",
+      "dominant_issue": "Eastern Front crisis - Russian Great Retreat, Serbia overrun",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": null,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "12": {
+      "round": 12,
+      "quarter": "1915Q4",
+      "dominant_issue": "Serbia falls - Bulgaria joins Central Powers, Entente lands at Salonika",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "13": {
+      "round": 13,
+      "quarter": "1916Q1",
+      "dominant_issue": "Battle of Verdun begins - Western Front war of attrition",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "14": {
+      "round": 14,
+      "quarter": "1916Q2",
+      "dominant_issue": "Battle of Jutland & Portugal enters war - UK maintains naval supremacy",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "15": {
+      "round": 15,
+      "quarter": "1916Q3",
+      "dominant_issue": "Somme & Brusilov Offensive - simultaneous major offensives, Romania joins Entente",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "16": {
+      "round": 16,
+      "quarter": "1916Q4",
+      "dominant_issue": "Romania defeated & Franz Joseph dies - war fatigue emerges",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "17": {
+      "round": 17,
+      "quarter": "1917Q1",
+      "dominant_issue": "Russian Revolution (Feb) & US enters war - international landscape transforms",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "18": {
+      "round": 18,
+      "quarter": "1917Q2",
+      "dominant_issue": "French army mutinies & Greece joins Entente - Entente internal coordination strengthens",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "19": {
+      "round": 19,
+      "quarter": "1917Q3",
+      "dominant_issue": "Russian October Revolution & Caporetto - Eastern Front collapses, Italy needs UK/France support",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "20": {
+      "round": 20,
+      "quarter": "1917Q4",
+      "dominant_issue": "Passchendaele & Cambrai - new technology warfare (tanks, aircraft)",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Information"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "21": {
+      "round": 21,
+      "quarter": "1918Q1",
+      "dominant_issue": "Brest-Litovsk Treaty & German Spring Offensive preparations - Russia exits, Germany masses west",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "22": {
+      "round": 22,
+      "quarter": "1918Q2",
+      "dominant_issue": "German Spring Offensive & Allied unified command (Foch) - A-H/Ottoman/Bulgaria wavering",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": null,
+        "8": null,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "23": {
+      "round": 23,
+      "quarter": "1918Q3",
+      "dominant_issue": "Hundred Days Offensive & Central Powers collapse - Bulgaria & Ottoman surrender",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": null,
+        "6": 3,
+        "7": null,
+        "8": null,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "8": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "24": {
+      "round": 24,
+      "quarter": "1918Q4",
+      "dominant_issue": "Armistice - WWI ends, empires dissolve, UK dominates postwar order",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": null,
+        "6": 3,
+        "7": null,
+        "8": null,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "25": {
+      "round": 25,
+      "quarter": "1919Q1",
+      "dominant_issue": "Paris Peace Conference opens - UK dominates postwar settlement, Wilson's Fourteen Points",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": null,
+        "6": 3,
+        "7": null,
+        "8": null,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "26": {
+      "round": 26,
+      "quarter": "1919Q2",
+      "dominant_issue": "Treaty of Versailles signed - Germany accepts war guilt and reparations",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": null,
+        "6": 3,
+        "7": null,
+        "8": null,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "27": {
+      "round": 27,
+      "quarter": "1919Q3",
+      "dominant_issue": "Treaty of Saint-Germain - Austria-Hungary formally dissolved, Central Europe redrawn",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "28": {
+      "round": 28,
+      "quarter": "1919Q4",
+      "dominant_issue": "Treaty of Neuilly & Greco-Turkish War begins - Bulgaria loses territory",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": null,
+        "8": null,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "29": {
+      "round": 29,
+      "quarter": "1920Q1",
+      "dominant_issue": "League of Nations founded - UK leads collective security mechanism",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "30": {
+      "round": 30,
+      "quarter": "1920Q2",
+      "dominant_issue": "Treaty of Trianon & Little Entente - Central European order established, France leads Little Entente",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "31": {
+      "round": 31,
+      "quarter": "1920Q3",
+      "dominant_issue": "Polish-Soviet War - Red Army threatens Central Europe, West aids Poland",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "32": {
+      "round": 32,
+      "quarter": "1920Q4",
+      "dominant_issue": "Greco-Turkish War intensifies & Treaty of Sevres - Ottoman Empire partitioned",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": null,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "33": {
+      "round": 33,
+      "quarter": "1921Q1",
+      "dominant_issue": "Reparations negotiations - London conference sets German reparations total, France demands harsh terms",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "34": {
+      "round": 34,
+      "quarter": "1921Q2",
+      "dominant_issue": "Anglo-Soviet Trade Agreement - UK leads economic engagement with Soviet Russia",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "35": {
+      "round": 35,
+      "quarter": "1921Q3",
+      "dominant_issue": "Washington Naval Conference preparations & Austrian economic dependence on Germany",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "36": {
+      "round": 36,
+      "quarter": "1921Q4",
+      "dominant_issue": "Washington Naval Treaty - naval disarmament (5-power treaty)",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "37": {
+      "round": 37,
+      "quarter": "1922Q1",
+      "dominant_issue": "Genoa Conference - European economic reconstruction, Soviet Russia invited",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "38": {
+      "round": 38,
+      "quarter": "1922Q2",
+      "dominant_issue": "Treaty of Rapallo - Germany-Soviet secret cooperation, Germany breaks Versailles isolation",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "2": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "39": {
+      "round": 39,
+      "quarter": "1922Q3",
+      "dominant_issue": "Chanak Crisis & Mussolini's March on Rome - UK faces Turkey alone, Italian fascist regime",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": null,
+        "7": null,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": null,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Information",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "40": {
+      "round": 40,
+      "quarter": "1922Q4",
+      "dominant_issue": "Mussolini in power & Lausanne Conference - Italy turns to independent fascist foreign policy",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": null,
+        "7": null,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": null,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "7": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "41": {
+      "round": 41,
+      "quarter": "1923Q1",
+      "dominant_issue": "Ruhr Crisis - France occupies Ruhr unilaterally, UK opposes French hardline policy",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Information"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "42": {
+      "round": 42,
+      "quarter": "1923Q2",
+      "dominant_issue": "German hyperinflation - economic crisis threatens European stability",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "43": {
+      "round": 43,
+      "quarter": "1923Q3",
+      "dominant_issue": "Corfu Incident - Italy bombards Greece, League of Nations crisis",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 1,
+        "6": null,
+        "7": 3,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 3,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Information"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Information"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "44": {
+      "round": 44,
+      "quarter": "1923Q4",
+      "dominant_issue": "Stresemann & Dawes Plan - German economic stabilization, international coordination",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 3,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "45": {
+      "round": 45,
+      "quarter": "1924Q1",
+      "dominant_issue": "Dawes Plan adopted - German reparations restructured, UK/US lead reconstruction",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 3,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "46": {
+      "round": 46,
+      "quarter": "1924Q2",
+      "dominant_issue": "Geneva Protocol - collective security mechanism strengthened",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 3,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Information",
+          "expected_secondary": "Military"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "47": {
+      "round": 47,
+      "quarter": "1924Q3",
+      "dominant_issue": "London Conference - final reparations settlement, French evacuate Ruhr",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 3,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 2,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 2,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Economic",
+          "expected_secondary": "Diplomatic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "48": {
+      "round": 48,
+      "quarter": "1924Q4",
+      "dominant_issue": "Locarno preparations - Franco-German rapprochement, UK guarantees Western borders",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 3,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "49": {
+      "round": 49,
+      "quarter": "1925Q1",
+      "dominant_issue": "Locarno negotiations - Germany accepts Western borders, European reconciliation",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 3,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    },
+    "50": {
+      "round": 50,
+      "quarter": "1925Q2",
+      "dominant_issue": "Locarno Treaties signed - European collective security system established",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": 3,
+        "5": 3,
+        "6": null,
+        "7": 1,
+        "8": 1,
+        "9": 3,
+        "10": 3,
+        "11": 2,
+        "12": 3,
+        "13": 3,
+        "14": 3,
+        "15": 3,
+        "16": 3,
+        "17": 3,
+        "18": 3,
+        "19": 3
+      },
+      "actions": {
+        "1": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "2": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "3": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "4": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "5": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "6": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "7": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "8": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "9": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "10": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "11": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "12": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "13": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "14": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "15": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Military"
+        },
+        "16": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "17": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        },
+        "18": {
+          "expected_primary": "Military",
+          "expected_secondary": "Diplomatic"
+        },
+        "19": {
+          "expected_primary": "Diplomatic",
+          "expected_secondary": "Economic"
+        }
+      }
+    }
+  }
+}

@@ -299,21 +299,7 @@ class InteractionEngine:
                         logger.warning(
                             f"Validation failed for action {action.action_name}: {', '.join(errors)}"
                         )
-                        # Create action record
-                        record = ActionRecord(
-                            round_num=self._current_round,
-                            action_stage=ActionStage.INITIATIVE,
-                            source_agent_id=agent.agent_id,
-                            target_agent_id=target_agent_id,
-                            action_id=action.action_id,
-                            action_category=action.action_category,
-                            action_name=action.action_name,
-                            respect_sov=action.respect_sov,
-                            initiator_power_change=action.initiator_power_change,
-                            target_power_change=action.target_power_change,
-                            decision_detail=action_data.get('decision_detail')
-                        )
-                        records.append(record)
+                        continue
 
                 except Exception as e:
                     logger.exception(f"Error processing action for agent {agent.agent_name}: {e}")
@@ -385,21 +371,7 @@ class InteractionEngine:
                         logger.warning(
                             f"Validation failed for response {action.action_name}: {', '.join(errors)}"
                         )
-                        # Create action record
-                        record = ActionRecord(
-                            round_num=self._current_round,
-                            action_stage=ActionStage.RESPONSE,
-                            source_agent_id=agent.agent_id,
-                            target_agent_id=source_agent_id,
-                            action_id=action.action_id,
-                            action_category=action.action_category,
-                            action_name=action.action_name,
-                            respect_sov=action.respect_sov,
-                            initiator_power_change=action.initiator_power_change,
-                            target_power_change=action.target_power_change,
-                            decision_detail=response_data.get('decision_detail')
-                        )
-                        records.append(record)
+                        continue
 
                 except Exception as e:
                     logger.exception(f"Error processing response for agent {agent.agent_name}: {e}")
@@ -436,7 +408,7 @@ class InteractionEngine:
         async def execute_agent(agent: Agent) -> List[ActionRecord]:
             async with semaphore:
                 # Run initiative phase in thread pool to avoid blocking
-                loop = asyncio.get_event_loop()
+                loop = asyncio.get_running_loop()
                 return await loop.run_in_executor(
                     None, self._execute_agent_initiative_phase,
                     agent, agents,
@@ -481,7 +453,7 @@ class InteractionEngine:
         async def execute_agent(agent: Agent) -> List[ActionRecord]:
             async with semaphore:
                 # Run response phase in thread pool to avoid blocking
-                loop = asyncio.get_event_loop()
+                loop = asyncio.get_running_loop()
                 return await loop.run_in_executor(
                     None, self._execute_agent_response_phase,
                     agent,
@@ -530,8 +502,6 @@ class InteractionEngine:
         finally:
             loop.close()
 
-        return self._initiative_records
-
     def execute_response_phase(
         self,
         agents: List[Agent],
@@ -560,8 +530,6 @@ class InteractionEngine:
             )
         finally:
             loop.close()
-
-        return self._response_records
 
     async def execute_round_async(
         self,
@@ -630,11 +598,6 @@ class InteractionEngine:
             )
         finally:
             loop.close()
-
-        return {
-            'initiative': self._initiative_records,
-            'response': self._response_records
-        }
 
     def get_valid_records(self) -> List[ActionRecord]:
         """

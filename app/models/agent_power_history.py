@@ -7,7 +7,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, func, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..models import Base
@@ -48,6 +48,12 @@ class AgentPowerHistory(Base):
     # Relationships
     project = relationship("SimulationProject", back_populates="power_histories")
     agent = relationship("AgentConfig", back_populates="power_histories")
+
+    # 复合索引：加速按项目+轮次和按项目+智能体+轮次的历史查询
+    __table_args__ = (
+        Index('ix_power_history_project_round', 'project_id', 'round_num'),
+        Index('ix_power_history_project_agent_round', 'project_id', 'agent_id', 'round_num'),
+    )
 
     def __repr__(self) -> str:
         return f"<AgentPowerHistory(id={self.history_id}, agent_id={self.agent_id}, round={self.round_num})>"

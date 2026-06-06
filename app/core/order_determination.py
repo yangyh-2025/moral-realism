@@ -241,12 +241,13 @@ class OrderDeterminationEngine:
         if not self._agents:
             return False, None, 0.0
 
-        # Count followers for each leader
+        # Count followers for each leader (only eligible candidates)
         leader_follower_counts: Dict[int, int] = {}
         total_agents = len(self._agents)
+        eligible_candidates = set(self._determine_leader_candidates())
 
         for relation in follower_relations:
-            if relation.leader_agent_id is not None:
+            if relation.leader_agent_id is not None and relation.leader_agent_id in eligible_candidates:
                 leader_follower_counts[relation.leader_agent_id] = (
                     leader_follower_counts.get(relation.leader_agent_id, 0) + 1
                 )
@@ -261,7 +262,8 @@ class OrderDeterminationEngine:
                 leader_agent_id = agent_id
 
         # Check if follower ratio meets threshold
-        follower_ratio = max_follower_count / total_agents if total_agents > 0 else 0.0
+        # 分母排除领导者自身（领导者不能追随自己）
+        follower_ratio = max_follower_count / (total_agents - 1) if total_agents > 1 else 0.0
         has_leader = follower_ratio >= self.leader_threshold
 
         if self.enable_logging:

@@ -60,7 +60,9 @@ async def get_llm_calls(
             count_query = count_query.where(LLMCallLog.status == status)
             query = query.where(LLMCallLog.status == status)
         if keyword:
-            like = f"%{keyword}%"
+            # 转义SQL通配符防止LIKE注入
+            escaped = keyword.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+            like = f"%{escaped}%"
             count_query = count_query.where(
                 or_(LLMCallLog.prompt_full.ilike(like), LLMCallLog.response_full.ilike(like))
             )
@@ -68,8 +70,11 @@ async def get_llm_calls(
                 or_(LLMCallLog.prompt_full.ilike(like), LLMCallLog.response_full.ilike(like))
             )
 
-        # 排序
+        # 排序（白名单校验防注入）
+        ALLOWED_SORT_FIELDS = {'created_at', 'round_num', 'agent_id', 'status', 'call_id'}
         sort_field, sort_dir = sort.rsplit("_", 1) if "_" in sort else ("created_at", "desc")
+        if sort_field not in ALLOWED_SORT_FIELDS:
+            sort_field = "created_at"
         sort_col = getattr(LLMCallLog, sort_field, LLMCallLog.created_at)
         if sort_dir == "asc":
             query = query.order_by(sort_col.asc())

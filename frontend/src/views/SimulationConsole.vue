@@ -637,8 +637,8 @@ async function refreshProjectStatus() {
     const response = await simulationApi.getProject(projectId.value)
     const project = response
 
-    console.log('==== Poll refreshProjectStatus ====')
-    console.log('Project status data:', project)
+    // 成功则重置失败计数
+    consecutiveFailures = 0
 
     status.value = project.status || '未启动'
     const newRound = project.current_round || 0
@@ -675,38 +675,79 @@ async function refreshProjectStatus() {
     }
 
     // 确保只在运行时才轮询
-    if (!isRunningNow && pollTimer) {
+    if (!isRunningNow && (pollTimer || pollTimeout)) {
       stopPolling()
-    } else if (isRunningNow && !pollTimer) {
-      startPolling()
+    } else if (isRunningNow && !pollTimer && !pollTimeout) {
+      scheduleNextPoll()
     }
 
-    // 加载战略关系数据
-    await loadStrategicRelations()
+    // 加载战略关系数据（仅在轮次变化时，避免每秒重复请求）
+    if (newRound > lastRound.value || consecutiveFailures === 0) {
+      await loadStrategicRelations()
 
-    // 加载战略关系变化历史
-    if (currentRound.value > 0) {
-      await loadRelationshipChanges(currentRound.value)
+      // 加载战略关系变化历史
+      if (currentRound.value > 0) {
+        await loadRelationshipChanges(currentRound.value)
+      }
     }
   } catch (error) {
-    console.error('获取项目状态失败:', error)
+    consecutiveFailures++
+    if (consecutiveFailures <= 3) {
+      console.error(`获取项目状态失败 (${consecutiveFailures}/${MAX_FAILURES}):`, error.message || error)
+    } else if (consecutiveFailures === MAX_FAILURES) {
+      console.error(`连续失败${MAX_FAILURES}次，停止轮询。后端可能已断开。`)
+      stopPolling()
+    }
     // 即使 API 失败也确保 isRunning 与当前 status 一致，防止按钮状态卡住
     const isRunningNow = status.value === '运行中'
     if (isRunningNow !== isRunning.value) {
       isRunning.value = isRunningNow
     }
-    if (!isRunningNow && pollTimer) {
+    if (!isRunningNow && (pollTimer || pollTimeout)) {
       stopPolling()
     }
   }
+}
+
+// 轮询退避机制
+let consecutiveFailures = 0
+const BASE_POLL_INTERVAL = 1000    // 基础间隔 1s
+const MAX_POLL_INTERVAL = 15000    // 最大间隔 15s
+const MAX_FAILURES = 10            // 连续失败10次后停止轮询
+
+function getPollInterval() {
+  if (consecutiveFailures === 0) return BASE_POLL_INTERVAL
+  // 指数退避: 1s → 2s → 4s → 8s → 15s
+  return Math.min(BASE_POLL_INTERVAL * Math.pow(2, consecutiveFailures), MAX_POLL_INTERVAL)
+}
+
+let pollTimeout = null
+
+function scheduleNextPoll() {
+  if (pollTimeout) return
+  const interval = getPollInterval()
+  pollTimeout = setTimeout(async () => {
+    pollTimeout = null
+    await refreshProjectStatus()
+    // 如果仍在运行中，继续调度下一次
+    if (isRunning.value) {
+      scheduleNextPoll()
+    }
+  }, interval)
 }
 
 /**
  * 开始轮询
  */
 function startPolling() {
-  if (pollTimer) return
-  pollTimer = setInterval(refreshProjectStatus, 1000)
+  if (pollTimer || pollTimeout) return
+  consecutiveFailures = 0
+  // 首次立即执行，之后用退避调度
+  refreshProjectStatus().then(() => {
+    if (isRunning.value) {
+      scheduleNextPoll()
+    }
+  })
 }
 
 /**
@@ -716,6 +757,10 @@ function stopPolling() {
   if (pollTimer) {
     clearInterval(pollTimer)
     pollTimer = null
+  }
+  if (pollTimeout) {
+    clearTimeout(pollTimeout)
+    pollTimeout = null
   }
 }
 

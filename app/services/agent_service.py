@@ -159,6 +159,14 @@ class AgentService:
                 level = levels.get(a.agent_id, PowerLevelEnum.SMALL_STATE)
                 a.power_level = level.value if hasattr(level, 'value') else str(level)
 
+                # 清理非法leader_type：仅超级大国/大国可拥有领导类型
+                if a.power_level not in ("超级大国", "大国") and a.leader_type:
+                    logger.info(
+                        f"智能体 {a.agent_name} 层级为 {a.power_level}，"
+                        f"清空 leader_type={a.leader_type}"
+                    )
+                    a.leader_type = None
+
             await session.commit()
 
     async def add_agent(self, project_id: int, config: AgentConfigRequest) -> dict:
@@ -239,16 +247,14 @@ class AgentService:
             )
             agent = result.scalar_one()
 
-            # 注意：CINC层级是体系内相对排名，新增agent会引发排名重排，
-            # 因此add_agent阶段不对leader_type做硬校验。
-            # 如果当前层级不允许配置leader_type，则在持久化时清空该字段，
-            # 但保留agent本身（其他agent加入后排名可能变化）。
+            # 硬校验：仅超级大国/大国可拥有leader_type
             if config.leader_type and agent.power_level not in ["超级大国", "大国"]:
                 logger.warning(
                     f"智能体 {agent.agent_name} 当前层级为 {agent.power_level}，"
-                    f"非超级大国/大国，仍保留leader_type={config.leader_type}（"
-                    f"层级会随后续agent加入而动态调整）"
+                    f"非超级大国/大国，清空leader_type={config.leader_type}"
                 )
+                agent.leader_type = None
+                await session.commit()
 
             return {
                 "agent_id": agent.agent_id,
@@ -436,14 +442,14 @@ class AgentService:
             )
             agent = result.scalar_one()
 
-            # 注意：CINC层级是体系内相对排名，更新agent后排名可能变化，
-            # 因此update_agent阶段不对leader_type做硬校验，只警告。
+            # 硬校验：仅超级大国/大国可拥有leader_type
             if config.leader_type and agent.power_level not in ["超级大国", "大国"]:
                 logger.warning(
                     f"智能体 {agent.agent_name} 当前层级为 {agent.power_level}，"
-                    f"非超级大国/大国，仍保留leader_type={config.leader_type}（"
-                    f"层级会随其他agent变化而动态调整）"
+                    f"非超级大国/大国，清空leader_type={config.leader_type}"
                 )
+                agent.leader_type = None
+                await session.commit()
 
             return {
                 "agent_id": agent.agent_id,

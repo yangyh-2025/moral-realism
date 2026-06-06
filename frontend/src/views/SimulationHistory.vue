@@ -321,7 +321,7 @@ async function handlePrimaryAction(row) {
       ElMessage.error('恢复失败: ' + (e.message || e))
     }
   } else if (status === '已完成' || status === '已终止') {
-    router.push({ name: 'SimulationResults', query: { projectId: row.project_id } })
+    router.push({ name: 'Analysis', query: { projectId: row.project_id } })
   } else {
     router.push({ name: 'SimulationConsole', query: { projectId: row.project_id } })
   }

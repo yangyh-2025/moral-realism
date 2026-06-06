@@ -15,7 +15,7 @@ from datetime import datetime
 from app.services.project_service import project_service
 from app.services.agent_service import agent_service, AgentConfig
 from app.services.simulation_service import simulation_service
-from app.models import ActionRecord, AgentConfig as AgentConfigModel, FollowerRelation
+from app.models import ActionRecord, AgentConfig as AgentConfigModel, FollowerRelation, SimulationRound
 from sqlalchemy import select
 from app.config.database import db_config
 
@@ -572,23 +572,25 @@ async def get_round_detail(project_id: int, round_num: int):
         )
         follower_relations = follower_relations_result.scalars().all()
 
+        # 查询轮次记录获取领导者信息
+        round_result = await session.execute(
+            select(SimulationRound)
+            .where(SimulationRound.project_id == project_id)
+            .where(SimulationRound.round_num == round_num)
+        )
+        round_record = round_result.scalar_one_or_none()
+
         # 构建响应
         action_responses = []
         respect_sov_count = 0
-        has_leader = False
 
         for record in records:
             source_name = agent_names.get(record.source_agent_id, f"Agent_{record.source_agent_id}")
             target_name = agent_names.get(record.target_agent_id, f"Agent_{record.target_agent_id}")
 
-            # 统计尊重主权行为
-            respect_sov_val = str(record.respect_sov).lower() in ['true', '1', 'yes']
-            if respect_sov_val:
+            # 统计尊重主权行为（Boolean字段直接使用）
+            if record.respect_sov:
                 respect_sov_count += 1
-
-            # 简单判断是否有领导行为（霸权国行为）
-            if "霸权" in source_name or "霸权" in record.action_category:
-                has_leader = True
 
             action_responses.append(ActionRecordResponse(
                 record_id=record.record_id,
@@ -602,7 +604,7 @@ async def get_round_detail(project_id: int, round_num: int):
                 action_id=record.action_id,
                 action_name=record.action_name,
                 action_category=record.action_category,
-                respect_sov=respect_sov_val,
+                respect_sov=record.respect_sov,
                 initiator_power_change=record.initiator_power_change,
                 target_power_change=record.target_power_change,
                 decision_detail=record.decision_detail,
@@ -642,11 +644,11 @@ async def get_round_detail(project_id: int, round_num: int):
             actions=action_responses,
             total_actions=len(action_responses),
             respect_sov_actions=respect_sov_count,
-            has_leader=has_leader,
+            has_leader=round_record.has_leader if round_record else False,
             follower_relations=follower_relation_responses,
-            leader_agent_id=leader_agent_id,
-            leader_follower_ratio=leader_follower_ratio,
-            order_type=None
+            leader_agent_id=round_record.leader_agent_id if round_record else leader_agent_id,
+            leader_follower_ratio=round_record.leader_follower_ratio if round_record else leader_follower_ratio,
+            order_type=round_record.order_type if round_record else None
         )
 
 
