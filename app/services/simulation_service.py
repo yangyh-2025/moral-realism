@@ -1288,37 +1288,37 @@ class SimulationService:
             elif "1946" in scene_source or "冷战" in scene_source:
                 filename = "scene3_prewar_1946.json"
             else:
-                filename = None
+                # 自定义场景无历史 JSON，无需写 trace（GT 不可用）
+                return
 
-            if filename:
-                with open(_os.path.join(_history_dir, filename), "r", encoding="utf-8") as f:
-                    history = _json.load(f)
+            with open(_os.path.join(_history_dir, filename), "r", encoding="utf-8") as f:
+                history = _json.load(f)
 
-                # Build country_index -> blind_name from agents list order
-                # (agents are created in the same order as JSON countries)
-                idx_to_blind: Dict[int, str] = {}
-                for i, a in enumerate(agents, start=1):
-                    idx_to_blind[i] = a.get("agent_name", f"国家{i}")
+            # Build country_index -> blind_name from agents list order
+            # (agents are created in the same order as JSON countries)
+            idx_to_blind: Dict[int, str] = {}
+            for i, a in enumerate(agents, start=1):
+                idx_to_blind[i] = a.get("agent_name", f"国家{i}")
 
-                # Build blind_name -> agent_id map
-                blind_to_aid: Dict[str, int] = {}
-                for a in agents:
-                    blind_to_aid[a.get("agent_name", "")] = a.get("agent_id")
+            # Build blind_name -> agent_id map
+            blind_to_aid: Dict[str, int] = {}
+            for a in agents:
+                blind_to_aid[a.get("agent_name", "")] = a.get("agent_id")
 
-                # Get GT following for this round
-                rnd = history.get("rounds", {}).get(str(round_num), {})
-                gt_following = rnd.get("following", {})
-                for cidx_str, leader_idx_str in gt_following.items():
-                    cidx = int(cidx_str)
-                    follower_blind = idx_to_blind.get(cidx)
-                    if follower_blind and follower_blind in blind_to_aid:
-                        fid = blind_to_aid[follower_blind]
-                        if leader_idx_str is None:
-                            gt_map[fid] = None
-                        else:
-                            leader_blind = idx_to_blind.get(int(leader_idx_str))
-                            if leader_blind and leader_blind in blind_to_aid:
-                                gt_map[fid] = blind_to_aid[leader_blind]
+            # Get GT following for this round
+            rnd = history.get("rounds", {}).get(str(round_num), {})
+            gt_following = rnd.get("following", {})
+            for cidx_str, leader_idx_str in gt_following.items():
+                cidx = int(cidx_str)
+                follower_blind = idx_to_blind.get(cidx)
+                if follower_blind and follower_blind in blind_to_aid:
+                    fid = blind_to_aid[follower_blind]
+                    if leader_idx_str is None:
+                        gt_map[fid] = None
+                    else:
+                        leader_blind = idx_to_blind.get(int(leader_idx_str))
+                        if leader_blind and leader_blind in blind_to_aid:
+                            gt_map[fid] = blind_to_aid[leader_blind]
 
                 # Also extract dominant_issue (blind the real names)
                 issue_raw = rnd.get("dominant_issue", "")
