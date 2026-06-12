@@ -12,6 +12,7 @@ from loguru import logger
 
 from app.config.database import db_config
 from app.core.decision_engine import InfoPool
+from app.core.leader_profiles import get_leader_profile_by_ccode, get_scene_id_from_cinc_year
 from app.models import SimulationProject, AgentConfig, ActionRecord, AgentPowerHistory, SimulationRound, FollowerRelation
 from app.services.project_service import project_service
 from app.services.agent_service import agent_service
@@ -46,6 +47,47 @@ class SimulationService:
         except Exception:
             max_concurrent = 5
         return max(1, min(max_concurrent, 20))
+
+    async def _warmup_cache(self, agents: List[Dict], log_manager=None) -> None:
+        """
+        首轮开始前发送一次轻量API调用来预热 Anthropic prompt cache。
+
+        发送与所有 agent 相同的 system prompt 前缀（SHARED_CACHE_PREFIX），
+        使后续 195 个 agent 的 system prompt 前缀完全命中缓存。
+
+        成本：1 次 API 调用（~50 input tokens + ~50 output tokens），
+        收益：后续每 agent 每次调用的 ~2000 input tokens 缓存命中。
+        """
+        from app.core.prompt_templates import PromptTemplates
+        from app.services.llm_service import get_llm_service
+
+        cinc_year = None
+        for a in agents:
+            y = a.get('cinc_year')
+            if y:
+                cinc_year = y
+                break
+
+        if not cinc_year:
+            return
+
+        shared_prefix = PromptTemplates.SHARED_CACHE_PREFIX.format(cinc_year=cinc_year)
+        warmup_prompt = '{"decision_reason":"cache warmup","actions":[]}'
+
+        try:
+            llm_service = get_llm_service()
+            await llm_service.call_llm_async(
+                warmup_prompt,
+                system_prompt=shared_prefix,
+                log_manager=log_manager,
+                log_category="cache_warmup",
+                agent_id=0,
+                agent_name="缓存预热",
+                round_num=0
+            )
+            logger.info(f"缓存预热完成 (cinc_year={cinc_year})")
+        except Exception as e:
+            logger.warning(f"缓存预热失败（非致命）: {e}")
 
     async def start_simulation(self, project_id: int) -> dict:
         """
@@ -294,10 +336,14 @@ class SimulationService:
             # 0. 创建轮次记录
             round_id = await self._create_round_record(project_id, current_round)
 
-            # 1. 获取所有智能体
+            # 0.5 获取所有智能体
             agents = await agent_service.get_agents(project_id)
             if not agents:
                 raise ValueError(f"项目 {project_id} 中没有智能体")
+
+            # 0.6 首轮缓存预热（仅第1轮，1次轻量调用激活 Anthropic prompt cache）
+            if current_round == 1:
+                await self._warmup_cache(agents, log_manager)
 
             # 2. 执行决策生成（主动阶段）
             if self._stop_flags.get(project_id, False):
@@ -337,6 +383,15 @@ class SimulationService:
                 project_id, agents, round_id, current_round, log_manager
             )
             logger.info(f"  生成 {len(follower_decisions)} 条追随决策")
+
+            # 5.5 追加逐国追随决策 trace 到 JSONL（用于统计验证）
+            self._append_follower_trace_jsonl(
+                project_id=project_id,
+                round_num=current_round,
+                agents=agents,
+                follower_decisions=follower_decisions,
+                scene_source=project.get('scene_source', ''),
+            )
 
             # 6. 秩序判定阶段
             if self._stop_flags.get(project_id, False):
@@ -623,6 +678,24 @@ class SimulationService:
                 "leader_type": agent.get('leader_type'),
             })
 
+            # Resolve leader profile from COW country code + CINC year
+            _cinc_year = agent.get('cinc_year')
+            _scene_id = get_scene_id_from_cinc_year(_cinc_year)
+            _cow_code = agent.get('country_code')
+            # Pass _scene_id even if None — get_leader_profile_by_ccode has a
+            # cross-scene fallback (scene_id=0) for profiles like Wilson/USA
+            _leader_profile = get_leader_profile_by_ccode(_scene_id or 0, _cow_code, round_num)
+            # Guard: Wilson profile (王道型) must not load for non-王道型 US agents.
+            # Other profiles (Wilhelm/Stalin/etc.) match their leader types by scene
+            # design and are left untouched.
+            _leader_type = agent.get('leader_type')
+            if _leader_profile and '威尔逊' in _leader_profile and _leader_type != '王道型':
+                logger.debug(
+                    f"Wilson profile suppressed for {_leader_type} USA agent "
+                    f"(profile is 王道型-specific)"
+                )
+                _leader_profile = None
+
             agent_info = AgentInfo(
                 agent_id=agent_id,
                 agent_name=agent_name,
@@ -631,6 +704,7 @@ class SimulationService:
                 current_total_power=agent.get('current_total_power'),
                 power_level=agent.get('power_level'),
                 leader_type=agent.get('leader_type'),
+                leader_profile=_leader_profile,
                 national_interest=agent_base.national_interest,
                 strategic_relationships=strategic_relationships.get(agent_id, {}),
                 cinc_year=agent.get('cinc_year'),
@@ -1055,6 +1129,327 @@ class SimulationService:
             pass
         return ""
 
+    @staticmethod
+    def _get_historical_following(
+        scene_source: str, round_num: int, agents: list = None
+    ) -> str:
+        """
+        从历史地面真值 v2 JSON 中读取当前轮次及之前轮次的追随真值 (following)，
+        并用糊名替换真实国名后返回文本，供 LLM 追随决策参考。
+
+        返回格式示例：
+          【历史追随格局参考（地面真值）】
+          第3轮：强国甲 被 3国追随（中等国甲, 小国乙, 小国丙）
+          第4轮：强国甲 被 4国追随（中等国甲, 小国甲, 小国乙, 小国丙）
+          第5轮（本轮）：待决策
+
+        Args:
+            scene_source: 场景标识（用于定位 JSON 文件）
+            round_num: 当前轮次号
+            agents: 智能体列表（用于 index->糊名映射）
+
+        Returns:
+            格式化的历史追随格局文本，或空字符串
+        """
+        import json, os
+
+        history_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "data", "history"
+        )
+        if "1913" in scene_source or "一战" in scene_source:
+            filename = "scene1_prewar_1913.json"
+        elif "1938" in scene_source or "二战" in scene_source:
+            filename = "scene2_prewar_1938.json"
+        elif "1946" in scene_source or "冷战" in scene_source:
+            filename = "scene3_prewar_1946.json"
+        else:
+            return ""
+
+        try:
+            filepath = os.path.join(history_dir, filename)
+            with open(filepath, "r", encoding="utf-8") as f:
+                history = json.load(f)
+
+            # Build index -> blind-name lookup from JSON countries list
+            json_countries = history.get("countries", [])
+            idx_to_real = {c["index"]: c["name"] for c in json_countries}
+
+            # Build index -> blind-name lookup via agent list
+            # scene_service creates agents in the same order as JSON countries,
+            # so agent's position in the agents list == country index
+            idx_to_blind = {}
+            if agents:
+                for i, a in enumerate(agents, start=1):
+                    idx_to_blind[i] = a.get("agent_name", f"国家{i}")
+
+            if round_num <= 1:
+                # 第1轮无历史数据可参考
+                return ""
+
+            # Collect the last N rounds of following data
+            rounds_data = history.get("rounds", {})
+            max_history_rounds = 6  # show up to 6 previous rounds
+            start_rnd = max(1, round_num - max_history_rounds)
+
+            lines = []
+            lines.append("【历史追随格局参考（地面真值）】")
+            lines.append(
+                "以下为历史各轮的实际追随格局。每行列出被追随者及其追随者列表。"
+            )
+            lines.append(
+                "注意：这些是真实历史中发生的追随关系，供你理解体系动态。"
+                "你的决策应基于你的国家利益和当前议题，而非机械复制历史。"
+            )
+            lines.append("")
+
+            for rn in range(start_rnd, round_num):
+                rnd = rounds_data.get(str(rn), {})
+                following = rnd.get("following", {})
+                if not following:
+                    continue
+
+                # Group followers by leader
+                leader_to_followers: dict = {}
+                for cidx_str, target_str in following.items():
+                    cidx = int(cidx_str)
+                    if target_str is None:
+                        continue
+                    target = int(target_str)
+                    leader_to_followers.setdefault(target, []).append(cidx)
+
+                if not leader_to_followers:
+                    lines.append(f"第{rn}轮：无追随关系（各国中立）")
+                    continue
+
+                for leader_idx, follower_indices in sorted(
+                    leader_to_followers.items(), key=lambda x: -len(x[1])
+                ):
+                    leader_name = idx_to_blind.get(leader_idx, f"国家{leader_idx}")
+                    follower_names = [
+                        idx_to_blind.get(fi, f"国家{fi}")
+                        for fi in follower_indices
+                    ]
+                    lines.append(
+                        f"第{rn}轮：{leader_name} 被 {len(follower_names)}国追随 "
+                        f"（{', '.join(follower_names)}）"
+                    )
+
+            lines.append(f"第{round_num}轮（本轮）：待决策")
+
+            return "\n".join(lines)
+
+        except Exception:
+            pass
+        return ""
+
+    @staticmethod
+    def _append_follower_trace_jsonl(
+        project_id: int,
+        round_num: int,
+        agents: List[Dict],
+        follower_decisions: Dict[int, Optional[int]],
+        scene_source: str = "",
+    ) -> None:
+        """
+        将本轮所有国家的追随决策 (agent 视角) 追加到 JSONL trace 文件。
+
+        每行一个 JSON 对象，包含：
+          - project_id, round_num
+          - agent_id, agent_name (糊名), country_code
+          - current_cinc, power_level, leader_type
+          - follower_of_agent_id (或 null=中立)
+          - follower_of_agent_name (或 "中立")
+          - ground_truth_follower_agent_name (来自历史 JSON, 或 null)
+          - ground_truth_follower_agent_id (或 null)
+          - is_correct (1/0/None: 仅当双方均非中立时才可比)
+          - dominant_issue (当轮议题，糊名后)
+
+        文件路径：data/traces/follower_trace_{project_id}.jsonl
+        后续统计脚本可直接按 project_id 过滤并做逐轮分析。
+        """
+        import json as _json, os as _os
+
+        # Resolve trace directory
+        _base = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+        _traces_dir = _os.path.join(_base, "data", "traces")
+        _os.makedirs(_traces_dir, exist_ok=True)
+        _trace_path = _os.path.join(_traces_dir, f"follower_trace_{project_id}.jsonl")
+
+        # Load ground truth for THIS round from history JSON (same lookup as _get_historical_following)
+        gt_map: Dict[int, Optional[int]] = {}  # agent_id -> target_agent_id or None
+        issue_text = ""
+        try:
+            _history_dir = _os.path.join(_base, "data", "history")
+            if "1913" in scene_source or "一战" in scene_source:
+                filename = "scene1_prewar_1913.json"
+            elif "1938" in scene_source or "二战" in scene_source:
+                filename = "scene2_prewar_1938.json"
+            elif "1946" in scene_source or "冷战" in scene_source:
+                filename = "scene3_prewar_1946.json"
+            else:
+                filename = None
+
+            if filename:
+                with open(_os.path.join(_history_dir, filename), "r", encoding="utf-8") as f:
+                    history = _json.load(f)
+
+                # Build country_index -> blind_name from agents list order
+                # (agents are created in the same order as JSON countries)
+                idx_to_blind: Dict[int, str] = {}
+                for i, a in enumerate(agents, start=1):
+                    idx_to_blind[i] = a.get("agent_name", f"国家{i}")
+
+                # Build blind_name -> agent_id map
+                blind_to_aid: Dict[str, int] = {}
+                for a in agents:
+                    blind_to_aid[a.get("agent_name", "")] = a.get("agent_id")
+
+                # Get GT following for this round
+                rnd = history.get("rounds", {}).get(str(round_num), {})
+                gt_following = rnd.get("following", {})
+                for cidx_str, leader_idx_str in gt_following.items():
+                    cidx = int(cidx_str)
+                    follower_blind = idx_to_blind.get(cidx)
+                    if follower_blind and follower_blind in blind_to_aid:
+                        fid = blind_to_aid[follower_blind]
+                        if leader_idx_str is None:
+                            gt_map[fid] = None
+                        else:
+                            leader_blind = idx_to_blind.get(int(leader_idx_str))
+                            if leader_blind and leader_blind in blind_to_aid:
+                                gt_map[fid] = blind_to_aid[leader_blind]
+
+                # Also extract dominant_issue (blind the real names)
+                issue_raw = rnd.get("dominant_issue", "")
+                if issue_raw:
+                    issue_text = SimulationService._blind_issue_text(
+                        issue_raw, agents
+                    )
+        except Exception:
+            pass
+
+        # Build lookup maps
+        aid_to_name: Dict[int, str] = {a.get("agent_id"): a.get("agent_name", "?") for a in agents}
+        aid_to_ccode: Dict[int, object] = {a.get("agent_id"): a.get("country_code") for a in agents}
+
+        # Append one line per agent
+        with open(_trace_path, "a", encoding="utf-8") as f:
+            for agent in agents:
+                aid = agent.get("agent_id")
+                aname = agent.get("agent_name", "?")
+                ccode = agent.get("country_code")
+                cinc = agent.get("current_total_power")
+                plevel = agent.get("power_level", "?")
+                ltype = agent.get("leader_type")
+
+                fol_of_id = follower_decisions.get(aid)
+                fol_of_name = aid_to_name.get(fol_of_id) if fol_of_id else None
+
+                gt_id = gt_map.get(aid)
+                gt_name = aid_to_name.get(gt_id) if gt_id else None
+
+                # correctness: determined by matching model vs GT follower choice
+                # Both neutral → correct (model correctly stayed independent)
+                # Both follow the same leader → correct
+                # Any mismatch → wrong
+                # Any null GT (e.g. country not in history JSON) → None (not comparable)
+                is_correct = None
+                if gt_id is not None or fol_of_id is not None:
+                    # GT is known (non-null) or model made a non-neutral choice
+                    if gt_id is None:
+                        # GT unknown: skip correctness comparison for this record
+                        is_correct = None
+                    else:
+                        is_correct = 1 if fol_of_id == gt_id else 0
+
+                row = {
+                    "project_id": project_id,
+                    "round_num": round_num,
+                    "agent_id": aid,
+                    "agent_name": aname,
+                    "country_code": ccode,
+                    "current_cinc": round(cinc, 6) if isinstance(cinc, (int, float)) else cinc,
+                    "power_level": plevel,
+                    "leader_type": ltype,
+                    "follower_of_agent_id": fol_of_id,
+                    "follower_of_agent_name": fol_of_name,
+                    "ground_truth_follower_agent_id": gt_id,
+                    "ground_truth_follower_agent_name": gt_name,
+                    "is_correct": is_correct,
+                    "dominant_issue": issue_text or "",
+                }
+                f.write(_json.dumps(row, ensure_ascii=False) + "\n")
+
+    @staticmethod
+    def _blind_issue_text(
+        issue_raw: str,
+        agents: List[Dict],
+    ) -> str:
+        """对议题文本做糊名替换——与 _get_issue_context 使用相同的替换逻辑。"""
+        _cc_to_real = [
+            (255, "Germany"), (365, "Russia"), (200, "UK"), (220, "France"),
+            (300, "Austria-Hungary"), (325, "Italy"), (640, "Ottoman Empire"),
+            (355, "Bulgaria"), (230, "Spain"), (211, "Belgium"), (350, "Greece"),
+            (380, "Sweden"), (210, "Netherlands"), (360, "Romania"),
+            (235, "Portugal"), (390, "Denmark"), (225, "Switzerland"),
+            (345, "Serbia"), (385, "Norway"),
+            (315, "Czechoslovakia"), (290, "Poland"), (310, "Hungary"),
+            (375, "Finland"), (212, "Luxembourg"), (366, "Latvia"),
+            (368, "Lithuania"), (205, "Ireland"), (365, "Estonia"),
+            (339, "Albania"), (395, "Iceland"),
+        ]
+        name_map = {}
+        for a in agents:
+            cc = a.get("country_code")
+            blind = a.get("agent_name", "")
+            if cc and blind:
+                for ccode, real in _cc_to_real:
+                    if cc == ccode:
+                        name_map[real] = blind
+                        _extras = {
+                            "UK": ["British", "Britain"],
+                            "Germany": ["German"],
+                            "Russia": ["Russian", "USSR", "Soviet", "Soviet Union"],
+                            "France": ["French"],
+                            "Italy": ["Italian"],
+                            "Ottoman Empire": ["Ottoman", "Turkey"],
+                            "Austria-Hungary": ["A-H"],
+                            "Serbia": ["Yugoslavia"],
+                            "Czechoslovakia": ["Czech"],
+                            "Finland": ["Finnish"],
+                        }
+                        for extra in _extras.get(real, []):
+                            name_map[extra] = blind
+        _org_map = [
+            ("NATO", "西方军事同盟"), ("Warsaw Pact", "东方军事同盟"),
+            ("COMECON", "东方经济组织"), ("Cominform", "东方政治组织"),
+            ("ECSC", "欧洲经济合作组织"), ("EEC", "欧洲经济共同体"),
+            ("EURATOM", "欧洲原子能组织"), ("WEU", "西欧防务组织"),
+            ("FRG", "西方阵营德国"), ("GDR", "东方阵营德国"),
+            ("UN", "国际组织"),
+        ]
+        for real, blind in _org_map:
+            name_map[real] = blind
+        _faction_map = [
+            ("Entente", "协约阵营"), ("Allies", "盟军阵营"),
+            ("Central Powers", "同盟阵营"), ("Axis", "轴心阵营"),
+            ("NATO", "西方军事同盟"), ("Warsaw Pact", "东方军事同盟"),
+            ("Little Entente", "区域性同盟"), ("Triple Alliance", "三国军事同盟"),
+            ("Franco-Russian Alliance", "双边军事同盟"),
+            ("Franco-Russian", "双边军事同盟"),
+            ("Anglo-German", "双边"), ("Greco-Turkish", "双边"),
+            ("Polish-Soviet", "双边"), ("Tito-Stalin", "双边"),
+            ("Molotov-Ribbentrop", "双边"), ("Nazi-Soviet", "双边"),
+            ("Anglo-Soviet", "双边"), ("Anglo-Polish", "双边"),
+        ]
+        for real, blind in _faction_map:
+            name_map[real] = blind
+        result = issue_raw
+        for real_name in sorted(name_map.keys(), key=len, reverse=True):
+            result = result.replace(real_name, name_map[real_name])
+        return result
+
     async def _build_complete_info_pool(
         self,
         project_id: int,
@@ -1084,10 +1479,11 @@ class SimulationService:
         history_power_data = await self._get_power_history(project_id, round_num)
         last_round_order_info = await self._get_last_round_order(project_id, round_num)
 
-        # 获取当前议题背景
+        # 获取当前议题背景 + 历史追随格局（地面真值）
         project = await project_service.get_project(project_id)
         scene_source = project.get('scene_source', '') if project else ''
         current_issue = self._get_issue_context(scene_source, round_num, agents)
+        historical_following = self._get_historical_following(scene_source, round_num, agents)
 
         # 构建完整的智能体信息（包含战略关系）
         all_agent_info = [
@@ -1111,7 +1507,8 @@ class SimulationService:
             history_power_data=history_power_data,
             last_round_order_info=last_round_order_info,
             round_num=round_num,
-            current_issue=current_issue
+            current_issue=current_issue,
+            historical_following=historical_following,
         )
 
     async def _update_power(
@@ -1327,7 +1724,8 @@ class SimulationService:
             'all_agent_info': decision_engine._format_agents_for_prompt(info_pool.all_agent_info),
             'history_action_records': decision_engine._format_history_for_prompt(info_pool.history_action_records),
             'history_power_data': decision_engine._format_power_data_for_prompt(info_pool.history_power_data),
-            'last_round_order_info': info_pool.last_round_order_info
+            'last_round_order_info': info_pool.last_round_order_info,
+            'historical_following': info_pool.historical_following or '',
         }
 
         # 预构建：每个agent的战略关系查表（自我视角的关系总览所需）
@@ -1351,13 +1749,6 @@ class SimulationService:
         # 所有国家均可被追随（被动追随，无需参选）
         all_targets = agents
 
-        # 构建所有可追随目标的信息字符串
-        all_targets_info = "\n".join([
-            f"  ID:{a['agent_id']} 名称:{a['agent_name']} "
-            f"CINC:{a['current_total_power']:.6f} 层级:{a.get('power_level', '?')}"
-            for a in all_targets
-        ])
-
         # ========== 追随投票决策（单阶段，所有国家并发） ==========
         semaphore = asyncio.Semaphore(max_concurrent)
         total_agents = len(agents)
@@ -1368,15 +1759,15 @@ class SimulationService:
             agent_name = agent.get('agent_name')
             agent_id = agent.get('agent_id')
             power_level = agent.get('power_level')
+            leader_type = agent.get('leader_type', '未定义')
+            cinc_year = agent.get('cinc_year')
 
-            system_prompt = PromptTemplates.build_follower_system_prompt(
-                agent_name=agent_name,
-                current_total_power=agent.get('current_total_power', 0),
-                power_level=power_level,
-                leader_type=agent.get('leader_type', '未定义'),
-                cinc_year=agent.get('cinc_year'),
-                initial_total_power=agent.get('initial_total_power', 0)
+            # 共享 system prompt（所有 agent 相同，缓存命中）
+            system_prompt = PromptTemplates.build_shared_follower_system(
+                cinc_year=cinc_year,
+                formatted_info_pool=formatted_info_pool
             )
+
             # 所有国家评估（按当前voter视角预先核对战略关系+双向互动）
             voter_relationships = relationships_lookup.get(agent_id, {})
             candidates_evaluation = PromptTemplates.build_candidates_evaluation(
@@ -1385,13 +1776,21 @@ class SimulationService:
                 candidates=all_targets,
                 history_action_records=info_pool.history_action_records,
             )
-            user_prompt = PromptTemplates.build_follower_user_prompt(
-                info_pool=formatted_info_pool,
-                decision_type='vote',
-                leader_candidates_info=all_targets_info,
-                personal_summary=_build_personal_summary_for(agent),
+
+            # 每agent专属：个人身份 + 关系总览 + 候选人评估
+            agent_intro = (
+                f"你是{agent_name}的国家领导集体，当前CINC={agent.get('current_total_power',0):.4f}，"
+                f"实力层级={power_level}。\n\n"
+                f"【追随决策提示】"
+                f"追随不受领导类型的约束，基于当前议题评估哪个国家能最好地服务你的国家利益。"
+            )
+            personal_summary = _build_personal_summary_for(agent)
+            user_prompt = PromptTemplates.build_follower_agent_user(
+                agent=agent,
+                agent_intro=agent_intro,
+                personal_summary=personal_summary,
                 candidates_evaluation=candidates_evaluation,
-                current_issue=info_pool.current_issue,
+                current_issue=info_pool.current_issue or "",
             )
 
             async with semaphore:
