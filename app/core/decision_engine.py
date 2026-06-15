@@ -36,6 +36,7 @@ class AgentInfo:
     current_total_power: float
     power_level: str
     leader_type: Optional[str] = None
+    leader_profile: Optional[str] = None  # 历史领导档案浓缩文本（200-350字），仅大国/超级大国配置
     national_interest: List[str] = field(default_factory=list)
     allowed_actions: List[Dict[str, Any]] = field(default_factory=list)
     strategic_relationships: Dict[int, str] = field(default_factory=dict)
@@ -51,6 +52,7 @@ class InfoPool:
     last_round_order_info: Dict[str, Any] = field(default_factory=dict)
     round_num: int = 1  # 当前轮次
     current_issue: str = ""  # 当前轮次的突出议题背景
+    historical_following: str = ""  # 历史追随格局（地面真值v2，糊名后）
 
 
 @dataclass
@@ -335,17 +337,14 @@ class DecisionEngine:
         neighbor_summary: Optional[str] = None
     ) -> tuple[str, str]:
         """
-        Build system and user prompts for LLM.
+        Build system and user prompts for LLM — cache-optimized.
 
-        Args:
-            agent_info: Agent information
-            allowed_actions: Allowed actions for this stage
-            info_pool: Information pool
+        Shared blocks (info_pool, action list, rules, task) go to SYSTEM
+        so they are identical across agents and hit the prompt cache.
 
-        Returns:
-            Tuple of (system_prompt, user_prompt)
+        Per-agent blocks (agent identity, situation summary) go to USER.
         """
-        # Convert agent info to dict for template
+        # Convert agent info to dict
         agent_dict = {
             'agent_name': agent_info.agent_name,
             'region': agent_info.region,
@@ -354,19 +353,22 @@ class DecisionEngine:
             'power_level': agent_info.power_level,
             'leader_type': agent_info.leader_type or "未定义",
             'national_interest': agent_info.national_interest,
-            'cinc_year': agent_info.cinc_year
+            'cinc_year': agent_info.cinc_year,
+            'leader_profile': agent_info.leader_profile or ''
         }
 
-        # Generate situation summary for the agent
+        # Generate situation summary (per-agent, goes to user prompt)
         situation_summary = self._generate_situation_summary(
             agent_info, info_pool
         )
 
-        # Convert info pool to dict
+        # Format info pool (shared across all agents in same round+phase)
+        # History uses global pair-based format so it's identical for all agents.
+        # Per-agent outgoing/incoming perspective is in situation_summary.
         info_pool_dict = {
             'all_agent_info': self._format_agents_for_prompt(info_pool.all_agent_info),
             'history_action_records': self._format_history_for_prompt(
-                info_pool.history_action_records, agent_info.agent_id
+                info_pool.history_action_records, agent_id=None
             ),
             'history_power_data': self._format_power_data_for_prompt(
                 info_pool.history_power_data
@@ -376,24 +378,24 @@ class DecisionEngine:
             'neighbor_summary': neighbor_summary or "【邻接关系简报】未提供邻接数据"
         }
 
-        # Debug: 验证战略关系是否在info_pool中
-        logger.debug(f"InfoPool中的agent_info示例: {info_pool.all_agent_info[0] if info_pool.all_agent_info else 'empty'}")
-        if info_pool.all_agent_info:
-            for agent in info_pool.all_agent_info[:3]:  # 只打印前3个
-                logger.debug(f"  Agent {agent.get('agent_id')} 战略关系: {agent.get('strategic_relationships', {})}")
-
-        # Build system prompt (role, rules, output requirements)
-        system_prompt = PromptTemplates.build_system_prompt(
-            agent_dict,
-            agent_info.leader_type or "未定义"
+        # System prompt: ALL shared content (cached after first agent)
+        system_prompt = PromptTemplates.build_shared_system(
+            cinc_year=agent_info.cinc_year,
+            info_pool_dict=info_pool_dict,
+            allowed_actions=allowed_actions,
+            situation_summary="",
+            agent_name_for_task=agent_info.agent_name
         )
 
-        # Build user prompt (task, context, data)
-        user_prompt = PromptTemplates.build_user_prompt(
+        # User prompt: ONLY per-agent content + personal history view
+        # Build per-agent history perspective separately for inclusion in user prompt
+        personal_history = self._format_history_for_prompt(
+            info_pool.history_action_records, agent_info.agent_id
+        )
+        user_prompt = PromptTemplates.build_agent_user(
             agent_dict,
-            allowed_actions,
-            info_pool_dict,
-            situation_summary=situation_summary
+            situation_summary=situation_summary,
+            personal_history=personal_history
         )
 
         return system_prompt, user_prompt
@@ -1122,6 +1124,10 @@ class CostBenefitAnalyzer:
         "强权型": {
             "military_coercion_bonus": 0.2,
             "weak_opponent_bonus": 0.1,
+            "prestige_bonus": 0.08,
+            "concession_penalty": -0.1,
+            "defiance_sensitivity": 0.1,
+            "volatility_factor": 0.05,
         },
         "昏庸型": {
             "random_variance": 0.2,
@@ -1193,6 +1199,17 @@ class CostBenefitAnalyzer:
                     net_benefit += weights.get('military_coercion_bonus', 0)
                 if action_config.get('action_name') in {'攻击/袭击', '交战/使用常规军事武力'}:
                     net_benefit += weights.get('weak_opponent_bonus', 0)
+                # Wilhelm-specific: prestige-driven behavior
+                # Displaying force or compelling submission yields personal prestige
+                if action_config.get('action_name') in {'展示军事姿态', '胁迫/强制', '发表公开声明'}:
+                    net_benefit += weights.get('prestige_bonus', 0)
+                # Concession/surrender is read as personal humiliation
+                if action_config.get('action_name') in {'让步/屈服', '呼吁/请求', '表达合作意向'}:
+                    net_benefit += weights.get('concession_penalty', 0)
+                # Decision volatility under sustained pressure (>2 rounds)
+                volatility = weights.get('volatility_factor', 0)
+                if volatility > 0:
+                    net_benefit += random.uniform(-volatility, volatility)
 
             elif leader_type == "昏庸型":
                 # Random variance for inept leader type

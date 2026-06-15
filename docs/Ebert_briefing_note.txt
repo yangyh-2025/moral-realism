@@ -1,0 +1,84 @@
+# Friedrich Ebert's Approach to International Relations (1919-1925)
+## A Historical Research Briefing Note
+
+Friedrich Ebert (1871-1925), the first President of the Weimar Republic, governed Germany from February 1919 until his sudden death in February 1925. A Social Democrat and former saddler who rose through the trade union movement, Ebert led Germany through its most vulnerable period -- from the collapse of the Kaiser's regime through the Versailles Treaty, hyperinflation, and the slow, contested reintegration of Germany into the international community.
+
+---
+
+### 1. The Versailles Treaty Decision (1919)
+
+When Germany was presented with the Versailles Treaty terms in May 1919, Ebert initially denounced them as contemplating the "physical, moral and intellectual paralysis" of the German people. Six weeks later, he accepted the treaty unconditionally.
+
+**Why Ebert accepted Versailles.** Five constraints eliminated every alternative. First, General Wilhelm Groener reported that military resistance was hopeless: "You know as well as I that armed resistance is impossible" (Hindenburg's words, conveyed by Groener). Second, the Allied naval blockade, maintained for eight months after the November 1918 Armistice, was causing mass starvation -- an estimated 250,000 additional civilian deaths. Third, Ebert feared that renewed Allied invasion would trigger the disintegration of the Reich into separatist states (Bavarian separatism and French-funded Rhineland separatism were active threats). Fourth, Ebert dreaded a Bolshevik-style revolution -- he had told his colleague Gustav Noske: "Ich hasse die Revolution wie die Suende" (I hate revolution like sin) -- and the Spartacist uprising of January 1919, suppressed by Freikorps with the murders of Rosa Luxemburg and Karl Liebknecht, demonstrated the real danger. Fifth, the Ebert-Groener Pact of November 1918 had tied the government's survival to the old imperial officer corps, limiting Ebert's political options.
+
+**The decision timeline.** Chancellor Philipp Scheidemann resigned on June 20, 1919, rather than sign, declaring: "Welche Hand muesste nicht verdorren, die sich und uns in diese Fesseln legt?" (What hand would not wither that places this fetter upon itself and upon us?). Ebert threatened to resign to pressure the Democratic Party (DDP) into cooperation, but failed. He appointed Gustav Bauer -- a fellow trade unionist and reluctant convert -- as chancellor. The National Assembly voted 237-138 on June 22 to authorize signing with reservations, but the Allies rejected any conditions. On June 23, Bauer told the Assembly: "Let us sign! Sign without conditions! ... We are defenseless. But defenseless is not honorless!" Germany signed on June 28, 1919.
+
+**Later defense.** Ebert never expressed public regret. In May 1921, when a further Allied reparations ultimatum produced another crisis, he again threatened resignation to force acceptance. This became the logic of Erfuellungspolitik -- the strategy of complying with Versailles to demonstrate its impossibility and secure peaceful revision. A defamation lawsuit Ebert brought over the "stab-in-the-back" accusation was technically won in December 1924, but the Munich court found that Ebert had committed "high treason in the legal sense" through his role in the 1918 munitions strike -- a devastating blow shortly before his death.
+
+**The Brandenburg Gate speech.** On December 10, 1918, greeting returning troops, Ebert declared: "Eure Opfer und Taten sind ohne Beispiel. Kein Feind hat Euch ueberwunden." (Your sacrifices and deeds are unparalleled. No enemy overcame you.) He intended these words as an honorific tribute -- two of his own sons had been killed in the war. He never said the phrase that became the nationalist slogan: "im Felde unbesiegt" (undefeated in the field of battle). Nevertheless, the speech was weaponized by the nationalist right as alleged proof that even the republic's founder had admitted the army was never defeated.
+
+**Key primary evidence:** Ebert's May 11, 1919 Berlin speech exists only in contemporary English-language newspaper reports (the German original has not been located in open-access archives). Ebert's February 6, 1919 National Assembly speech is preserved in full German text (Ritter/Miller 1975). The December 10, 1918 Brandenburg Gate speech is preserved in the Wende scholarly edition (1994) and in the GHDI digital archive. Ebert's presidential papers at the Friedrich-Ebert-Stiftung in Bonn are incomplete; a significant portion of his Nachlass was destroyed or lost.
+
+---
+
+### 2. Erfuellungspolitik (Fulfillment Policy)
+
+The strategic logic of Erfuellungspolitik was to meet initial Allied demands to reestablish trust, then negotiate for better terms once Germany's good faith had been demonstrated. Walther Rathenau, the industrialist-intellectual appointed Foreign Minister in January 1922, was the policy's architect. Ebert provided essential presidential backing.
+
+**Rapallo (April 16, 1922).** The Treaty of Rapallo with Soviet Russia was the most dramatic event of Ebert's presidency. Signed during the Genoa Conference, it normalized German-Soviet diplomatic and economic relations. Crucially, it was negotiated without Ebert's prior authorization. At the "Pyjama Conference" on the night of April 15-16, Chancellor Joseph Wirth and Foreign Office Eastern Section head Ago von Maltzan persuaded a hesitant Rathenau to sign immediately, presenting Ebert with a fait accompli. Ebert was annoyed but accepted the treaty publicly, recognizing that Rapallo broke Germany's diplomatic isolation and demonstrated to the Western powers that Germany had alternatives. Rathenau was assassinated two months later by right-wing extremists.
+
+**The Ruhr Crisis (1923).** When France and Belgium occupied the Ruhr Valley in January 1923, Ebert supported Chancellor Wilhelm Cuno's policy of passive resistance -- general strikes and non-cooperation. He insisted resistance remain strictly non-violent, arguing that Germany was militarily powerless and to pretend otherwise would be criminal. The economic costs were catastrophic: hyperinflation destroyed the currency, and the Cuno government collapsed in August 1923. On September 26, new Chancellor Gustav Stresemann unconditionally abandoned passive resistance; the same day, Ebert declared a state of emergency under Article 48.
+
+**The Dawes Plan (1924).** Ebert worked intensely to secure German acceptance of the Dawes Plan, which restructured reparations, provided an international loan, and stabilized the currency. The Plan inaugurated the "Golden Twenties" (1924-1929).
+
+**Ebert's role.** Ebert was neither the intellectual architect of Erfuellungspolitik (Rathenau) nor its most famous practitioner (Stresemann). His role was that of institutional enabler -- providing presidential legitimacy to unpopular policies and holding the republican coalition together under immense pressure.
+
+---
+
+### 3. The Military and Secret Rearmament
+
+Ebert's relationship with the military was defined by the Ebert-Groener Pact of November 10, 1918. In a telephone call that night, Groener offered the army's support against revolutionary threats; Ebert undertook to preserve the officer corps' traditional authority. Groener later testified: "We allied ourselves to one another to fight against the revolution, to fight against Bolshevism ... the total putting down of revolution." The pact preserved the old imperial officer corps within the new Reichswehr, creating a "state within a state" that was never fully loyal to the republic.
+
+**The Kapp Putsch (March 13-17, 1920).** When right-wing Freikorps marched on Berlin, General Hans von Seeckt -- the effective head of the Reichswehr -- refused to defend the constitutional government. His words: "Reichswehr does not fire on Reichswehr." When Ebert asked where the army stood, Seeckt replied: "The Reichswehr stands behind me." Ebert and the cabinet fled to Stuttgart. The putsch collapsed only because of a general strike by 12 million workers. Ebert did not purge the military afterward -- the communists in the Ruhr had launched an armed uprising, and he needed the army to suppress it.
+
+**The Black Reichswehr.** This was a network of illegal paramilitary formations of 50,000-80,000 men, organized as "labor commandos" (Arbeitskommandos) under Seeckt's authorization, funded by secret state accounts and heavy industry. Ebert knew about the Black Reichswehr in general terms but was kept uninformed of operational specifics. The Prussian SPD government under Otto Braun and Carl Severing actively collaborated in establishing the labor commando framework. On October 1, 1923, Black Reichswehr leader Major Bruno Buchrucker attempted a coup at Kuestrin Fortress; it collapsed within hours, and the subsequent trial was held in secret. When the Black Reichswehr's practice of Feme murders -- extrajudicial killings of alleged "traitors," possibly 350 victims -- was exposed starting in 1925, it caused a major scandal.
+
+**Secret Soviet cooperation.** Seeckt's Sondergruppe R (Special Group Russia) managed clandestine military cooperation with the Soviet Union from 1921, funded with 75 million Reichsmarks provided by Chancellor Wirth in September 1921. The facilities at Lipetsk (fighter-pilot school), Kama (tank school), and Tomka (gas warfare testing) became operational in the mid-to-late 1920s -- after Ebert's death. Ebert opposed military cooperation with the Soviet Union and sought to constrain Seeckt's independent foreign policy, but War Minister Otto Gessler later claimed the Socialists "had been aware of what was being set in motion and had not protested."
+
+**Scholarship.** Francis Carsten (1966) judges Ebert's military policy as his most consequential failure. Gordon Craig (1955) sees Ebert's choices as tragic trade-offs rather than simple errors. Eberhard Kolb (1997) argues Ebert faced an insoluble structural dilemma: the Versailles limits meant any German government would seek ways around them; the question was whether this occurred under civilian control or autonomously by the military.
+
+---
+
+### 4. Peace, Sovereignty, and International Norms
+
+Ebert articulated a conception of sovereignty that rejected the traditional German model of unbounded state power. In his Reichstag speech of June 1920, he argued that Germany would recover its sovereign rights not through threats or force but by demonstrating that it was a reliable partner, a democratic state, and a peace-loving member of the international community. His key preserved public statements come from his February 6, 1919 National Assembly opening address, where he declared: "Wir haben den Krieg verloren" (We have lost the war) and called on the Allies to deliver the "Wilson-Frieden, auf den wir Anspruch haben" (Wilson peace to which we have a right).
+
+**League of Nations.** Ebert evolved from early skepticism -- the League was seen in Germany as an instrument of the victors -- to becoming one of its strongest German advocates. His Konstanz speech of August 10, 1924, is widely cited as the fullest articulation of his pro-League position. In a private conversation with Foreign Minister Stresemann in early 1925, Ebert argued Germany must join the League to protect German minorities, ensure universal disarmament, and create pathways for peaceful treaty revision. Germany joined the League in September 1926, 18 months after Ebert's death. The Locarno Treaties, initialed in October 1925, were built on diplomatic foundations Ebert had laid.
+
+**Peace movement.** Ebert addressed the German Peace Society (Deutsche Friedensgesellschaft) in November 1923 -- at the height of the hyperinflation crisis, weeks before Hitler's Beer Hall Putsch. He presented a vision of international law, arbitration, and the international court as necessary instruments of civilized international order.
+
+**Labour and Socialist International.** Ebert's internationalism was rooted in the Social Democratic tradition. The Labour and Socialist International, founded in Hamburg in May 1923, merged the remnants of the pre-war Second International with centrist socialist parties. The SPD was the dominant member, sending 80 delegates among 620 from 41 parties in 30 countries. Ebert's direct involvement was brief -- he died in February 1925 -- but the SPD he led embodied the moderate, democratic socialist internationalism he championed.
+
+**Caveat on speeches.** The Konstanz speech (August 1924) and the Peace Society address (November 1923) are known through secondary scholarly descriptions (Muehlhausen 2006, Scheer 1983). Verbatim German transcripts were not located in open-access sources for this research. They may be contained in the scholarly edition *Friedrich Ebert -- Reden als Reichspraesident (1919-1925)*, ed. Walter Muehlhausen (Dietz, 2017), which was not directly consulted.
+
+---
+
+### Critical Tensions
+
+Four structurally irreconcilable tensions define Ebert's record:
+
+**1. Revisionist goals vs. peaceful methods.** Ebert wanted Versailles revised -- his May 1919 denunciation of its terms was among the most forceful of any German leader -- but he insisted revision be achieved through peaceful means. This distinguished him from the nationalist right. Yet the peaceful-revisionist formula created expectations of success that, when frustrated after 1929, discredited cooperative methods and empowered confrontational nationalism.
+
+**2. Public peace commitment vs. covert rearmament toleration.** Ebert publicly championed disarmament and international law while tacitly tolerating the Black Reichswehr and secret Soviet cooperation. This was not simple hypocrisy; it reflected a pragmatic calculus that Germany needed some military capacity to be taken seriously diplomatically.
+
+**3. Democratic conviction vs. military dependency.** Ebert was a committed Social Democrat who, through the Ebert-Groener Pact and subsequent inaction, preserved a fundamentally undemocratic military. Seeckt's 1936 retrospective captures the asymmetry: Ebert asked "Behind whom does the Reichswehr stand?" and Seeckt answered "The Reichswehr stands behind me." The constitutional Supreme Commander had no control over his own military.
+
+**4. National interest vs. international cooperation.** Ebert saw no fundamental contradiction between rebuilding German power and embedding Germany in international institutions. An isolated, unilateralist Germany would alarm its neighbors; an integrated, cooperative Germany could achieve revision gradually and peacefully. This insight -- shared by Rathenau and Stresemann -- was one of the Weimar Republic's most significant contributions to international relations theory.
+
+**The ultimate tragedy.** The forces Ebert attempted to reconcile -- national ambition and international cooperation, peaceful methods and revisionist goals, democratic conviction and military dependency -- proved structurally irreconcilable in the conditions of interwar Germany. He preserved the republic through 14 crises across six years. He did not build institutions strong enough to survive his death.
+
+---
+
+*Primary sources consulted:* Ebert's February 6, 1919 National Assembly speech (Ritter/Miller 1975; Horne 1923); December 10, 1918 Brandenburg Gate speech (Wende 1994; GHDI/Pam Selwyn translation); May 11, 1919 Berlin speech (Ogden Daily Standard, Salt Lake Tribune, New York Times, May 1919); February 11, 1919 election speech (Horne 1923); Groener's Dolchstossprozess testimony (GHDI); Bauer's June 22-23, 1919 National Assembly speeches (GHDI stenographic record); Scheidemann's resignation (Heilfron 1919); Noske memoirs (1920). *Key secondary works:* Carsten (1966), Craig (1955), Kolb (1997, 2004), Kotowski (1963), Krueger (1985), Muehlhausen (2006), Peukert (1992), Scheer (1983), Watt (1968), Winkler (1993, 2006).
+
+*Research limitations:* Ebert's presidential papers are incomplete (partial destruction during WWII). The German original of the May 11, 1919 speech was not located in open-access archives. The Konstanz speech (1924) and Peace Society address (1923) are known through secondary paraphrases. A modern scholarly edition of Ebert's speeches (Muehlhausen 2017) and the Groener memoirs (1957) were not directly consulted. See the full research document for complete bibliography and source verification notes.

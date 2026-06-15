@@ -682,19 +682,12 @@ class SimulationService:
             _cinc_year = agent.get('cinc_year')
             _scene_id = get_scene_id_from_cinc_year(_cinc_year)
             _cow_code = agent.get('country_code')
-            # Pass _scene_id even if None — get_leader_profile_by_ccode has a
-            # cross-scene fallback (scene_id=0) for profiles like Wilson/USA
-            _leader_profile = get_leader_profile_by_ccode(_scene_id or 0, _cow_code, round_num)
-            # Guard: Wilson profile (王道型) must not load for non-王道型 US agents.
-            # Other profiles (Wilhelm/Stalin/etc.) match their leader types by scene
-            # design and are left untouched.
             _leader_type = agent.get('leader_type')
-            if _leader_profile and '威尔逊' in _leader_profile and _leader_type != '王道型':
-                logger.debug(
-                    f"Wilson profile suppressed for {_leader_type} USA agent "
-                    f"(profile is 王道型-specific)"
-                )
-                _leader_profile = None
+            # Pass leader_type so profile is suppressed when it doesn't match
+            # (single-variable control: no profile spillover across experiment groups)
+            _leader_profile = get_leader_profile_by_ccode(
+                _scene_id or 0, _cow_code, round_num, leader_type=_leader_type
+            )
 
             agent_info = AgentInfo(
                 agent_id=agent_id,

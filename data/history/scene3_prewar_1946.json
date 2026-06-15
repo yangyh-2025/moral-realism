@@ -1,7 +1,7 @@
 {
   "scene_id": 3,
   "scene_name": "冷战前欧洲(1946)",
-  "description": "冷战前欧洲(1946), 1946Q1 to 1958Q2, 25 countries, 50 rounds. Each round=3 months. Following is issue-specific leadership preference (NOT alliance).",
+  "description": "冷战前欧洲(1946), time_span=1946Q1-1958Q2, 25 countries, 50 rounds. V5: fully audited issue-specific following (NOT alliance).",
   "time_span": "1946-Q1 ~ 1958-Q2",
   "total_rounds": 50,
   "num_countries": 25,
@@ -137,20 +137,12 @@
     1,
     2
   ],
-  "following_definition": "追随!=同盟: 追随是对某国在特定议题上的领导偏好, 不等同于战略同盟关系。盟友可能在经济议题上追随敌对阵营的领导者, 这是正常的外交现象。每轮的追随基于该轮最突出议题上的政策协调对象。",
-  "key_issue_specific_cases": {
-    "Yugoslavia(12)": "Communist state, initially follows USSR(1), breaks with Stalin in 1948 (R10) and becomes independent throughout remaining rounds.",
-    "Finland(22)": "Forced to follow USSR(1) on security issues (Finlandization), but maintains Western economic/cultural ties and democratic system.",
-    "Spain(6)": "Franco regime remains isolated, not following any major power bloc. Independent throughout.",
-    "Ireland(23)": "Neutral throughout, independent of all great powers. UN member but non-aligned.",
-    "France(3)": "Initially follows UK(2) in Western camp, but under De Gaulle (R49) becomes independent - key following != alliance case.",
-    "Sweden(11)": "Formally neutral, but economically and culturally follows UK/Western camp. Not a NATO member but clearly Western-aligned."
-  },
+  "following_definition": "追随≠同盟。追随是一国在当前主导议题上对某大国立场的认同。冷战是两极格局(USSR vs UK/US-led West)。中立国和不结盟国家在某些议题上保持独立(null)。每轮3个月。",
   "rounds": {
     "1": {
       "round": 1,
       "quarter": "1946Q1",
-      "dominant_issue": "Postwar reconstruction begins - UN established, Iron Curtain not yet descended, wartime cooperation fading",
+      "dominant_issue": "Postwar reconstruction & UN established — wartime cooperation fading, Iron Curtain not yet fully descended, relief efforts",
       "following": {
         "1": null,
         "2": null,
@@ -177,114 +169,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "2": {
       "round": 2,
       "quarter": "1946Q2",
-      "dominant_issue": "Greek Civil War intensifies & Iran crisis - USSR pressures Turkey/Iran, West resists, Cold War tensions rise",
+      "dominant_issue": "Greek Civil War & Iran crisis — Stalin pressures Turkey/Iran, West resists, first Cold War confrontation",
       "following": {
         "1": null,
         "2": null,
@@ -311,114 +201,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "3": {
       "round": 3,
       "quarter": "1946Q3",
-      "dominant_issue": "Paris Peace Conference - postwar treaties with Italy/Romania/Hungary/Bulgaria/Finland finalized",
+      "dominant_issue": "Paris Peace Conference — treaties with Italy/Romania/Hungary/Bulgaria/Finland finalized, borders adjusted",
       "following": {
         "1": null,
         "2": null,
@@ -445,114 +233,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "4": {
       "round": 4,
       "quarter": "1946Q4",
-      "dominant_issue": "Bizone established (US/UK merge German occupation zones) - Western integration begins, USSR objects",
+      "dominant_issue": "Bizone established — US/UK merge German occupation zones, Western integration begins, USSR objects to unified Germany",
       "following": {
         "1": null,
         "2": null,
@@ -579,114 +265,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "5": {
       "round": 5,
       "quarter": "1947Q1",
-      "dominant_issue": "Truman Doctrine announced - US pledges to support Greece/Turkey against communism, containment policy begins",
+      "dominant_issue": "Truman Doctrine — US pledges to support Greece/Turkey against communism, containment policy formally declared",
       "following": {
         "1": null,
         "2": null,
@@ -713,114 +297,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "6": {
       "round": 6,
       "quarter": "1947Q2",
-      "dominant_issue": "Marshall Plan announced - massive US economic aid for Europe, USSR rejects and forbids Eastern Bloc participation",
+      "dominant_issue": "Marshall Plan announced — massive US economic aid for Europe, USSR rejects and forbids Eastern Bloc participation",
       "following": {
         "1": null,
         "2": null,
@@ -847,114 +329,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "7": {
       "round": 7,
       "quarter": "1947Q3",
-      "dominant_issue": "Cominform founded & Marshall Plan implemented - USSR tightens control over Eastern Bloc, Western Europe begins recovery",
+      "dominant_issue": "Cominform founded & Marshall Plan implemented — USSR tightens control over Eastern Bloc, Western Europe begins economic recovery",
       "following": {
         "1": null,
         "2": null,
@@ -981,114 +361,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "8": {
       "round": 8,
       "quarter": "1947Q4",
-      "dominant_issue": "Communist consolidation in Eastern Europe - Poland/Romania/Bulgaria become people's republics",
+      "dominant_issue": "Communist consolidation in Eastern Europe — Poland/Romania/Bulgaria become people's republics under Soviet domination",
       "following": {
         "1": null,
         "2": null,
@@ -1115,114 +393,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "9": {
       "round": 9,
       "quarter": "1948Q1",
-      "dominant_issue": "Czechoslovak communist coup - last democratic Eastern European state falls to communism, West alarmed",
+      "dominant_issue": "Czechoslovak communist coup — last democratic Eastern European state falls, Jan Masaryk dies, West shocked",
       "following": {
         "1": null,
         "2": null,
@@ -1249,114 +425,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "10": {
       "round": 10,
       "quarter": "1948Q2",
-      "dominant_issue": "Tito-Stalin split - Yugoslavia expelled from Cominform, asserts independent communist path, key following!=alliance case",
+      "dominant_issue": "Tito-Stalin split — Yugoslavia expelled from Cominform, first communist state to break with Moscow, independent path",
       "following": {
         "1": null,
         "2": null,
@@ -1368,7 +442,7 @@
         "8": 1,
         "9": 2,
         "10": 2,
-        "11": 2,
+        "11": null,
         "12": null,
         "13": 1,
         "14": 1,
@@ -1377,120 +451,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "11": {
       "round": 11,
       "quarter": "1948Q3",
-      "dominant_issue": "Berlin Blockade begins - USSR blocks West Berlin, Western Allies organize massive airlift",
+      "dominant_issue": "Berlin Blockade begins — USSR blocks West Berlin, Western Allies organize massive airlift, Cold War military standoff",
       "following": {
         "1": null,
         "2": null,
@@ -1503,7 +475,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -1517,114 +489,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Military",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "3": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "12": {
       "round": 12,
       "quarter": "1948Q4",
-      "dominant_issue": "Berlin Airlift succeeds - Western resolve demonstrated, USSR unable to force West out of Berlin",
+      "dominant_issue": "Berlin Airlift succeeds — Western resolve demonstrated, USSR unable to force West out, blockade lifted May 1949",
       "following": {
         "1": null,
         "2": null,
@@ -1637,7 +507,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -1651,114 +521,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Military",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "3": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "13": {
       "round": 13,
       "quarter": "1949Q1",
-      "dominant_issue": "NATO founded - Western collective defense: UK/France/Italy/Belgium/Netherlands/Luxembourg/Denmark/Norway/Iceland/Portugal",
+      "dominant_issue": "NATO founded — 12 founding members: US/UK/France/Italy/Belgium/Netherlands/Luxembourg/Denmark/Norway/Iceland/Portugal/Canada",
       "following": {
         "1": null,
         "2": null,
@@ -1771,7 +539,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -1779,120 +547,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        }
       }
     },
     "14": {
       "round": 14,
       "quarter": "1949Q2",
-      "dominant_issue": "Berlin Blockade ends & two German states founded - FRG and GDR established, Cold War division institutionalized",
+      "dominant_issue": "Two German states founded — FRG (West Germany) and GDR (East Germany), Cold War division institutionalized",
       "following": {
         "1": null,
         "2": null,
@@ -1904,8 +570,8 @@
         "8": 1,
         "9": 2,
         "10": 2,
-        "11": 2,
-        "12": 1,
+        "11": null,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -1913,120 +579,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "15": {
       "round": 15,
       "quarter": "1949Q3",
-      "dominant_issue": "Soviet atomic bomb test - USSR acquires nuclear weapons, Cold War enters nuclear age, arms race begins",
+      "dominant_issue": "Soviet atomic bomb test — USSR acquires nuclear weapons, Cold War enters nuclear age, US monopoly broken",
       "following": {
         "1": null,
         "2": null,
@@ -2038,8 +602,8 @@
         "8": 1,
         "9": 2,
         "10": 2,
-        "11": 2,
-        "12": 1,
+        "11": null,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -2053,114 +617,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "16": {
       "round": 16,
       "quarter": "1949Q4",
-      "dominant_issue": "COMECON formalized - Soviet economic bloc consolidates, Eastern Europe integrated into Soviet economy",
+      "dominant_issue": "COMECON formalized — Soviet economic bloc consolidates, Eastern European economies integrated, Molotov Plan vs Marshall Plan",
       "following": {
         "1": null,
         "2": null,
@@ -2173,7 +635,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -2187,114 +649,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Economic",
-          "expected_secondary": "Diplomatic"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "17": {
       "round": 17,
       "quarter": "1950Q1",
-      "dominant_issue": "Schuman Declaration - European Coal and Steel Community proposed, Franco-German reconciliation begins",
+      "dominant_issue": "Schuman Declaration — European Coal and Steel Community proposed, Franco-German reconciliation begins under Monnet/Schuman",
       "following": {
         "1": null,
         "2": null,
@@ -2307,7 +667,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -2321,114 +681,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "18": {
       "round": 18,
       "quarter": "1950Q2",
-      "dominant_issue": "Korean War begins - North Korea invades South, Cold War goes hot in Asia, NATO rearmed, Western solidarity peaks",
+      "dominant_issue": "Korean War begins — North Korea invades South, US/UN intervention, Cold War goes hot in Asia, NATO rearmament",
       "following": {
         "1": null,
         "2": null,
@@ -2441,7 +699,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -2449,120 +707,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Military",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "3": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "19": {
       "round": 19,
       "quarter": "1950Q3",
-      "dominant_issue": "Korean War - UN counteroffensive, Inchon landing, NATO establishes integrated command (SHAPE)",
+      "dominant_issue": "Korean War — UN counteroffensive (Inchon), China threatens intervention, NATO establishes SHAPE (integrated command)",
       "following": {
         "1": null,
         "2": null,
@@ -2575,7 +731,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -2583,120 +739,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "2": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "3": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "20": {
       "round": 20,
       "quarter": "1950Q4",
-      "dominant_issue": "China enters Korean War - massive Chinese offensive, UN forces retreat, fear of wider war",
+      "dominant_issue": "China enters Korean War — massive Chinese offensive drives UN forces south, fear of World War III",
       "following": {
         "1": null,
         "2": null,
@@ -2709,7 +763,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -2723,114 +777,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Military",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "3": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "21": {
       "round": 21,
       "quarter": "1951Q1",
-      "dominant_issue": "Korean War stalemate & European Defense Community proposed - front stabilizes, West German rearmament debated",
+      "dominant_issue": "Korean War stalemate & European Defense Community — front at 38th parallel, West German rearmament debated, EDC proposed",
       "following": {
         "1": null,
         "2": null,
@@ -2843,7 +795,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -2851,120 +803,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "22": {
       "round": 22,
       "quarter": "1951Q2",
-      "dominant_issue": "ECSC Treaty signed - European integration advances, Franco-German economic cooperation institutionalized",
+      "dominant_issue": "ECSC Treaty signed — European integration advances, Franco-German coal/steel cooperation institutionalized under supranational authority",
       "following": {
         "1": null,
         "2": null,
@@ -2977,7 +827,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -2991,114 +841,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "23": {
       "round": 23,
       "quarter": "1951Q3",
-      "dominant_issue": "Korean War armistice talks begin - military stalemate, negotiations start at Kaesong/Panmunjom",
+      "dominant_issue": "Korean armistice talks begin — military stalemate, negotiations at Kaesong/Panmunjom, NATO Lisbon conference",
       "following": {
         "1": null,
         "2": null,
@@ -3111,7 +859,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -3125,114 +873,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "24": {
       "round": 24,
       "quarter": "1951Q4",
-      "dominant_issue": "UK tests atomic bomb - Britain becomes third nuclear power, NATO nuclear sharing debates begin",
+      "dominant_issue": "UK tests atomic bomb — Britain becomes third nuclear power, NATO nuclear sharing debates, European defense identity",
       "following": {
         "1": null,
         "2": null,
@@ -3245,7 +891,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -3253,120 +899,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "25": {
       "round": 25,
       "quarter": "1952Q1",
-      "dominant_issue": "NATO Lisbon Conference - ambitious conventional force goals, Greece/Turkey join NATO",
+      "dominant_issue": "Greece/Turkey join NATO — southern flank secured, NATO expands to Eastern Mediterranean, Soviet encirclement complete",
       "following": {
         "1": null,
         "2": null,
@@ -3379,7 +923,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -3387,120 +931,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "26": {
       "round": 26,
       "quarter": "1952Q2",
-      "dominant_issue": "European Defense Community treaty signed - attempt to create European army, West Germany to contribute",
+      "dominant_issue": "European Defense Community treaty signed — attempt to create European army with German participation, French initiative",
       "following": {
         "1": null,
         "2": null,
@@ -3513,7 +955,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -3527,114 +969,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "27": {
       "round": 27,
       "quarter": "1952Q3",
-      "dominant_issue": "Stalin's final years - Cold War at peak tension, Soviet domestic repression intensifies, anti-Semitic campaigns",
+      "dominant_issue": "Stalin's final years — peak repression, Doctors' Plot, anti-Semitic campaigns, Cold War tension at maximum",
       "following": {
         "1": null,
         "2": null,
@@ -3646,8 +986,8 @@
         "8": 1,
         "9": 2,
         "10": 2,
-        "11": 2,
-        "12": 1,
+        "11": null,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -3655,120 +995,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "28": {
       "round": 28,
       "quarter": "1952Q4",
-      "dominant_issue": "First hydrogen bomb tests - US tests H-bomb (Ivy Mike), USSR follows, thermonuclear age begins",
+      "dominant_issue": "First hydrogen bomb tests — US (Ivy Mike) and USSR follow, thermonuclear age begins, arms race escalates",
       "following": {
         "1": null,
         "2": null,
@@ -3781,7 +1019,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -3789,120 +1027,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "29": {
       "round": 29,
       "quarter": "1953Q1",
-      "dominant_issue": "Stalin dies - Malenkov becomes Soviet Premier, succession struggle begins, Cold War thaw signals",
+      "dominant_issue": "Stalin dies — Malenkov becomes Soviet Premier, succession struggle begins, Cold War thaw signals, East German uncertainty",
       "following": {
         "1": null,
         "2": null,
@@ -3915,7 +1051,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -3929,114 +1065,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "30": {
       "round": 30,
       "quarter": "1953Q2",
-      "dominant_issue": "East German uprising - workers revolt in GDR, suppressed by Soviet tanks, demonstrates Soviet control fragility",
+      "dominant_issue": "East German uprising — workers revolt in GDR suppressed by Soviet tanks, demonstrates fragility of Soviet control",
       "following": {
         "1": null,
         "2": null,
@@ -4049,7 +1083,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -4057,120 +1091,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Military",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "31": {
       "round": 31,
       "quarter": "1953Q3",
-      "dominant_issue": "Korean War armistice signed - war ends in stalemate, Cold War military confrontation in Asia de-escalates",
+      "dominant_issue": "Korean War armistice signed — war ends at 38th parallel, Cold War military confrontation in Asia de-escalates",
       "following": {
         "1": null,
         "2": null,
@@ -4183,7 +1115,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -4197,114 +1129,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "32": {
       "round": 32,
       "quarter": "1953Q4",
-      "dominant_issue": "USSR tests hydrogen bomb & Khrushchev rises - Soviet nuclear parity approaches, leadership transition continues",
+      "dominant_issue": "Khrushchev rises — becomes First Secretary, denounces Beria, 'New Course' reform, peaceful coexistence rhetoric begins",
       "following": {
         "1": null,
         "2": null,
@@ -4317,7 +1147,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -4331,114 +1161,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "33": {
       "round": 33,
       "quarter": "1954Q1",
-      "dominant_issue": "Berlin Conference (Big Four) - attempt at German reunification fails, Cold War division persists",
+      "dominant_issue": "Berlin Conference (Big Four) — attempt at German reunification fails, Cold War division of Germany persists",
       "following": {
         "1": null,
         "2": null,
@@ -4451,7 +1179,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -4465,114 +1193,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "34": {
       "round": 34,
       "quarter": "1954Q2",
-      "dominant_issue": "Geneva Conference on Indochina - French defeat at Dien Bien Phu, Vietnam partitioned, Geneva Accords",
+      "dominant_issue": "Geneva Conference on Indochina — French defeat at Dien Bien Phu, Vietnam partitioned, end of French Indochina",
       "following": {
         "1": null,
         "2": null,
@@ -4585,7 +1211,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -4599,114 +1225,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "3": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "35": {
       "round": 35,
       "quarter": "1954Q3",
-      "dominant_issue": "French National Assembly rejects EDC - European army plan collapses, alternative: West German NATO membership",
+      "dominant_issue": "French National Assembly rejects EDC — European army plan collapses, alternative: West German NATO membership via WEU",
       "following": {
         "1": null,
         "2": null,
@@ -4719,7 +1243,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -4727,120 +1251,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "36": {
       "round": 36,
       "quarter": "1954Q4",
-      "dominant_issue": "Paris Agreements - West Germany joins NATO, occupation ends, Western European Union formed",
+      "dominant_issue": "Paris Agreements — West Germany joins NATO, occupation ends, Western European Union formed, sovereign FRG",
       "following": {
         "1": null,
         "2": null,
@@ -4853,7 +1275,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -4861,120 +1283,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "37": {
       "round": 37,
       "quarter": "1955Q1",
-      "dominant_issue": "Khrushchev consolidates power - Malenkov resigns, Khrushchev becomes dominant, peaceful coexistence policy",
+      "dominant_issue": "Khrushchev consolidates — Malenkov resigns, Khrushchev dominates, peaceful coexistence policy, 'Spirit of Geneva'",
       "following": {
         "1": null,
         "2": null,
@@ -4987,7 +1307,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -5001,114 +1321,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "38": {
       "round": 38,
       "quarter": "1955Q2",
-      "dominant_issue": "Warsaw Pact founded - Soviet response to West German NATO membership, Eastern Bloc military alliance formalized",
+      "dominant_issue": "Warsaw Pact founded — Soviet response to West German NATO membership, Eastern Bloc military alliance formalized",
       "following": {
         "1": null,
         "2": null,
@@ -5120,7 +1338,7 @@
         "8": 1,
         "9": 2,
         "10": 2,
-        "11": 2,
+        "11": null,
         "12": null,
         "13": 1,
         "14": 1,
@@ -5129,254 +1347,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "39": {
       "round": 39,
       "quarter": "1955Q3",
-      "dominant_issue": "Austrian State Treaty & Geneva Summit - Austria neutralized, Big Four summit, Spirit of Geneva detente",
-      "following": {
-        "1": null,
-        "2": null,
-        "3": 2,
-        "4": 2,
-        "5": 1,
-        "6": null,
-        "7": 2,
-        "8": 1,
-        "9": 2,
-        "10": 2,
-        "11": 2,
-        "12": 1,
-        "13": 1,
-        "14": 1,
-        "15": 2,
-        "16": 1,
-        "17": 2,
-        "18": 2,
-        "19": 2,
-        "20": 2,
-        "21": 2,
-        "22": 1,
-        "23": null,
-        "24": 1,
-        "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
-      }
-    },
-    "40": {
-      "round": 40,
-      "quarter": "1955Q4",
-      "dominant_issue": "West Germany joins NATO & USSR- Yugoslavia rapprochement - Khrushchev visits Belgrade, acknowledges Tito's path",
+      "dominant_issue": "Austrian State Treaty & Geneva Summit — Austria neutralized, Big Four summit, 'Spirit of Geneva' detente, East-West dialogue",
       "following": {
         "1": null,
         "2": null,
@@ -5403,114 +1385,44 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
+      }
+    },
+    "40": {
+      "round": 40,
+      "quarter": "1955Q4",
+      "dominant_issue": "USSR-Yugoslavia rapprochement — Khrushchev visits Belgrade, acknowledges different paths to socialism, Tito-Stalin split partially healed",
+      "following": {
+        "1": null,
+        "2": null,
+        "3": 2,
+        "4": 2,
+        "5": 1,
+        "6": null,
+        "7": 2,
+        "8": 1,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 1,
+        "13": 1,
+        "14": 1,
+        "15": 2,
+        "16": 1,
+        "17": 2,
+        "18": 2,
+        "19": 2,
+        "20": 2,
+        "21": 2,
+        "22": 1,
+        "23": null,
+        "24": 1,
+        "25": 2
       }
     },
     "41": {
       "round": 41,
       "quarter": "1956Q1",
-      "dominant_issue": "Khrushchev's Secret Speech - denounces Stalin's crimes at 20th Party Congress, de-Stalinization begins, Eastern Bloc shaken",
+      "dominant_issue": "Khrushchev's Secret Speech — denounces Stalin's crimes at 20th Party Congress, de-Stalinization begins, Eastern Bloc shaken",
       "following": {
         "1": null,
         "2": null,
@@ -5537,114 +1449,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "42": {
       "round": 42,
       "quarter": "1956Q2",
-      "dominant_issue": "Polish October - Gomulka comes to power, Poland asserts limited autonomy while remaining in Warsaw Pact",
+      "dominant_issue": "Polish October — Gomulka comes to power, Poland asserts limited autonomy while remaining in Warsaw Pact, Soviet intervention averted",
       "following": {
         "1": null,
         "2": null,
@@ -5671,114 +1481,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "43": {
       "round": 43,
       "quarter": "1956Q3",
-      "dominant_issue": "Hungarian Revolution - Hungary attempts to leave Warsaw Pact, crushed by Soviet invasion, Western condemnation but no intervention",
+      "dominant_issue": "Hungarian Revolution — Hungary attempts to exit Warsaw Pact, declares neutrality, crushed by Soviet invasion, 200,000 flee West",
       "following": {
         "1": null,
         "2": null,
@@ -5790,8 +1498,8 @@
         "8": 1,
         "9": 2,
         "10": 2,
-        "11": 2,
-        "12": 1,
+        "11": null,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -5799,120 +1507,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Military",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "44": {
       "round": 44,
       "quarter": "1956Q4",
-      "dominant_issue": "Suez Crisis - UK/France/Israel attack Egypt, US/USSR force withdrawal, demonstrates UK/France no longer independent great powers",
+      "dominant_issue": "Suez Crisis — UK/France/Israel attack Egypt, US/USSR force withdrawal, demonstrates UK/France no longer independent great powers",
       "following": {
         "1": null,
         "2": null,
@@ -5925,7 +1531,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -5939,114 +1545,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Military",
-          "expected_secondary": "Information"
-        },
-        "3": {
-          "expected_primary": "Military",
-          "expected_secondary": "Information"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "45": {
       "round": 45,
       "quarter": "1957Q1",
-      "dominant_issue": "Treaty of Rome - EEC and EURATOM founded, European economic integration accelerates, Six sign (France/Italy/Benelux/West Germany)",
+      "dominant_issue": "Treaty of Rome — EEC and EURATOM founded, European Economic Community established by the Six, European integration accelerates",
       "following": {
         "1": null,
         "2": null,
@@ -6073,114 +1577,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "46": {
       "round": 46,
       "quarter": "1957Q2",
-      "dominant_issue": "Sputnik launched - USSR launches first satellite, space race begins, Western technological confidence shaken",
+      "dominant_issue": "Sputnik launched — USSR launches first satellite, space race begins, Western technological confidence shaken, missile gap fears",
       "following": {
         "1": null,
         "2": null,
@@ -6207,114 +1609,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Information",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "47": {
       "round": 47,
       "quarter": "1957Q3",
-      "dominant_issue": "NATO dual-track on nuclear weapons - US deploys intermediate-range missiles in Europe, arms control debates",
+      "dominant_issue": "NATO dual-track on nuclear weapons — US deploys intermediate-range missiles in Europe, arms control debates, peace movements",
       "following": {
         "1": null,
         "2": null,
@@ -6327,7 +1627,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -6335,120 +1635,18 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "48": {
       "round": 48,
       "quarter": "1957Q4",
-      "dominant_issue": "Khrushchev consolidates - Zhukov dismissed, Khrushchev becomes Premier as well as Party Secretary, Soviet leadership unified",
+      "dominant_issue": "Khrushchev becomes Premier — Zhukov dismissed, Khrushchev now both Party Secretary and Premier, leadership consolidated",
       "following": {
         "1": null,
         "2": null,
@@ -6461,7 +1659,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -6475,114 +1673,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "49": {
       "round": 49,
       "quarter": "1958Q1",
-      "dominant_issue": "De Gaulle returns to power - French Fifth Republic established, France asserts independent foreign policy, challenges UK/US leadership",
+      "dominant_issue": "De Gaulle returns to power — French Fifth Republic, France asserts independent foreign policy, challenges UK/US leadership",
       "following": {
         "1": null,
         "2": null,
@@ -6595,7 +1691,7 @@
         "9": 2,
         "10": 2,
         "11": 2,
-        "12": 1,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -6609,114 +1705,12 @@
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     },
     "50": {
       "round": 50,
       "quarter": "1958Q2",
-      "dominant_issue": "Berlin Ultimatum begins - Khrushchev demands Western withdrawal from Berlin, second Berlin crisis, Cold War tension peaks",
+      "dominant_issue": "Berlin Ultimatum begins — Khrushchev demands Western withdrawal from Berlin, second Berlin crisis, Cold War tension peaks again",
       "following": {
         "1": null,
         "2": null,
@@ -6728,8 +1722,8 @@
         "8": 1,
         "9": 2,
         "10": 2,
-        "11": 2,
-        "12": 1,
+        "11": null,
+        "12": null,
         "13": 1,
         "14": 1,
         "15": 2,
@@ -6737,114 +1731,12 @@
         "17": 2,
         "18": 2,
         "19": 2,
-        "20": 2,
+        "20": null,
         "21": 2,
         "22": 1,
         "23": null,
         "24": 1,
         "25": 2
-      },
-      "actions": {
-        "1": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Information"
-        },
-        "2": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "3": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "4": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "5": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "6": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "7": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "8": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "9": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "10": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "11": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "12": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "13": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "14": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "15": {
-          "expected_primary": "Military",
-          "expected_secondary": "Diplomatic"
-        },
-        "16": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "17": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "18": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "19": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "20": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "21": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "22": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "23": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        },
-        "24": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Military"
-        },
-        "25": {
-          "expected_primary": "Diplomatic",
-          "expected_secondary": "Economic"
-        }
       }
     }
   }

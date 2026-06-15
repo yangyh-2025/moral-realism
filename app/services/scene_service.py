@@ -5,6 +5,7 @@
 
 from typing import List, Optional, Dict, Tuple
 from datetime import datetime
+from loguru import logger
 
 from app.services.project_service import project_service
 from app.services.agent_service import agent_service, AgentConfigRequest
@@ -35,58 +36,375 @@ class SceneService:
         from app.models import PresetScene
         from sqlalchemy import select
 
-        # 优先从数据库查询
+        # 优先从数据库查询，合并硬编码回退（确保新场景在未seeded时也可见）
         async for session in db_config.get_session():
             result = await session.execute(select(PresetScene))
             db_scenes = result.scalars().all()
-            if db_scenes:
-                return [
-                    {
-                        "scene_id": s.scene_id,
-                        "scene_name": s.scene_name,
-                        "scene_desc": s.scene_desc,
-                        "total_rounds": s.total_rounds,
-                        "agent_config_json": s.agent_config_json,
-                        "is_default": s.is_default,
-                        "created_at": s.created_at,
-                        "updated_at": s.updated_at,
-                    }
-                    for s in db_scenes
-                ]
 
-        # 数据库无数据时回退到硬编码数据
-        return [
-            {
-                "scene_id": 1,
-                "scene_name": "一战前欧洲（1913）",
-                "scene_desc": "基于1913年CINC真实数据的欧洲国际体系，包含19个国家。德国崛起、英俄结盟、巴尔干危机...",
-                "total_rounds": 50,
-                "agent_config_json": '{"agents": []}',
-                "is_default": True,
-                "created_at": datetime.now(),
-                "updated_at": datetime.now()
-            },
-            {
-                "scene_id": 2,
-                "scene_name": "二战前欧洲（1938）",
-                "scene_desc": "基于1938年CINC真实数据的欧洲国际体系，包含28个国家。苏德对抗、张伯伦绥靖、轴心国体系...",
-                "total_rounds": 50,
-                "agent_config_json": '{"agents": []}',
-                "is_default": False,
-                "created_at": datetime.now(),
-                "updated_at": datetime.now()
-            },
-            {
-                "scene_id": 3,
-                "scene_name": "冷战前欧洲（1946）",
-                "scene_desc": "基于1946年CINC真实数据的欧洲国际体系，包含25个国家。苏英对立、铁幕降临、马歇尔计划前夜...",
-                "total_rounds": 50,
-                "agent_config_json": '{"agents": []}',
-                "is_default": False,
-                "created_at": datetime.now(),
-                "updated_at": datetime.now()
-            }
-        ]
+            # 硬编码回退数据（新场景可能在DB尚未seeded）
+            hardcoded = [
+                {
+                    "scene_id": 1,
+                    "scene_name": "一战前欧洲（1913）",
+                    "scene_desc": "基于1913年CINC真实数据的欧洲国际体系，包含19个国家。德国崛起、英俄结盟、巴尔干危机...",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": True,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 2,
+                    "scene_name": "二战前欧洲（1938）",
+                    "scene_desc": "基于1938年CINC真实数据的欧洲国际体系，包含28个国家。苏德对抗、张伯伦绥靖、轴心国体系...",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 3,
+                    "scene_name": "冷战前欧洲（1946）",
+                    "scene_desc": "基于1946年CINC真实数据的欧洲国际体系，包含25个国家。苏英对立、铁幕降临、马歇尔计划前夜...",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 4,
+                    "scene_name": "全球体系（2012）",
+                    "scene_desc": "基于2012年CINC真实数据的全球国际体系，包含195个国家。美国单极霸权后撤、中国快速崛起、金砖合作深化、中东动荡...",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 5,
+                    "scene_name": "全球体系（2012·美国王道型）",
+                    "scene_desc": "2012年全球体系变体——美国改为王道型（多边合作/规则倡导者），其余195国领导类型、国力数据、战略关系均与场景4一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 6,
+                    "scene_name": "全球体系（2012·美国强权型）",
+                    "scene_desc": "2012年全球体系变体——美国改为强权型（军事实力优先/单边干预），其余195国领导类型、国力数据、战略关系均与场景4一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 7,
+                    "scene_name": "全球体系（2012·美国昏庸型）",
+                    "scene_desc": "2012年全球体系变体——美国改为昏庸型（决策非理性/国内政治极化），其余195国领导类型、国力数据、战略关系均与场景4一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 8,
+                    "scene_name": "一战前欧洲（1913·奥匈昏庸型）",
+                    "scene_desc": "1913年欧洲体系变体——奥匈帝国改为昏庸型领导（Conrad von Hötzendorf校准），其余18国领导类型、国力数据、战略关系均与场景1一致。用于验证历史昏庸型领导者的预防性战争冲动、多线作战偏误、盟友意图误判和敌人能力低估等行为模式。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 9,
+                    "scene_name": "全球体系（2012·美国王道型·威尔逊道德国际主义）",
+                    "scene_desc": "2012年全球体系变体——美国改为王道型并加载伍德罗·威尔逊总统的历史行为心理学档案（长老会圣约神学、文明等级过滤器、公共道义呼吁替代精英妥协、中风后代理决策模式），用于验证王道型道德国际主义领导者的独特决策偏误。其余195国领导类型、国力数据、战略关系均与场景4一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                # ═══════════════════════════════════════════════════════════
+                # 场景10-18：场景1变体（1913欧洲 — 单变量领导类型实验）
+                # ═══════════════════════════════════════════════════════════
+                {
+                    "scene_id": 10,
+                    "scene_name": "一战前欧洲（1913·GMY王道型）",
+                    "scene_desc": "1913年欧洲体系变体——德国由强权型改为王道型（遵守国际规范/制度构建者）。若德国1913年受道义约束，七月危机能否避免？其余18国领导类型、国力数据、战略关系均与场景1一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 11,
+                    "scene_name": "一战前欧洲（1913·GMY霸权型）",
+                    "scene_desc": "1913年欧洲体系变体——德国由强权型改为霸权型（工具性道义/双重标准）。若德国以规则构建和制度工具主义操作国际关系，追随格局是否不同？其余18国领导类型、国力数据、战略关系均与场景1一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 12,
+                    "scene_name": "一战前欧洲（1913·GMY昏庸型）",
+                    "scene_desc": "1913年欧洲体系变体——德国由强权型改为昏庸型（决策非理性/战略紊乱）。若德国决策系统瘫痪，多极均势如何瓦解？其余18国领导类型、国力数据、战略关系均与场景1一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 13,
+                    "scene_name": "一战前欧洲（1913·RUS王道型）",
+                    "scene_desc": "1913年欧洲体系变体——俄国由强权型改为王道型（遵守国际规范/道义约束）。若俄国受道义约束且不诉诸军事动员，巴尔干危机能否通过外交降级？其余18国领导类型、国力数据、战略关系均与场景1一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 14,
+                    "scene_name": "一战前欧洲（1913·RUS霸权型）",
+                    "scene_desc": "1913年欧洲体系变体——俄国由强权型改为霸权型（双重标准/规则主导权）。若俄国以制度工具主义替代军事强制为核心手段，同盟关系如何重组？其余18国领导类型、国力数据、战略关系均与场景1一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 15,
+                    "scene_name": "一战前欧洲（1913·RUS昏庸型）",
+                    "scene_desc": "1913年欧洲体系变体——俄国由强权型改为昏庸型（决策非理性加剧/尼古拉二世昏庸型完全显现）。若俄国决策系统全面失能，追随流失路径与体系解体时序如何？其余18国领导类型、国力数据、战略关系均与场景1一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 16,
+                    "scene_name": "一战前欧洲（1913·UKG强权型）",
+                    "scene_desc": "1913年欧洲体系变体——英国由王道型改为强权型（军事强制/忽视道义）。若英国放弃道义约束以军力手段维持均势和帝国，秩序类型如何变化？其余18国领导类型、国力数据、战略关系均与场景1一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 17,
+                    "scene_name": "一战前欧洲（1913·UKG霸权型）",
+                    "scene_desc": "1913年欧洲体系变体——英国由王道型改为霸权型（双重标准/利益最大化）。若英国在殖民地以霸权逻辑在欧洲以道义话语并行操作，追随格局是否受影响？其余18国领导类型、国力数据、战略关系均与场景1一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 18,
+                    "scene_name": "一战前欧洲（1913·UKG昏庸型）",
+                    "scene_desc": "1913年欧洲体系变体——英国由王道型改为昏庸型（决策瘫痪/战略紊乱）。若体系内唯一的王道型领导者决策失灵，体系领导者真空的后果是什么？其余18国领导类型、国力数据、战略关系均与场景1一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                # ═══════════════════════════════════════════════════════════
+                # 场景19-27：场景2变体（1938欧洲 — 单变量领导类型实验）
+                # ═══════════════════════════════════════════════════════════
+                {
+                    "scene_id": 19,
+                    "scene_name": "二战前欧洲（1938·RUS王道型）",
+                    "scene_desc": "1938年欧洲体系变体——苏联由霸权型改为王道型（遵守国际规范/道义约束集体安全）。若斯大林受道义约束而不追求势力范围，东欧缓冲区政策如何改变？其余27国领导类型、国力数据、战略关系均与场景2一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 20,
+                    "scene_name": "二战前欧洲（1938·RUS强权型）",
+                    "scene_desc": "1938年欧洲体系变体——苏联由霸权型改为强权型（军事强制核心/忽视道义）。若苏联以纯军事逻辑行动——扩张依靠武力而非制度形式，冷战格局是否提前固化？其余27国领导类型、国力数据、战略关系均与场景2一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 21,
+                    "scene_name": "二战前欧洲（1938·RUS昏庸型）",
+                    "scene_desc": "1938年欧洲体系变体——苏联由霸权型改为昏庸型（决策非理性/战略判断失能）。若苏联决策系统紊乱——无法计算性地利用德苏条约和军事缓冲，对德战争转折？其余27国领导类型、国力数据、战略关系均与场景2一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 22,
+                    "scene_name": "二战前欧洲（1938·GMY王道型）",
+                    "scene_desc": "1938年欧洲体系变体——德国由强权型改为王道型（遵守国际规范/通过制度追求修正）。若希特勒受道义约束——修正凡尔赛条约通过外交谈判而非军事威胁，是否存在谈判和平？其余27国领导类型、国力数据、战略关系均与场景2一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 23,
+                    "scene_name": "二战前欧洲（1938·GMY霸权型）",
+                    "scene_desc": "1938年欧洲体系变体——德国由强权型改为霸权型（工具性道义/双重标准）。若纳粹以规则话语和制度工具主义包装扩张——对大国用道义话语对小国用强制，绥靖是否延续更久？其余27国领导类型、国力数据、战略关系均与场景2一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 24,
+                    "scene_name": "二战前欧洲（1938·GMY昏庸型）",
+                    "scene_desc": "1938年欧洲体系变体——德国由强权型改为昏庸型（决策非理性/战略紊乱）。若纳粹决策系统紊乱——同时多线挑衅且无法完成战略规划，战争进程如何偏离历史轨道？其余27国领导类型、国力数据、战略关系均与场景2一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 25,
+                    "scene_name": "二战前欧洲（1938·UKG强权型）",
+                    "scene_desc": "1938年欧洲体系变体——英国由王道型改为强权型（军事强制/忽视道义）。若无绥靖而强硬对抗——英国以军事手段回应德国的每一步扩张，1938年即开战？其余27国领导类型、国力数据、战略关系均与场景2一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 26,
+                    "scene_name": "二战前欧洲（1938·UKG霸权型）",
+                    "scene_desc": "1938年欧洲体系变体——英国由王道型改为霸权型（双重标准/以绥靖为霸权工具）。若张伯伦式霸权逻辑——牺牲小国以换取时间——成为整个时期的制度性策略而非一次性误判，结果如何？其余27国领导类型、国力数据、战略关系均与场景2一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 27,
+                    "scene_name": "二战前欧洲（1938·UKG昏庸型）",
+                    "scene_desc": "1938年欧洲体系变体——英国由王道型改为昏庸型（决策瘫痪/战略失能）。若英国决策系统失灵——无法形成连贯的对德政策，欧洲是否会因缺乏抗衡力量而全线沦陷？其余27国领导类型、国力数据、战略关系均与场景2一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                # ═══════════════════════════════════════════════════════════
+                # 场景28-33：场景3变体（1946欧洲 — 单变量领导类型实验）
+                # ═══════════════════════════════════════════════════════════
+                {
+                    "scene_id": 28,
+                    "scene_name": "冷战前欧洲（1946·RUS王道型）",
+                    "scene_desc": "1946年欧洲体系变体——苏联由强权型改为王道型（遵守国际规范/道义约束势力范围）。若斯大林受道义约束——东欧非军事强制而通过多边制度安排，冷战能否避免或形态不同？其余24国领导类型、国力数据、战略关系均与场景3一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 29,
+                    "scene_name": "冷战前欧洲（1946·RUS霸权型）",
+                    "scene_desc": "1946年欧洲体系变体——苏联由强权型改为霸权型（双重标准/制度工具主义）。若苏联以规则构建和灵活标准化替代纯军事强制管理势力范围，阵营稳定性如何变化？其余24国领导类型、国力数据、战略关系均与场景3一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 30,
+                    "scene_name": "冷战前欧洲（1946·RUS昏庸型）",
+                    "scene_desc": "1946年欧洲体系变体——苏联由强权型改为昏庸型（决策非理性/战略失能）。若苏联决策系统紊乱——继承斗争扩大化、对外行为不稳定，东欧阵营的凝聚力如何变化？其余24国领导类型、国力数据、战略关系均与场景3一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 31,
+                    "scene_name": "冷战前欧洲（1946·UKG强权型）",
+                    "scene_desc": "1946年欧洲体系变体——英国由王道型改为强权型（军事力量维持帝国/强制手段优先）。若英国拒绝去殖民化且以军事手段维持全球存在，西方阵营的性质如何变化？其余24国领导类型、国力数据、战略关系均与场景3一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 32,
+                    "scene_name": "冷战前欧洲（1946·UKG霸权型）",
+                    "scene_desc": "1946年欧洲体系变体——英国由王道型改为霸权型（双重标准/帝国保护主义）。若英国以霸权型逻辑运作——公开主张道义但私下维护帝国特权（苏伊士模式贯穿全期），西方阵营团结度如何？其余24国领导类型、国力数据、战略关系均与场景3一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+                {
+                    "scene_id": 33,
+                    "scene_name": "冷战前欧洲（1946·UKG昏庸型）",
+                    "scene_desc": "1946年欧洲体系变体——英国由王道型改为昏庸型（决策失灵/战略紊乱）。若英国决策系统瘫痪——无法推动北约筹建、欧洲一体化或有序去殖民化，西欧领导真空由谁填补？其余24国领导类型、国力数据、战略关系均与场景3一致。",
+                    "total_rounds": 50,
+                    "agent_config_json": '{"agents": []}',
+                    "is_default": False,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now()
+                },
+            ]
+
+            if not db_scenes:
+                return hardcoded
+
+            # DB有数据时，合并硬编码中DB不存在的场景
+            db_ids = {s.scene_id for s in db_scenes}
+            result_list = []
+            for s in db_scenes:
+                result_list.append({
+                    "scene_id": s.scene_id,
+                    "scene_name": s.scene_name,
+                    "scene_desc": s.scene_desc,
+                    "total_rounds": s.total_rounds,
+                    "agent_config_json": s.agent_config_json,
+                    "is_default": s.is_default,
+                    "created_at": s.created_at,
+                    "updated_at": s.updated_at,
+                })
+            for hc in hardcoded:
+                if hc["scene_id"] not in db_ids:
+                    result_list.append(hc)
+            return result_list
 
     async def get_preset_scene(self, scene_id: int) -> Optional[dict]:
         """
@@ -119,7 +437,7 @@ class SceneService:
                     "updated_at": db_scene.updated_at,
                 }
 
-        # 数据库无数据时回退到硬编码数据
+        # 数据库无该场景时，回退到硬编码数据
         scenes = await self.get_preset_scenes()
         for scene in scenes:
             if scene["scene_id"] == scene_id:
@@ -130,21 +448,34 @@ class SceneService:
     # 场景1：一战前欧洲（1913年，19国）
     # ------------------------------------------------------------------
     async def _create_scene1_agents(self, project_id: int) -> Dict[int, int]:
+        """场景1基线：GMY=强权, RUS=强权, UKG=王道, FRN=霸权, AUH=昏庸"""
+        return await self._create_scene1_variant(project_id)
+
+    async def _create_scene1_variant(
+        self,
+        project_id: int,
+        gmy_leader: str = "强权型",
+        rus_leader: str = "强权型",
+        ukg_leader: str = "王道型",
+        frn_leader: str = "霸权型",
+        auh_leader: str = "昏庸型",
+    ) -> Dict[int, int]:
         """
-        创建场景1（一战前欧洲1913）的智能体
-        返回 {index: agent_id}
+        场景1变体（参数化大国领导类型）。
+
+        参数均为可选，None表示不分配领导类型（仅按profile注入决策特征）。
         """
         from app.core.cinc_data_loader import get_cinc_loader
         loader = get_cinc_loader()
         YEAR = 1913
 
         countries: List[Tuple[str, str, Optional[str]]] = [
-            ("强国甲", "GMY", "霸权型"),
-            ("强国乙", "RUS", "强权型"),
-            ("强国丙", "UKG", "王道型"),
-            ("中等国甲", "FRN", None),
-            ("中等国乙", "AUH", None),
-            ("中等国丙", "ITA", None),
+            ("强国甲", "GMY", gmy_leader),
+            ("强国乙", "RUS", rus_leader),
+            ("强国丙", "UKG", ukg_leader),
+            ("强国丁", "FRN", frn_leader),
+            ("中等国甲", "AUH", auh_leader),
+            ("中等国乙", "ITA", None),
             ("小国甲", "TUR", None),
             ("小国乙", "BUL", None),
             ("小国丙", "SPN", None),
@@ -166,20 +497,29 @@ class SceneService:
     # 场景2：二战前欧洲（1938年，28国）
     # ------------------------------------------------------------------
     async def _create_scene2_agents(self, project_id: int) -> Dict[int, int]:
+        """场景2基线：RUS=霸权, GMY=强权, UKG=王道"""
+        return await self._create_scene2_variant(project_id)
+
+    async def _create_scene2_variant(
+        self,
+        project_id: int,
+        rus_leader: str = "霸权型",
+        gmy_leader: str = "强权型",
+        ukg_leader: str = "王道型",
+    ) -> Dict[int, int]:
         """
-        创建场景2（二战前欧洲1938）的智能体
-        返回 {index: agent_id}
+        场景2变体（参数化大国领导类型）。
         """
         from app.core.cinc_data_loader import get_cinc_loader
         loader = get_cinc_loader()
         YEAR = 1938
 
         countries: List[Tuple[str, str, Optional[str]]] = [
-            ("强国甲", "RUS", "强权型"),
-            ("强国乙", "GMY", "霸权型"),
-            ("强国丙", "UKG", "王道型"),
+            ("强国甲", "RUS", rus_leader),
+            ("强国乙", "GMY", gmy_leader),
+            ("强国丙", "UKG", ukg_leader),
             ("中等国甲", "FRN", None),
-            ("中等国乙", "ITA", "霸权型"),
+            ("中等国乙", "ITA", None),
             ("中等国丙", "POL", None),
             ("小国甲", "SPN", None),
             ("小国乙", "CZE", None),
@@ -211,17 +551,25 @@ class SceneService:
     # 场景3：冷战前欧洲（1946年，25国）
     # ------------------------------------------------------------------
     async def _create_scene3_agents(self, project_id: int) -> Dict[int, int]:
+        """场景3基线：RUS=强权, UKG=王道"""
+        return await self._create_scene3_variant(project_id)
+
+    async def _create_scene3_variant(
+        self,
+        project_id: int,
+        rus_leader: str = "强权型",
+        ukg_leader: str = "王道型",
+    ) -> Dict[int, int]:
         """
-        创建场景3（冷战前欧洲1946）的智能体
-        返回 {index: agent_id}
+        场景3变体（参数化大国领导类型）。
         """
         from app.core.cinc_data_loader import get_cinc_loader
         loader = get_cinc_loader()
         YEAR = 1946
 
         countries: List[Tuple[str, str, Optional[str]]] = [
-            ("强国甲", "RUS", "强权型"),
-            ("强国乙", "UKG", "王道型"),
+            ("强国甲", "RUS", rus_leader),
+            ("强国乙", "UKG", ukg_leader),
             ("中等国甲", "FRN", None),
             ("中等国乙", "ITA", None),
             ("中等国丙", "POL", None),
@@ -248,6 +596,350 @@ class SceneService:
         ]
 
         return await self._create_agents_from_cinc(project_id, loader, YEAR, countries)
+
+    # ------------------------------------------------------------------
+    # 场景4-7：全球体系（2012年，195国）— USA领导类型变体实验
+    # ------------------------------------------------------------------
+    async def _create_2012_agents(self, project_id: int, usa_leader: str) -> Dict[int, int]:
+        """
+        创建2012年全球体系智能体（场景4-7的共享实现）
+
+        Args:
+            project_id: 项目ID
+            usa_leader: USA的领导类型（霸权型/王道型/强权型/昏庸型）
+
+        其他国家领导类型：
+        - 王道型: CHN, UKG, FRN, GMY, JPN
+        - 强权型: RUS, IRN, PRK, VEN
+        """
+        from app.core.cinc_data_loader import get_cinc_loader
+        loader = get_cinc_loader()
+        YEAR = 2012
+
+        _LEADER_MAP = {
+            "USA": usa_leader,
+            "CHN": "王道型", "UKG": "王道型", "FRN": "王道型",
+            "GMY": "王道型", "JPN": "王道型",
+            "RUS": "强权型", "IRN": "强权型", "PRK": "强权型", "VEN": "强权型",
+        }
+
+        countries_2012 = loader.get_countries_by_year(YEAR)
+        country_list: List[Tuple[str, str, Optional[str]]] = []
+        for c in countries_2012:
+            if c["cinc"] <= 0:
+                continue
+            abb = c["stateabb"]
+            name = c["name"]
+            leader = _LEADER_MAP.get(abb)
+            country_list.append((name, abb, leader))
+
+        return await self._create_agents_from_cinc(project_id, loader, YEAR, country_list)
+
+    async def _create_scene4_agents(self, project_id: int) -> Dict[int, int]:
+        """场景4：USA=霸权型"""
+        return await self._create_2012_agents(project_id, "霸权型")
+
+    async def _create_scene5_agents(self, project_id: int) -> Dict[int, int]:
+        """场景5：USA=王道型"""
+        return await self._create_2012_agents(project_id, "王道型")
+
+    async def _create_scene6_agents(self, project_id: int) -> Dict[int, int]:
+        """场景6：USA=强权型"""
+        return await self._create_2012_agents(project_id, "强权型")
+
+    async def _create_scene7_agents(self, project_id: int) -> Dict[int, int]:
+        """场景7：USA=昏庸型"""
+        return await self._create_2012_agents(project_id, "昏庸型")
+
+    async def _create_scene8_agents(self, project_id: int) -> Dict[int, int]:
+        """场景8：AUH=昏庸型（Conrad校准），其余与场景1相同。显式实验对照。"""
+        return await self._create_scene1_agents(project_id)
+
+    async def _create_scene9_agents(self, project_id: int) -> Dict[int, int]:
+        """场景9：USA=王道型+Wilson档案，其余与场景4相同。威尔逊道德国际主义实验。"""
+        return await self._create_2012_agents(project_id, "王道型")
+
+    # ------------------------------------------------------------------
+    # 场景10-18：场景1变体实验（1913欧洲 — 单变量领导类型操作）
+    # 每个实验仅改变一个大国的领导类型，其余与基线一致。
+    # 缩写：S1-G1=场景1-GMY→王道, S1-G2=GMY→霸权, S1-G3=GMY→昏庸
+    #       S1-R1=RUS→王道, S1-R2=RUS→霸权, S1-R3=RUS→昏庸
+    #       S1-U1=UKG→强权, S1-U2=UKG→霸权, S1-U3=UKG→昏庸
+    # ------------------------------------------------------------------
+    async def _create_scene10_agents(self, project_id: int) -> Dict[int, int]:
+        """S1-G1: GMY 强权→王道。若德国1913年遵守国际规范，追随格局与秩序类型如何变化？"""
+        return await self._create_scene1_variant(project_id, gmy_leader="王道型")
+
+    async def _create_scene11_agents(self, project_id: int) -> Dict[int, int]:
+        """S1-G2: GMY 强权→霸权。若德国工具性使用道义（双重标准），追随格局是否不同？"""
+        return await self._create_scene1_variant(project_id, gmy_leader="霸权型")
+
+    async def _create_scene12_agents(self, project_id: int) -> Dict[int, int]:
+        """S1-G3: GMY 强权→昏庸。若德国决策非理性化，多极均势如何瓦解？"""
+        return await self._create_scene1_variant(project_id, gmy_leader="昏庸型")
+
+    async def _create_scene13_agents(self, project_id: int) -> Dict[int, int]:
+        """S1-R1: RUS 强权→王道。若俄国受道义约束，巴尔干危机会否降级？"""
+        return await self._create_scene1_variant(project_id, rus_leader="王道型")
+
+    async def _create_scene14_agents(self, project_id: int) -> Dict[int, int]:
+        """S1-R2: RUS 强权→霸权。若俄国双重标准操作，同盟关系如何重组？"""
+        return await self._create_scene1_variant(project_id, rus_leader="霸权型")
+
+    async def _create_scene15_agents(self, project_id: int) -> Dict[int, int]:
+        """S1-R3: RUS 强权→昏庸。若尼古拉二世昏庸加剧，追随流失路径？"""
+        return await self._create_scene1_variant(project_id, rus_leader="昏庸型")
+
+    async def _create_scene16_agents(self, project_id: int) -> Dict[int, int]:
+        """S1-U1: UKG 王道→强权。若英国放弃道义以军力主导，秩序类型？"""
+        return await self._create_scene1_variant(project_id, ukg_leader="强权型")
+
+    async def _create_scene17_agents(self, project_id: int) -> Dict[int, int]:
+        """S1-U2: UKG 王道→霸权。若英国双重标准操作（如殖民地），影响？"""
+        return await self._create_scene1_variant(project_id, ukg_leader="霸权型")
+
+    async def _create_scene18_agents(self, project_id: int) -> Dict[int, int]:
+        """S1-U3: UKG 王道→昏庸。若英国决策瘫痪，体系领导者真空后果？"""
+        return await self._create_scene1_variant(project_id, ukg_leader="昏庸型")
+
+    # ------------------------------------------------------------------
+    # 场景19-27：场景2变体实验（1938欧洲 — 单变量领导类型操作）
+    # 缩写：S2-R1=RUS→王道, S2-R2=RUS→强权, S2-R3=RUS→昏庸
+    #       S2-G1=GMY→王道, S2-G2=GMY→霸权, S2-G3=GMY→昏庸
+    #       S2-U1=UKG→强权, S2-U2=UKG→霸权, S2-U3=UKG→昏庸
+    # ------------------------------------------------------------------
+    async def _create_scene19_agents(self, project_id: int) -> Dict[int, int]:
+        """S2-R1: RUS 霸权→王道。若斯大林受道义约束，东欧缓冲区政策？"""
+        return await self._create_scene2_variant(project_id, rus_leader="王道型")
+
+    async def _create_scene20_agents(self, project_id: int) -> Dict[int, int]:
+        """S2-R2: RUS 霸权→强权。若苏联纯军事逻辑，冷战格局是否提前？"""
+        return await self._create_scene2_variant(project_id, rus_leader="强权型")
+
+    async def _create_scene21_agents(self, project_id: int) -> Dict[int, int]:
+        """S2-R3: RUS 霸权→昏庸。若苏联决策非理性，对德战争的转折？"""
+        return await self._create_scene2_variant(project_id, rus_leader="昏庸型")
+
+    async def _create_scene22_agents(self, project_id: int) -> Dict[int, int]:
+        """S2-G1: GMY 强权→王道。若希特勒受道义约束，能否存在谈判和平？"""
+        return await self._create_scene2_variant(project_id, gmy_leader="王道型")
+
+    async def _create_scene23_agents(self, project_id: int) -> Dict[int, int]:
+        """S2-G2: GMY 强权→霸权。若纳粹工具性使用规范，绥靖是否延续？"""
+        return await self._create_scene2_variant(project_id, gmy_leader="霸权型")
+
+    async def _create_scene24_agents(self, project_id: int) -> Dict[int, int]:
+        """S2-G3: GMY 强权→昏庸。若德国决策紊乱，战争进程如何偏离？"""
+        return await self._create_scene2_variant(project_id, gmy_leader="昏庸型")
+
+    async def _create_scene25_agents(self, project_id: int) -> Dict[int, int]:
+        """S2-U1: UKG 王道→强权。若无绥靖而强硬对抗，1938年即开战？"""
+        return await self._create_scene2_variant(project_id, ukg_leader="强权型")
+
+    async def _create_scene26_agents(self, project_id: int) -> Dict[int, int]:
+        """S2-U2: UKG 王道→霸权。若张伯伦式霸权逻辑延续全期？"""
+        return await self._create_scene2_variant(project_id, ukg_leader="霸权型")
+
+    async def _create_scene27_agents(self, project_id: int) -> Dict[int, int]:
+        """S2-U3: UKG 王道→昏庸。若英国决策瘫痪，欧洲是否会全线沦陷？"""
+        return await self._create_scene2_variant(project_id, ukg_leader="昏庸型")
+
+    # ------------------------------------------------------------------
+    # 场景28-33：场景3变体实验（1946欧洲 — 单变量领导类型操作）
+    # 缩写：S3-R1=RUS→王道, S3-R2=RUS→霸权, S3-R3=RUS→昏庸
+    #       S3-U1=UKG→强权, S3-U2=UKG→霸权, S3-U3=UKG→昏庸
+    # ------------------------------------------------------------------
+    async def _create_scene28_agents(self, project_id: int) -> Dict[int, int]:
+        """S3-R1: RUS 强权→王道。若斯大林受道义约束，冷战能否避免？"""
+        return await self._create_scene3_variant(project_id, rus_leader="王道型")
+
+    async def _create_scene29_agents(self, project_id: int) -> Dict[int, int]:
+        """S3-R2: RUS 强权→霸权。若苏联霸权型（双重标准），阵营稳定性？"""
+        return await self._create_scene3_variant(project_id, rus_leader="霸权型")
+
+    async def _create_scene30_agents(self, project_id: int) -> Dict[int, int]:
+        """S3-R3: RUS 强权→昏庸。若苏联决策非理性，阵营稳定性？"""
+        return await self._create_scene3_variant(project_id, rus_leader="昏庸型")
+
+    async def _create_scene31_agents(self, project_id: int) -> Dict[int, int]:
+        """S3-U1: UKG 王道→强权。若英国以军力维持帝国，去殖民化路径？"""
+        return await self._create_scene3_variant(project_id, ukg_leader="强权型")
+
+    async def _create_scene32_agents(self, project_id: int) -> Dict[int, int]:
+        """S3-U2: UKG 王道→霸权。若英国霸权型（苏伊士逻辑主导），影响？"""
+        return await self._create_scene3_variant(project_id, ukg_leader="霸权型")
+
+    async def _create_scene33_agents(self, project_id: int) -> Dict[int, int]:
+        """S3-U3: UKG 王道→昏庸。若英国决策失灵，西欧领导真空由谁填补？"""
+        return await self._create_scene3_variant(project_id, ukg_leader="昏庸型")
+
+    # ------------------------------------------------------------------
+    # 场景4战略关系（2012全球体系 — 条约集团/bloc-based）
+    # ------------------------------------------------------------------
+    async def _setup_scene4_relationships(
+        self,
+        sr_service: StrategicRelationshipService,
+        project_id: int,
+        agent_map: Dict[int, int],
+    ) -> None:
+        """
+        2012年全球战略关系 — 程序化条约集团分配。
+
+        195国产生约4000对有效配对，逐对硬编码不可行。采用 bloc 分组：
+        先收集所有要设置的关系为 (idx1, idx2, rel) 三元组，
+        然后批量 await _set_rel。
+
+        2012年真实条约集团:
+
+        [NATO 28] ALB,BEL,BUL,CAN,CRO,CZR,DEN,EST,FRN,GMY,GRC,HUN,
+          ICE,ITA,LAT,LIT,LUX,NTH,NOR,POL,POR,ROM,SLV,SLO,SPN,TUR,UKG,USA
+        [CSTO 6] RUS,BLR,ARM,KZK,KYR,TAJ
+        [美日韩澳] JPN,ROK,AUL,NEW
+        [上合 SCO] CHN,RUS,KZK,KYR,TAJ,UZB
+        [GCC 6] SAU,UAE,OMN,KUW,BAH,QAT
+        [BRICS 5] CHN,RUS,IND,BRA,SAF
+        [反美轴心] IRN,SYR,PRK,VEN,CUB,BOL,ECU,NIC,ZIM
+        [中国紧密伙伴] PAK,CAM,LAO,MYA
+        [中东亲美] ISR,EGY,JOR,IRQ
+        """
+        from app.core.cinc_data_loader import get_cinc_loader
+        loader = get_cinc_loader()
+
+        # 按 CINC 排序获取 2012 国家列表 → idx_stateabb
+        countries_sorted = [c for c in loader.get_countries_by_year(2012) if c["cinc"] > 0]
+        idx_stateabb: Dict[int, str] = {}
+        abb_to_idx: Dict[str, int] = {}
+        for i, c in enumerate(countries_sorted, start=1):
+            if i in agent_map:
+                abb = c["stateabb"]
+                idx_stateabb[i] = abb
+                abb_to_idx[abb] = i
+
+        def _idx(abb: str) -> Optional[int]:
+            return abb_to_idx.get(abb.upper())
+
+        # 条约集团（COW三字母缩写，仅限2012年真实成员）
+        # NATO (28国,2012): 不含芬兰(2023入)、瑞典(2024入)、波黑
+        _nato = {"USA","CAN","UKG","FRN","GMY","ITA","SPN","NTH","BEL","LUX",
+                 "DEN","NOR","ICE","POL","CZR","SLO","SLV","HUN","ROM","BUL",
+                 "CRO","ALB","EST","LAT","LIT","TUR","POR","GRC"}
+        _csto = {"RUS","BLR","ARM","KZK","KYR","TAJ"}
+        _us_east_asia = {"JPN","ROK","TAW"}
+        _anzus = {"AUL","NEW"}
+        _sco = {"CHN","RUS","KZK","KYR","TAJ","UZB"}
+        _gcc = {"SAU","UAE","OMN","KUW","BAH","QAT"}
+        _brics = {"CHN","RUS","IND","BRA","SAF"}
+        _anti_us = {"IRN","SYR","PRK","VEN","CUB","BOL","ECU","NIC","ZIM"}
+        _cn_close = {"PAK","CAM","LAO","MYA","SUD"}
+        _eu_neutral = {"SWZ","MLD","UKR","GRG","AZE"}
+        _cn_nato_partners = {"UKG","FRN","GMY","ITA","SPN","NTH","CAN","AUL"}
+
+        # 收集所有关系对 (src_idx, tgt_idx, rel)
+        pairs: List[Tuple[int, int, StrategicRelationshipEnum]] = []
+        R = StrategicRelationshipEnum  # 缩写
+
+        # ---- 集团内部 ALLIANCE ----
+        for bloc in [_nato, _csto, _gcc, _anzus]:
+            members = sorted([_idx(a) for a in bloc if _idx(a)])
+            for i in range(len(members)):
+                for j in range(i + 1, len(members)):
+                    pairs.append((members[i], members[j], R.ALLIANCE))
+
+        # 集团内部 PARTNERSHIP
+        for bloc in [_brics, _sco, _eu_neutral, _cn_close, _us_east_asia]:
+            members = sorted([_idx(a) for a in bloc if _idx(a)])
+            for i in range(len(members)):
+                for j in range(i + 1, len(members)):
+                    pairs.append((members[i], members[j], R.PARTNERSHIP))
+
+        # 反美轴心内部 PARTNERSHIP
+        _au_members = sorted([_idx(a) for a in _anti_us if _idx(a)])
+        for i in range(len(_au_members)):
+            for j in range(i + 1, len(_au_members)):
+                pairs.append((_au_members[i], _au_members[j], R.PARTNERSHIP))
+
+        # ---- 集团间真实关系 ----
+        # NATO × CSTO: CONFLICT
+        for na in _nato:
+            for cs in _csto:
+                if _idx(na) and _idx(cs):
+                    pairs.append((_idx(na), _idx(cs), R.CONFLICT))
+
+        # NATO × _anti_us: CONFLICT
+        for na in _nato:
+            for au in _anti_us:
+                if _idx(na) and _idx(au):
+                    pairs.append((_idx(na), _idx(au), R.CONFLICT))
+
+        # USA × CHN: CONFLICT
+        if _idx("USA") and _idx("CHN"):
+            pairs.append((_idx("USA"), _idx("CHN"), R.CONFLICT))
+        # USA × RUS: CONFLICT
+        if _idx("USA") and _idx("RUS"):
+            pairs.append((_idx("USA"), _idx("RUS"), R.CONFLICT))
+
+        # CHN × RUS: PARTNERSHIP
+        if _idx("CHN") and _idx("RUS"):
+            pairs.append((_idx("CHN"), _idx("RUS"), R.PARTNERSHIP))
+
+        # 中国独特关系
+        for a, b, r in [
+            ("CHN","IRN",R.PARTNERSHIP), ("CHN","PRK",R.ALLIANCE),
+            ("CHN","PAK",R.ALLIANCE),     ("CHN","IND",R.CONFLICT),
+            ("JPN","CHN",R.CONFLICT),     ("USA","ISR",R.ALLIANCE),
+            ("USA","SAU",R.PARTNERSHIP),  ("PAK","IND",R.CONFLICT),
+            ("UKG","ARG",R.CONFLICT),     ("RUS","UKR",R.CONFLICT),
+            ("RUS","GRG",R.CONFLICT),     ("ISR","IRN",R.CONFLICT),
+            ("SAU","IRN",R.CONFLICT),     ("JPN","ROK",R.PARTNERSHIP),
+            ("JPN","PRK",R.CONFLICT),     ("ROK","PRK",R.CONFLICT),
+            ("TUR","GRC",R.CONFLICT),     ("TUR","ARM",R.CONFLICT),
+            ("TUR","IRN",R.PARTNERSHIP),  ("SAU","PAK",R.ALLIANCE),
+            ("VEN","IRN",R.ALLIANCE),     ("IND","RUS",R.PARTNERSHIP),
+            ("CHN","SUD",R.PARTNERSHIP),  ("RUS","SYR",R.ALLIANCE),
+            ("IRN","SYR",R.ALLIANCE),
+        ]:
+            if _idx(a) and _idx(b):
+                pairs.append((_idx(a), _idx(b), r))
+
+        # CN × NATO partners
+        for cn_p in _cn_nato_partners:
+            if _idx(cn_p) and _idx("CHN"):
+                pairs.append((_idx(cn_p), _idx("CHN"), R.PARTNERSHIP))
+
+        # US × JPN/ROK: ALLIANCE
+        for ea in ["JPN","ROK"]:
+            if _idx("USA") and _idx(ea):
+                pairs.append((_idx("USA"), _idx(ea), R.ALLIANCE))
+        # US × AUL: ALLIANCE
+        if _idx("USA") and _idx("AUL"):
+            pairs.append((_idx("USA"), _idx("AUL"), R.ALLIANCE))
+
+        # GCC × USA/UKG/FRN: PARTNERSHIP
+        for gc in _gcc:
+            for w in ["USA","UKG","FRN"]:
+                if _idx(gc) and _idx(w):
+                    pairs.append((_idx(gc), _idx(w), R.PARTNERSHIP))
+
+        # ISR/EGY/JOR × USA: PARTNERSHIP
+        for me in ["ISR","EGY","JOR","IRQ"]:
+            if _idx(me) and _idx("USA"):
+                pairs.append((_idx(me), _idx("USA"), R.PARTNERSHIP))
+
+        # ---- 批量执行（将 index 转为 agent_id 后调用 _ensure_relationship 跳过等级验证） ----
+        # 使用 _ensure_relationship 而非 set_relationship 是因为195国体系中
+        # RUS/UKR等国家对可能都是中等强国，set_relationship 会拒绝同等级配对。
+        for si, ti, rel in pairs:
+            src_id = agent_map.get(si)
+            tgt_id = agent_map.get(ti)
+            if src_id and tgt_id:
+                await sr_service._ensure_relationship(project_id, src_id, tgt_id, rel)
+
+        logger.info(
+            f"场景4：2012全球体系战略关系设置完成，共 {len(pairs)} 对显式关系"
+        )
+        # 注：未显式设置的高×低/高×高配对保留 initialize_relationships 的
+        # NO_DIPLOMACY 默认值（已在 create_project_from_scene 中先调用
+        # initialize_relationships 再调用本方法覆盖已有关系）。
 
     # ------------------------------------------------------------------
     # 通用CINC数据创建智能体方法
@@ -396,6 +1088,69 @@ class SceneService:
             agent_map = await self._create_scene2_agents(project_id)
         elif scene_id == 3:
             agent_map = await self._create_scene3_agents(project_id)
+        elif scene_id == 4:
+            agent_map = await self._create_scene4_agents(project_id)
+        elif scene_id == 5:
+            agent_map = await self._create_scene5_agents(project_id)
+        elif scene_id == 6:
+            agent_map = await self._create_scene6_agents(project_id)
+        elif scene_id == 7:
+            agent_map = await self._create_scene7_agents(project_id)
+        elif scene_id == 8:
+            agent_map = await self._create_scene8_agents(project_id)
+        elif scene_id == 9:
+            agent_map = await self._create_scene9_agents(project_id)
+        # 场景10-18：场景1变体（1913 — 单变量领导类型实验）
+        elif scene_id == 10:
+            agent_map = await self._create_scene10_agents(project_id)
+        elif scene_id == 11:
+            agent_map = await self._create_scene11_agents(project_id)
+        elif scene_id == 12:
+            agent_map = await self._create_scene12_agents(project_id)
+        elif scene_id == 13:
+            agent_map = await self._create_scene13_agents(project_id)
+        elif scene_id == 14:
+            agent_map = await self._create_scene14_agents(project_id)
+        elif scene_id == 15:
+            agent_map = await self._create_scene15_agents(project_id)
+        elif scene_id == 16:
+            agent_map = await self._create_scene16_agents(project_id)
+        elif scene_id == 17:
+            agent_map = await self._create_scene17_agents(project_id)
+        elif scene_id == 18:
+            agent_map = await self._create_scene18_agents(project_id)
+        # 场景19-27：场景2变体（1938 — 单变量领导类型实验）
+        elif scene_id == 19:
+            agent_map = await self._create_scene19_agents(project_id)
+        elif scene_id == 20:
+            agent_map = await self._create_scene20_agents(project_id)
+        elif scene_id == 21:
+            agent_map = await self._create_scene21_agents(project_id)
+        elif scene_id == 22:
+            agent_map = await self._create_scene22_agents(project_id)
+        elif scene_id == 23:
+            agent_map = await self._create_scene23_agents(project_id)
+        elif scene_id == 24:
+            agent_map = await self._create_scene24_agents(project_id)
+        elif scene_id == 25:
+            agent_map = await self._create_scene25_agents(project_id)
+        elif scene_id == 26:
+            agent_map = await self._create_scene26_agents(project_id)
+        elif scene_id == 27:
+            agent_map = await self._create_scene27_agents(project_id)
+        # 场景28-33：场景3变体（1946 — 单变量领导类型实验）
+        elif scene_id == 28:
+            agent_map = await self._create_scene28_agents(project_id)
+        elif scene_id == 29:
+            agent_map = await self._create_scene29_agents(project_id)
+        elif scene_id == 30:
+            agent_map = await self._create_scene30_agents(project_id)
+        elif scene_id == 31:
+            agent_map = await self._create_scene31_agents(project_id)
+        elif scene_id == 32:
+            agent_map = await self._create_scene32_agents(project_id)
+        elif scene_id == 33:
+            agent_map = await self._create_scene33_agents(project_id)
         else:
             agent_map = {}
 
@@ -413,6 +1168,14 @@ class SceneService:
                 await self._setup_scene2_relationships(sr_service, project_id, agent_map)
             elif scene_id == 3:
                 await self._setup_scene3_relationships(sr_service, project_id, agent_map)
+            elif scene_id in (4, 5, 6, 7, 9):
+                await self._setup_scene4_relationships(sr_service, project_id, agent_map)
+            elif scene_id in (8, 10, 11, 12, 13, 14, 15, 16, 17, 18):
+                await self._setup_scene1_relationships(sr_service, project_id, agent_map)
+            elif scene_id in (19, 20, 21, 22, 23, 24, 25, 26, 27):
+                await self._setup_scene2_relationships(sr_service, project_id, agent_map)
+            elif scene_id in (28, 29, 30, 31, 32, 33):
+                await self._setup_scene3_relationships(sr_service, project_id, agent_map)
 
             await session.commit()
 
@@ -427,7 +1190,12 @@ class SceneService:
         from app.services.agent_neighbor_service import AgentNeighborService
 
         # 场景 ID → 年份 映射 (与 _create_sceneN_agents 中的 YEAR 同步)
-        scene_year_map = {1: 1913, 2: 1938, 3: 1946}
+        scene_year_map = {1: 1913, 2: 1938, 3: 1946, 4: 2012, 5: 2012, 6: 2012, 7: 2012, 8: 1913, 9: 2012,
+                          10: 1913, 11: 1913, 12: 1913, 13: 1913, 14: 1913, 15: 1913,
+                          16: 1913, 17: 1913, 18: 1913,
+                          19: 1938, 20: 1938, 21: 1938, 22: 1938, 23: 1938, 24: 1938,
+                          25: 1938, 26: 1938, 27: 1938,
+                          28: 1946, 29: 1946, 30: 1946, 31: 1946, 32: 1946, 33: 1946}
         scene_year = scene_year_map.get(scene_id)
 
         async for session in db_config.get_session():
