@@ -138,7 +138,7 @@ class SceneService:
                 # ═══════════════════════════════════════════════════════════
                 {
                     "scene_id": 10,
-                    "scene_name": "一战前欧洲（1913·GMY王道型）",
+                    "scene_name": "S1-G1（GMY强权→王道）",
                     "scene_desc": "1913年欧洲体系变体——德国由强权型改为王道型（遵守国际规范/制度构建者）。若德国1913年受道义约束，七月危机能否避免？其余18国领导类型、国力数据、战略关系均与场景1一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -148,7 +148,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 11,
-                    "scene_name": "一战前欧洲（1913·GMY霸权型）",
+                    "scene_name": "S1-G2（GMY强权→霸权）",
                     "scene_desc": "1913年欧洲体系变体——德国由强权型改为霸权型（工具性道义/双重标准）。若德国以规则构建和制度工具主义操作国际关系，追随格局是否不同？其余18国领导类型、国力数据、战略关系均与场景1一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -158,7 +158,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 12,
-                    "scene_name": "一战前欧洲（1913·GMY昏庸型）",
+                    "scene_name": "S1-G3（GMY强权→昏庸）",
                     "scene_desc": "1913年欧洲体系变体——德国由强权型改为昏庸型（决策非理性/战略紊乱）。若德国决策系统瘫痪，多极均势如何瓦解？其余18国领导类型、国力数据、战略关系均与场景1一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -168,7 +168,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 13,
-                    "scene_name": "一战前欧洲（1913·RUS王道型）",
+                    "scene_name": "S1-R1（RUS强权→王道）",
                     "scene_desc": "1913年欧洲体系变体——俄国由强权型改为王道型（遵守国际规范/道义约束）。若俄国受道义约束且不诉诸军事动员，巴尔干危机能否通过外交降级？其余18国领导类型、国力数据、战略关系均与场景1一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -178,7 +178,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 14,
-                    "scene_name": "一战前欧洲（1913·RUS霸权型）",
+                    "scene_name": "S1-R2（RUS强权→霸权）",
                     "scene_desc": "1913年欧洲体系变体——俄国由强权型改为霸权型（双重标准/规则主导权）。若俄国以制度工具主义替代军事强制为核心手段，同盟关系如何重组？其余18国领导类型、国力数据、战略关系均与场景1一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -188,8 +188,8 @@ class SceneService:
                 },
                 {
                     "scene_id": 15,
-                    "scene_name": "一战前欧洲（1913·RUS昏庸型）",
-                    "scene_desc": "1913年欧洲体系变体——俄国由强权型改为昏庸型（决策非理性加剧/尼古拉二世昏庸型完全显现）。若俄国决策系统全面失能，追随流失路径与体系解体时序如何？其余18国领导类型、国力数据、战略关系均与场景1一致。",
+                    "scene_name": "S1-R3（RUS强权→昏庸）",
+                    "scene_desc": "1913年欧洲体系变体——俄国由强权型改为昏庸型（决策非理性加剧）。若俄国决策系统全面失能，追随流失路径与体系解体时序如何？其余18国领导类型、国力数据、战略关系均与场景1一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
@@ -198,7 +198,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 16,
-                    "scene_name": "一战前欧洲（1913·UKG强权型）",
+                    "scene_name": "S1-U1（UKG王道→强权）",
                     "scene_desc": "1913年欧洲体系变体——英国由王道型改为强权型（军事强制/忽视道义）。若英国放弃道义约束以军力手段维持均势和帝国，秩序类型如何变化？其余18国领导类型、国力数据、战略关系均与场景1一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -208,7 +208,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 17,
-                    "scene_name": "一战前欧洲（1913·UKG霸权型）",
+                    "scene_name": "S1-U2（UKG王道→霸权）",
                     "scene_desc": "1913年欧洲体系变体——英国由王道型改为霸权型（双重标准/利益最大化）。若英国在殖民地以霸权逻辑在欧洲以道义话语并行操作，追随格局是否受影响？其余18国领导类型、国力数据、战略关系均与场景1一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -218,7 +218,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 18,
-                    "scene_name": "一战前欧洲（1913·UKG昏庸型）",
+                    "scene_name": "S1-U3（UKG王道→昏庸）",
                     "scene_desc": "1913年欧洲体系变体——英国由王道型改为昏庸型（决策瘫痪/战略紊乱）。若体系内唯一的王道型领导者决策失灵，体系领导者真空的后果是什么？其余18国领导类型、国力数据、战略关系均与场景1一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -231,7 +231,7 @@ class SceneService:
                 # ═══════════════════════════════════════════════════════════
                 {
                     "scene_id": 19,
-                    "scene_name": "二战前欧洲（1938·RUS王道型）",
+                    "scene_name": "S2-R1（RUS霸权→王道）",
                     "scene_desc": "1938年欧洲体系变体——苏联由霸权型改为王道型（遵守国际规范/道义约束集体安全）。若斯大林受道义约束而不追求势力范围，东欧缓冲区政策如何改变？其余27国领导类型、国力数据、战略关系均与场景2一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -241,7 +241,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 20,
-                    "scene_name": "二战前欧洲（1938·RUS强权型）",
+                    "scene_name": "S2-R2（RUS霸权→强权）",
                     "scene_desc": "1938年欧洲体系变体——苏联由霸权型改为强权型（军事强制核心/忽视道义）。若苏联以纯军事逻辑行动——扩张依靠武力而非制度形式，冷战格局是否提前固化？其余27国领导类型、国力数据、战略关系均与场景2一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -251,7 +251,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 21,
-                    "scene_name": "二战前欧洲（1938·RUS昏庸型）",
+                    "scene_name": "S2-R3（RUS霸权→昏庸）",
                     "scene_desc": "1938年欧洲体系变体——苏联由霸权型改为昏庸型（决策非理性/战略判断失能）。若苏联决策系统紊乱——无法计算性地利用德苏条约和军事缓冲，对德战争转折？其余27国领导类型、国力数据、战略关系均与场景2一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -261,7 +261,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 22,
-                    "scene_name": "二战前欧洲（1938·GMY王道型）",
+                    "scene_name": "S2-G1（GMY强权→王道）",
                     "scene_desc": "1938年欧洲体系变体——德国由强权型改为王道型（遵守国际规范/通过制度追求修正）。若希特勒受道义约束——修正凡尔赛条约通过外交谈判而非军事威胁，是否存在谈判和平？其余27国领导类型、国力数据、战略关系均与场景2一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -271,7 +271,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 23,
-                    "scene_name": "二战前欧洲（1938·GMY霸权型）",
+                    "scene_name": "S2-G2（GMY强权→霸权）",
                     "scene_desc": "1938年欧洲体系变体——德国由强权型改为霸权型（工具性道义/双重标准）。若纳粹以规则话语和制度工具主义包装扩张——对大国用道义话语对小国用强制，绥靖是否延续更久？其余27国领导类型、国力数据、战略关系均与场景2一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -281,7 +281,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 24,
-                    "scene_name": "二战前欧洲（1938·GMY昏庸型）",
+                    "scene_name": "S2-G3（GMY强权→昏庸）",
                     "scene_desc": "1938年欧洲体系变体——德国由强权型改为昏庸型（决策非理性/战略紊乱）。若纳粹决策系统紊乱——同时多线挑衅且无法完成战略规划，战争进程如何偏离历史轨道？其余27国领导类型、国力数据、战略关系均与场景2一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -291,7 +291,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 25,
-                    "scene_name": "二战前欧洲（1938·UKG强权型）",
+                    "scene_name": "S2-U1（UKG王道→强权）",
                     "scene_desc": "1938年欧洲体系变体——英国由王道型改为强权型（军事强制/忽视道义）。若无绥靖而强硬对抗——英国以军事手段回应德国的每一步扩张，1938年即开战？其余27国领导类型、国力数据、战略关系均与场景2一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -301,7 +301,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 26,
-                    "scene_name": "二战前欧洲（1938·UKG霸权型）",
+                    "scene_name": "S2-U2（UKG王道→霸权）",
                     "scene_desc": "1938年欧洲体系变体——英国由王道型改为霸权型（双重标准/以绥靖为霸权工具）。若张伯伦式霸权逻辑——牺牲小国以换取时间——成为整个时期的制度性策略而非一次性误判，结果如何？其余27国领导类型、国力数据、战略关系均与场景2一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -311,7 +311,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 27,
-                    "scene_name": "二战前欧洲（1938·UKG昏庸型）",
+                    "scene_name": "S2-U3（UKG王道→昏庸）",
                     "scene_desc": "1938年欧洲体系变体——英国由王道型改为昏庸型（决策瘫痪/战略失能）。若英国决策系统失灵——无法形成连贯的对德政策，欧洲是否会因缺乏抗衡力量而全线沦陷？其余27国领导类型、国力数据、战略关系均与场景2一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -324,7 +324,7 @@ class SceneService:
                 # ═══════════════════════════════════════════════════════════
                 {
                     "scene_id": 28,
-                    "scene_name": "冷战前欧洲（1946·RUS王道型）",
+                    "scene_name": "S3-R1（RUS强权→王道）",
                     "scene_desc": "1946年欧洲体系变体——苏联由强权型改为王道型（遵守国际规范/道义约束势力范围）。若斯大林受道义约束——东欧非军事强制而通过多边制度安排，冷战能否避免或形态不同？其余24国领导类型、国力数据、战略关系均与场景3一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -334,7 +334,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 29,
-                    "scene_name": "冷战前欧洲（1946·RUS霸权型）",
+                    "scene_name": "S3-R2（RUS强权→霸权）",
                     "scene_desc": "1946年欧洲体系变体——苏联由强权型改为霸权型（双重标准/制度工具主义）。若苏联以规则构建和灵活标准化替代纯军事强制管理势力范围，阵营稳定性如何变化？其余24国领导类型、国力数据、战略关系均与场景3一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -344,7 +344,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 30,
-                    "scene_name": "冷战前欧洲（1946·RUS昏庸型）",
+                    "scene_name": "S3-R3（RUS强权→昏庸）",
                     "scene_desc": "1946年欧洲体系变体——苏联由强权型改为昏庸型（决策非理性/战略失能）。若苏联决策系统紊乱——继承斗争扩大化、对外行为不稳定，东欧阵营的凝聚力如何变化？其余24国领导类型、国力数据、战略关系均与场景3一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -354,7 +354,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 31,
-                    "scene_name": "冷战前欧洲（1946·UKG强权型）",
+                    "scene_name": "S3-U1（UKG王道→强权）",
                     "scene_desc": "1946年欧洲体系变体——英国由王道型改为强权型（军事力量维持帝国/强制手段优先）。若英国拒绝去殖民化且以军事手段维持全球存在，西方阵营的性质如何变化？其余24国领导类型、国力数据、战略关系均与场景3一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -364,7 +364,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 32,
-                    "scene_name": "冷战前欧洲（1946·UKG霸权型）",
+                    "scene_name": "S3-U2（UKG王道→霸权）",
                     "scene_desc": "1946年欧洲体系变体——英国由王道型改为霸权型（双重标准/帝国保护主义）。若英国以霸权型逻辑运作——公开主张道义但私下维护帝国特权（苏伊士模式贯穿全期），西方阵营团结度如何？其余24国领导类型、国力数据、战略关系均与场景3一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
@@ -374,7 +374,7 @@ class SceneService:
                 },
                 {
                     "scene_id": 33,
-                    "scene_name": "冷战前欧洲（1946·UKG昏庸型）",
+                    "scene_name": "S3-U3（UKG王道→昏庸）",
                     "scene_desc": "1946年欧洲体系变体——英国由王道型改为昏庸型（决策失灵/战略紊乱）。若英国决策系统瘫痪——无法推动北约筹建、欧洲一体化或有序去殖民化，西欧领导真空由谁填补？其余24国领导类型、国力数据、战略关系均与场景3一致。",
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
