@@ -1,0 +1,38 @@
+{
+  "ID22": {
+    "f1": 0,
+    "precision": 0,
+    "recall": 0.0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 707,
+    "tn": 43,
+    "total_obs": 750,
+    "per_round_f1_mean": 0.0,
+    "per_round_f1_stdev": 0.0
+  },
+  "ID25": {
+    "f1": 0,
+    "precision": 0,
+    "recall": 0.0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 584,
+    "tn": 184,
+    "total_obs": 768,
+    "per_round_f1_mean": 0.0,
+    "per_round_f1_stdev": 0.0
+  },
+  "ID26": {
+    "f1": 0,
+    "precision": 0,
+    "recall": 0.0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 987,
+    "tn": 163,
+    "total_obs": 1150,
+    "per_round_f1_mean": 0.0,
+    "per_round_f1_stdev": 0.0
+  }
+}

@@ -365,6 +365,7 @@ class DecisionEngine:
         # Format info pool (shared across all agents in same round+phase)
         # History uses global pair-based format so it's identical for all agents.
         # Per-agent outgoing/incoming perspective is in situation_summary.
+        # Per-agent briefs (alliance_chain, neighbor) go to user prompt only.
         info_pool_dict = {
             'all_agent_info': self._format_agents_for_prompt(info_pool.all_agent_info),
             'history_action_records': self._format_history_for_prompt(
@@ -374,17 +375,13 @@ class DecisionEngine:
                 info_pool.history_power_data
             ),
             'last_round_order_info': str(info_pool.last_round_order_info),
-            'alliance_chain_summary': alliance_chain_summary or "【上一轮联盟事件简报】上一轮无重要联盟相关事件",
-            'neighbor_summary': neighbor_summary or "【邻接关系简报】未提供邻接数据"
         }
 
-        # System prompt: ALL shared content (cached after first agent)
+        # System prompt: byte-identical for ALL agents (critical for DeepSeek cache hit)
         system_prompt = PromptTemplates.build_shared_system(
             cinc_year=agent_info.cinc_year,
             info_pool_dict=info_pool_dict,
             allowed_actions=allowed_actions,
-            situation_summary="",
-            agent_name_for_task=agent_info.agent_name
         )
 
         # User prompt: ONLY per-agent content + personal history view
@@ -392,10 +389,14 @@ class DecisionEngine:
         personal_history = self._format_history_for_prompt(
             info_pool.history_action_records, agent_info.agent_id
         )
+        alliance_text = alliance_chain_summary or "【上一轮联盟事件简报】上一轮无重要联盟相关事件"
+        neighbor_text = neighbor_summary or "【邻接关系简报】未提供邻接数据"
         user_prompt = PromptTemplates.build_agent_user(
             agent_dict,
             situation_summary=situation_summary,
-            personal_history=personal_history
+            personal_history=personal_history,
+            alliance_chain_summary=alliance_text,
+            neighbor_summary=neighbor_text
         )
 
         return system_prompt, user_prompt

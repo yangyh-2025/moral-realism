@@ -48,46 +48,123 @@ class SimulationService:
             max_concurrent = 5
         return max(1, min(max_concurrent, 20))
 
-    async def _warmup_cache(self, agents: List[Dict], log_manager=None) -> None:
+    async def _warmup_round_cache(
+        self,
+        agents: List[Dict],
+        info_pool,
+        phase_actions,
+        action_stage,
+        strategic_relationships: Dict,
+        log_manager=None,
+        round_num: int = 0,
+    ) -> None:
         """
-        首轮开始前发送一次轻量API调用来预热 Anthropic prompt cache。
+        每轮每阶段开始前发送 1 次轻量 API 调用，预热 DeepSeek 磁盘前缀缓存。
 
-        发送与所有 agent 相同的 system prompt 前缀（SHARED_CACHE_PREFIX），
-        使后续 195 个 agent 的 system prompt 前缀完全命中缓存。
+        机制：
+        - 用第一个 agent 构建完整的 system prompt（对所有 agent 字节级一致）
+        - 发送极短 user prompt 使 DeepSeek 将 system prompt 的 KV cache 落盘
+        - 后续并发 batch 中剩余 agent 全部命中缓存前缀
 
-        成本：1 次 API 调用（~50 input tokens + ~50 output tokens），
-        收益：后续每 agent 每次调用的 ~2000 input tokens 缓存命中。
+        成本：1 次 API 调用（~50 input + ~50 output tokens，缓存命中价格 ~0.0028 USD）
+        收益：后续每 agent 每次调用的 ~5000-8000 input tokens 缓存命中
+        （节省 98% 输入成本）
         """
+        from app.core.decision_engine import AgentInfo
         from app.core.prompt_templates import PromptTemplates
         from app.services.llm_service import get_llm_service
+        from app.core.agent_base import AgentBase
+        from app.core.leader_profiles import get_leader_profile_by_ccode, get_scene_id_from_cinc_year
 
-        cinc_year = None
-        for a in agents:
-            y = a.get('cinc_year')
-            if y:
-                cinc_year = y
-                break
+        if not agents:
+            return
 
+        # 用第一个 agent 构建与所有 agent 完全相同的 system prompt
+        agent0 = agents[0]
+        cinc_year = agent0.get('cinc_year')
         if not cinc_year:
             return
 
-        shared_prefix = PromptTemplates.SHARED_CACHE_PREFIX.format(cinc_year=cinc_year)
-        warmup_prompt = '{"decision_reason":"cache warmup","actions":[]}'
+        # 构建 agent_info 用于生成 system prompt（与 _decide_one_agent 逻辑一致）
+        agent_base0 = AgentBase(**{
+            "agent_id": agent0.get('agent_id'),
+            "agent_name": agent0.get('agent_name'),
+            "region": agent0.get('region'),
+            "milex": agent0.get('milex', 0),
+            "milper": agent0.get('milper', 0),
+            "irst": agent0.get('irst', 0),
+            "pec": agent0.get('pec', 0),
+            "tpop": agent0.get('tpop', 0),
+            "upop": agent0.get('upop', 0),
+            "initial_total_power": agent0.get('initial_total_power'),
+            "current_total_power": agent0.get('current_total_power'),
+            "power_level": agent0.get('power_level'),
+            "leader_type": agent0.get('leader_type'),
+        })
+
+        _scene_id = get_scene_id_from_cinc_year(cinc_year)
+        _leader_profile = get_leader_profile_by_ccode(
+            _scene_id or 0, agent0.get('country_code'), round_num,
+            leader_type=agent0.get('leader_type')
+        )
+
+        allowed_agent0 = [{
+            'action_id': a.action_id,
+            'action_name': a.action_name,
+            'action_en_name': a.action_en_name,
+            'action_category': a.action_category,
+            'action_desc': a.action_desc,
+            'respect_sov': a.respect_sov,
+            'initiator_power_change': a.initiator_power_change,
+            'target_power_change': a.target_power_change,
+            'is_initiative': a.is_initiative,
+            'is_response': a.is_response
+        } for a in phase_actions]
+
+        agent_info0 = AgentInfo(
+            agent_id=agent0.get('agent_id'),
+            agent_name=agent0.get('agent_name'),
+            region=agent0.get('region'),
+            initial_total_power=agent0.get('initial_total_power'),
+            current_total_power=agent0.get('current_total_power'),
+            power_level=agent0.get('power_level'),
+            leader_type=agent0.get('leader_type'),
+            leader_profile=_leader_profile,
+            national_interest=agent_base0.national_interest,
+            strategic_relationships=strategic_relationships.get(agent0.get('agent_id'), {}),
+            cinc_year=cinc_year,
+            allowed_actions=allowed_agent0,
+        )
+
+        # 构建 system prompt（与后续所有 agent 字节级完全相同）
+        decision_engine = get_decision_engine(log_manager=log_manager)
+        system_prompt, _ = decision_engine._build_prompts_for_llm(
+            agent_info0,
+            allowed_agent0,
+            info_pool,
+        )
+
+        # 极短 user prompt 以触发缓存落盘
+        warmup_user = '{"decision_reason":"cache warmup","actions":[]}'
 
         try:
             llm_service = get_llm_service()
             await llm_service.call_llm_async(
-                warmup_prompt,
-                system_prompt=shared_prefix,
+                warmup_user,
+                system_prompt=system_prompt,
                 log_manager=log_manager,
                 log_category="cache_warmup",
                 agent_id=0,
                 agent_name="缓存预热",
-                round_num=0
+                round_num=round_num
             )
-            logger.info(f"缓存预热完成 (cinc_year={cinc_year})")
+            logger.info(
+                f"R{round_num} 缓存预热完成 "
+                f"(system_prompt ~{len(system_prompt)} chars, "
+                f"后续 {len(agents)-1} agents 前缀缓存命中)"
+            )
         except Exception as e:
-            logger.warning(f"缓存预热失败（非致命）: {e}")
+            logger.warning(f"R{round_num} 缓存预热失败（非致命）: {e}")
 
     async def start_simulation(self, project_id: int) -> dict:
         """
@@ -341,9 +418,7 @@ class SimulationService:
             if not agents:
                 raise ValueError(f"项目 {project_id} 中没有智能体")
 
-            # 0.6 首轮缓存预热（仅第1轮，1次轻量调用激活 Anthropic prompt cache）
-            if current_round == 1:
-                await self._warmup_cache(agents, log_manager)
+            # 0.6 缓存预热（每轮每阶段均执行；见 _warmup_round_cache）
 
             # 2. 执行决策生成（主动阶段）
             if self._stop_flags.get(project_id, False):
@@ -649,6 +724,19 @@ class SimulationService:
         logger.info(
             f"\n========== 第 {round_num} 轮 - {phase_label}阶段开始 "
             f"(共{total_agents}国, 并发度{max_concurrent}) =========="
+        )
+
+        # ====== 缓存预热：用第一个 agent 构建完整 system prompt 并发送 1 次 API 调用 ======
+        # 此时 system prompt 对所有 agent 字节级一致，预热后 DeepSeek 将其 KV cache 落盘。
+        # 后续并发 batch 中剩余 agent 的前缀全部命中缓存，将输入成本降低 90%+。
+        await self._warmup_round_cache(
+            agents=agents,
+            info_pool=info_pool,
+            phase_actions=phase_actions,
+            action_stage=action_stage,
+            strategic_relationships=strategic_relationships,
+            log_manager=log_manager,
+            round_num=round_num,
         )
 
         semaphore = asyncio.Semaphore(max_concurrent)
@@ -1741,6 +1829,28 @@ class SimulationService:
 
         # 所有国家均可被追随（被动追随，无需参选）
         all_targets = agents
+
+        # ====== 缓存预热：追随阶段 system prompt 对所有 agent 字节级一致 ======
+        # 先发 1 次调用让 DeepSeek 将 system prompt KV cache 落盘
+        cinc_year0 = agents[0].get('cinc_year') if agents else None
+        if cinc_year0:
+            fsys = PromptTemplates.build_shared_follower_system(
+                cinc_year=cinc_year0,
+                formatted_info_pool=formatted_info_pool
+            )
+            try:
+                await llm_service.call_llm_async(
+                    '{"follower_agent_id":null,"follower_agent_name":"中立","reason":"cache warmup"}',
+                    system_prompt=fsys,
+                    log_manager=log_manager,
+                    log_category="cache_warmup",
+                    round_num=round_num,
+                    agent_id=0,
+                    agent_name="Follower缓存预热",
+                )
+                logger.info(f"R{round_num} 追随阶段缓存预热完成 (后续 {len(agents)-1} agents 缓存命中)")
+            except Exception as e:
+                logger.warning(f"R{round_num} 追随阶段缓存预热失败（非致命）: {e}")
 
         # ========== 追随投票决策（单阶段，所有国家并发） ==========
         semaphore = asyncio.Semaphore(max_concurrent)
