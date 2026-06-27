@@ -248,3 +248,14 @@ export function getLLMPrompts(projectId, roundNum) {
     method: 'get'
   })
 }
+
+/**
+ * 获取所有运行中/暂停项目的实时状态
+ * @returns {Promise} 返回 { projects: [...], global_concurrency: { used, total } }
+ */
+export function getRunningStatus() {
+  return request({
+    url: '/simulation/running-status',
+    method: 'get'
+  })
+}

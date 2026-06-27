@@ -13,6 +13,7 @@ const menus = [
     group: '仿真',
     items: [
       { label: '首页', path: '/' },
+      { label: '多项目监控', path: '/dashboard' },
       { label: '历史任务', path: '/history' },
       { label: '仿真配置', path: '/config' },
       { label: '仿真控制台', path: '/console' },

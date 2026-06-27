@@ -32,7 +32,7 @@ def setup_logging(
     if log_to_file:
         log_path.mkdir(parents=True, exist_ok=True)
 
-    # 控制台输出配置 - 彩色格式化输出（flush=True 确保子进程管道下实时输出）
+    # 控制台输出（保持 colorize=True 确保 loguru 内部 flush 行为不变）
     logger.add(
         sys.stdout,
         format=(
@@ -44,33 +44,17 @@ def setup_logging(
         level=log_level,
         colorize=True,
         backtrace=True,
-        diagnose=True
+        diagnose=True,
     )
 
-    # 文件输出配置 - 所有日志
+    # 文件日志：去掉 rotation，Windows 下 rename 被占用文件会抛 PermissionError
     if log_to_file:
         logger.add(
-            log_path / "abm_{time:YYYY-MM-DD}.log",
+            log_path / "abm.log",
             format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} | {message}",
             level="DEBUG",
-            rotation="10 MB",
-            retention="7 days",
-            compression="zip",
             backtrace=True,
-            diagnose=True
-        )
-
-    # 文件输出配置 - 仅错误日志
-    if log_to_file:
-        logger.add(
-            log_path / "abm_error_{time:YYYY-MM-DD}.log",
-            format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} | {message}",
-            level="ERROR",
-            rotation="10 MB",
-            retention="30 days",
-            compression="zip",
-            backtrace=True,
-            diagnose=True
+            diagnose=True,
         )
 
     logger.info(f"日志系统配置完成: level={log_level}, log_to_file={log_to_file}")

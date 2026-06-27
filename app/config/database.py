@@ -4,10 +4,11 @@ ABM仿真系统的数据库配置、连接管理和数据初始化。
 """
 
 import json
+import asyncio
 from pathlib import Path
 from typing import AsyncGenerator
 
-from sqlalchemy import text
+from sqlalchemy import text, event
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -15,6 +16,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.exc import OperationalError
 
 # 项目根目录
 BASE_DIR = Path(__file__).parent.parent.parent
@@ -57,8 +59,18 @@ class DatabaseConfig:
                 self.db_url,
                 echo=False,
                 future=True,
+                pool_size=10,
+                max_overflow=20,
                 connect_args={"check_same_thread": False},
             )
+            # 每个新连接都设置 WAL 相关 PRAGMA（确保连接池中的每个连接都启用）
+            @event.listens_for(self._engine.sync_engine, "connect")
+            def set_sqlite_pragma(dbapi_connection, connection_record):
+                cursor = dbapi_connection.cursor()
+                cursor.execute("PRAGMA journal_mode=WAL")
+                cursor.execute("PRAGMA busy_timeout=5000")
+                cursor.execute("PRAGMA synchronous=NORMAL")
+                cursor.close()
         return self._engine
 
     @property
@@ -214,6 +226,10 @@ async def init_database() -> None:
     from app.models import Base
 
     async with db_config.engine.begin() as conn:
+        # 开启 WAL 模式以支持并发读+写，减少多项目运行时的锁竞争
+        await conn.execute(text("PRAGMA journal_mode=WAL"))
+        await conn.execute(text("PRAGMA busy_timeout=5000"))
+        await conn.execute(text("PRAGMA synchronous=NORMAL"))
         await conn.run_sync(Base.metadata.create_all)
 
     async with db_config.engine.connect() as conn:
@@ -548,7 +564,7 @@ async def _init_preset_scenes(session: AsyncSession) -> None:
         session: 数据库会话
     """
     from app.models import PresetScene
-    from datetime import datetime
+    from datetime import datetime, timezone
 
     scenes = [
         {
@@ -558,8 +574,8 @@ async def _init_preset_scenes(session: AsyncSession) -> None:
             "total_rounds": 50,
             "agent_config_json": '{"agents": []}',
             "is_default": True,
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
         },
         {
             "scene_id": 2,
@@ -568,8 +584,8 @@ async def _init_preset_scenes(session: AsyncSession) -> None:
             "total_rounds": 50,
             "agent_config_json": '{"agents": []}',
             "is_default": False,
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
         },
         {
             "scene_id": 3,
@@ -578,8 +594,8 @@ async def _init_preset_scenes(session: AsyncSession) -> None:
             "total_rounds": 50,
             "agent_config_json": '{"agents": []}',
             "is_default": False,
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
         },
     ]
 
@@ -629,7 +645,12 @@ async def _init_system_config(session: AsyncSession) -> None:
         {
             "config_key": "simulation_concurrency",
             "config_value": "5",
-            "config_desc": "仿真并发数",
+            "config_desc": "单项目内 agent 并发数",
+        },
+        {
+            "config_key": "llm_global_concurrency",
+            "config_value": "500",
+            "config_desc": "全局 LLM API 调用总并发上限",
         },
         {
             "config_key": "log_level",

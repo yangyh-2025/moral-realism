@@ -54,6 +54,15 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"LLM配置同步失败（将使用环境变量）: {e}")
 
+    # 初始化全局 LLM 并发控制
+    try:
+        from app.core.llm_concurrency import init_global_llm_concurrency
+        sys_cfg_svc = get_system_config_service()
+        global_limit = await sys_cfg_svc.get_config_value("llm_global_concurrency", 500)
+        await init_global_llm_concurrency(max_concurrent=int(global_limit))
+    except Exception as e:
+        logger.warning(f"全局 LLM 并发控制初始化失败: {e}")
+
     # 启动期 reconcile: 上次意外退出残留的"运行中"项目改为"暂停"
     try:
         from sqlalchemy import update

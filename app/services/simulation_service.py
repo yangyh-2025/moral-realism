@@ -6,7 +6,7 @@
 from typing import Optional, List, Dict, Any, Tuple
 import asyncio
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import select, update, delete
 from loguru import logger
 
@@ -38,7 +38,7 @@ class SimulationService:
         self._stop_flags = {}  # 项目ID -> 是否请求停止（用于快速响应终止/重置）
 
     async def _get_max_concurrency(self) -> int:
-        """从系统配置读取最大并发数，默认5，范围1-20。"""
+        """从系统配置读取最大并发数，默认5，范围1-100。"""
         try:
             from app.services.system_service import get_system_config_service
             sys_cfg_svc = get_system_config_service()
@@ -46,7 +46,7 @@ class SimulationService:
             max_concurrent = int(val or 5)
         except Exception:
             max_concurrent = 5
-        return max(1, min(max_concurrent, 20))
+        return max(1, min(max_concurrent, 100))
 
     async def _warmup_round_cache(
         self,
@@ -70,7 +70,7 @@ class SimulationService:
         收益：后续每 agent 每次调用的 ~5000-8000 input tokens 缓存命中
         （节省 98% 输入成本）
         """
-        from app.core.decision_engine import AgentInfo
+        from app.core.decision_engine import AgentInfo, get_decision_engine
         from app.core.prompt_templates import PromptTemplates
         from app.services.llm_service import get_llm_service
         from app.core.agent_base import AgentBase
@@ -152,10 +152,6 @@ class SimulationService:
             await llm_service.call_llm_async(
                 warmup_user,
                 system_prompt=system_prompt,
-                log_manager=log_manager,
-                log_category="cache_warmup",
-                agent_id=0,
-                agent_name="缓存预热",
                 round_num=round_num
             )
             logger.info(
@@ -211,8 +207,8 @@ class SimulationService:
             project.status = "运行中"
             project.current_round = 1
             if project.started_at is None:
-                project.started_at = datetime.now()
-            project.updated_at = datetime.now()
+                project.started_at = datetime.now(timezone.utc)
+            project.updated_at = datetime.now(timezone.utc)
             await session.commit()
 
         # 初始化日志管理器
@@ -234,7 +230,7 @@ class SimulationService:
                 await session.execute(
                     update(SimulationProject)
                     .where(SimulationProject.project_id == project_id)
-                    .values(status="未启动", updated_at=datetime.now())
+                    .values(status="未启动", updated_at=datetime.now(timezone.utc))
                 )
                 await session.commit()
             raise
@@ -311,7 +307,7 @@ class SimulationService:
                                 await session.execute(
                                     update(SimulationProject)
                                     .where(SimulationProject.project_id == project_id)
-                                    .values(status="错误", updated_at=datetime.now())
+                                    .values(status="错误", updated_at=datetime.now(timezone.utc))
                                 )
                                 await session.commit()
                 if not step_success:
@@ -387,12 +383,12 @@ class SimulationService:
             async for session in db_config.get_session():
                 project = await session.get(SimulationProject, project_id)
                 project.status = "已完成"
-                project.completed_at = datetime.now()
+                project.completed_at = datetime.now(timezone.utc)
                 if project.started_at:
                     project.duration_seconds = int(
-                        (datetime.now() - project.started_at).total_seconds()
+                        (datetime.now(timezone.utc) - project.started_at).total_seconds()
                     )
-                project.updated_at = datetime.now()
+                project.updated_at = datetime.now(timezone.utc)
                 await session.commit()
             return {
                 "project_id": project_id,
@@ -539,7 +535,7 @@ class SimulationService:
                     .values(
                         current_round=next_round,
                         status=next_status,
-                        updated_at=datetime.now()
+                        updated_at=datetime.now(timezone.utc)
                     )
                 )
                 await session.commit()
@@ -740,6 +736,8 @@ class SimulationService:
         )
 
         semaphore = asyncio.Semaphore(max_concurrent)
+        from app.core.llm_concurrency import get_global_llm_concurrency
+        global_llm = get_global_llm_concurrency()
         completed_counter = {"n": 0}  # 用dict使闭包可写
 
         async def _decide_one_agent(agent):
@@ -804,74 +802,75 @@ class SimulationService:
             )
 
             async with semaphore:
-                try:
-                    decision_result = await decision_engine.make_decision(
-                        agent_info=agent_info,
-                        info_pool=info_pool,
-                        action_stage=action_stage
-                    )
-
-                    if decision_result.success and decision_result.decision:
-                        actions_list = decision_result.decision.get('actions', [])
-                        completed_counter["n"] += 1
-                        progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
-                        action_summary = "; ".join(
-                            f"{a.get('action_name','?')}->ID{a.get('target_agent_id','?')}"
-                            for a in actions_list[:3]
-                        )
-                        if len(actions_list) > 3:
-                            action_summary += f" ...等{len(actions_list)}个"
-                        logger.info(
-                            f"  {progress} [OK] R{round_num} {phase_label} | "
-                            f"{agent_name}(ID:{agent_id}) → {action_summary}"
+                async with global_llm._semaphore:
+                    try:
+                        decision_result = await decision_engine.make_decision(
+                            agent_info=agent_info,
+                            info_pool=info_pool,
+                            action_stage=action_stage
                         )
 
-                        for action_data in actions_list:
-                            target_id = action_data.get('target_agent_id', 0)
-                            action_id = action_data.get('action_id')
-                            try:
-                                action_id = int(action_id)
-                            except (ValueError, TypeError):
-                                logger.warning(f"行为ID {action_data.get('action_id')} 格式无效，跳过")
-                                continue
+                        if decision_result.success and decision_result.decision:
+                            actions_list = decision_result.decision.get('actions', [])
+                            completed_counter["n"] += 1
+                            progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
+                            action_summary = "; ".join(
+                                f"{a.get('action_name','?')}->ID{a.get('target_agent_id','?')}"
+                                for a in actions_list[:3]
+                            )
+                            if len(actions_list) > 3:
+                                action_summary += f" ...等{len(actions_list)}个"
+                            logger.info(
+                                f"  {progress} [OK] R{round_num} {phase_label} | "
+                                f"{agent_name}(ID:{agent_id}) → {action_summary}"
+                            )
 
-                            action_config = next((a for a in phase_actions if a.action_id == action_id), None)
-                            if not action_config:
-                                logger.warning(f"未找到行为ID {action_id} 的配置，跳过")
-                                continue
+                            for action_data in actions_list:
+                                target_id = action_data.get('target_agent_id', 0)
+                                action_id = action_data.get('action_id')
+                                try:
+                                    action_id = int(action_id)
+                                except (ValueError, TypeError):
+                                    logger.warning(f"行为ID {action_data.get('action_id')} 格式无效，跳过")
+                                    continue
 
-                            record = {
-                                "project_id": project_id,
-                                "round_id": round_id,
-                                "round_num": round_num,
-                                "action_stage": phase,
-                                "source_agent_id": agent_id,
-                                "target_agent_id": target_id,
-                                "action_id": action_id,
-                                "action_name": action_config.action_name,
-                                "action_category": action_config.action_category,
-                                "respect_sov": action_config.respect_sov,
-                                "initiator_power_change": action_config.initiator_power_change,
-                                "target_power_change": action_config.target_power_change,
-                                "decision_detail": action_data.get('cost_benefit_analysis', ''),
-                                "action_content": action_data.get('action_content', '')
-                            }
-                            local_records.append(record)
-                    else:
+                                action_config = next((a for a in phase_actions if a.action_id == action_id), None)
+                                if not action_config:
+                                    logger.warning(f"未找到行为ID {action_id} 的配置，跳过")
+                                    continue
+
+                                record = {
+                                    "project_id": project_id,
+                                    "round_id": round_id,
+                                    "round_num": round_num,
+                                    "action_stage": phase,
+                                    "source_agent_id": agent_id,
+                                    "target_agent_id": target_id,
+                                    "action_id": action_id,
+                                    "action_name": action_config.action_name,
+                                    "action_category": action_config.action_category,
+                                    "respect_sov": action_config.respect_sov,
+                                    "initiator_power_change": action_config.initiator_power_change,
+                                    "target_power_change": action_config.target_power_change,
+                                    "decision_detail": action_data.get('cost_benefit_analysis', ''),
+                                    "action_content": action_data.get('action_content', '')
+                                }
+                                local_records.append(record)
+                        else:
+                            completed_counter["n"] += 1
+                            progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
+                            logger.warning(
+                                f"  {progress} [FAIL] R{round_num} {phase_label} | "
+                                f"{agent_name}(ID:{agent_id}) LLM决策失败: "
+                                f"{decision_result.validation_errors}"
+                            )
+                    except Exception as e:
                         completed_counter["n"] += 1
                         progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
-                        logger.warning(
+                        logger.error(
                             f"  {progress} [FAIL] R{round_num} {phase_label} | "
-                            f"{agent_name}(ID:{agent_id}) LLM决策失败: "
-                            f"{decision_result.validation_errors}"
+                            f"{agent_name}(ID:{agent_id}) 决策异常: {e}"
                         )
-                except Exception as e:
-                    completed_counter["n"] += 1
-                    progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
-                    logger.error(
-                        f"  {progress} [FAIL] R{round_num} {phase_label} | "
-                        f"{agent_name}(ID:{agent_id}) 决策异常: {e}"
-                    )
 
             return local_records
 
@@ -1659,7 +1658,7 @@ class SimulationService:
                         pec=state["pec"], tpop=state["tpop"], upop=state["upop"],
                         current_total_power=r.end_cinc,
                         power_level=r.new_power_level.value if hasattr(r.new_power_level, 'value') else r.new_power_level,
-                        updated_at=datetime.now()
+                        updated_at=datetime.now(timezone.utc)
                     )
                 )
             await session.commit()
@@ -1842,11 +1841,7 @@ class SimulationService:
                 await llm_service.call_llm_async(
                     '{"follower_agent_id":null,"follower_agent_name":"中立","reason":"cache warmup"}',
                     system_prompt=fsys,
-                    log_manager=log_manager,
-                    log_category="cache_warmup",
                     round_num=round_num,
-                    agent_id=0,
-                    agent_name="Follower缓存预热",
                 )
                 logger.info(f"R{round_num} 追随阶段缓存预热完成 (后续 {len(agents)-1} agents 缓存命中)")
             except Exception as e:
@@ -1854,6 +1849,8 @@ class SimulationService:
 
         # ========== 追随投票决策（单阶段，所有国家并发） ==========
         semaphore = asyncio.Semaphore(max_concurrent)
+        from app.core.llm_concurrency import get_global_llm_concurrency
+        global_llm = get_global_llm_concurrency()
         total_agents = len(agents)
         completed_counter = {"n": 0}
 
@@ -1897,44 +1894,45 @@ class SimulationService:
             )
 
             async with semaphore:
-                try:
-                    response = await llm_service.call_llm_async(
-                        user_prompt,
-                        system_prompt=system_prompt,
-                        log_manager=log_manager,
-                        log_category="following",
-                        round_num=round_num,
-                        agent_id=agent_id,
-                        agent_name=agent_name,
-                        decision_type="follower_vote"
-                    )
-                    follower_id = response.get('follower_agent_id')
-                    follower_name = response.get('follower_agent_name', '中立')
-                    reason = response.get('reason', '')
-
-                    completed_counter["n"] += 1
-                    progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
-
-                    # 验证follower_id是否为有效目标（不能追随自己）
-                    valid_ids = {a['agent_id'] for a in all_targets}
-                    if follower_id and follower_id != agent_id and follower_id in valid_ids:
-                        logger.info(
-                            f"  {progress} {agent_name}(ID:{agent_id}) -> "
-                            f"追随 {follower_name}(ID:{follower_id})"
+                async with global_llm._semaphore:
+                    try:
+                        response = await llm_service.call_llm_async(
+                            user_prompt,
+                            system_prompt=system_prompt,
+                            log_manager=log_manager,
+                            log_category="following",
+                            round_num=round_num,
+                            agent_id=agent_id,
+                            agent_name=agent_name,
+                            decision_type="follower_vote"
                         )
-                        return agent_id, follower_id, reason
-                    else:
-                        logger.info(
-                            f"  {progress} {agent_name}(ID:{agent_id}) -> 中立"
+                        follower_id = response.get('follower_agent_id')
+                        follower_name = response.get('follower_agent_name', '中立')
+                        reason = response.get('reason', '')
+
+                        completed_counter["n"] += 1
+                        progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
+
+                        # 验证follower_id是否为有效目标（不能追随自己）
+                        valid_ids = {a['agent_id'] for a in all_targets}
+                        if follower_id and follower_id != agent_id and follower_id in valid_ids:
+                            logger.info(
+                                f"  {progress} {agent_name}(ID:{agent_id}) -> "
+                                f"追随 {follower_name}(ID:{follower_id})"
+                            )
+                            return agent_id, follower_id, reason
+                        else:
+                            logger.info(
+                                f"  {progress} {agent_name}(ID:{agent_id}) -> 中立"
+                            )
+                            return agent_id, None, reason
+                    except Exception as e:
+                        completed_counter["n"] += 1
+                        progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
+                        logger.error(
+                            f"  {progress} [FAIL] {agent_name}(ID:{agent_id}): {e}"
                         )
-                        return agent_id, None, reason
-                except Exception as e:
-                    completed_counter["n"] += 1
-                    progress = f"[{completed_counter['n']:>2d}/{total_agents}]"
-                    logger.error(
-                        f"  {progress} [FAIL] {agent_name}(ID:{agent_id}): {e}"
-                    )
-                    return agent_id, None, str(e)
+                        return agent_id, None, str(e)
 
         logger.info(
             f"========== 第 {round_num} 轮 - 追随投票开始 "
@@ -2236,7 +2234,7 @@ class SimulationService:
             await session.execute(
                 update(SimulationProject)
                 .where(SimulationProject.project_id == project_id)
-                .values(status="暂停", updated_at=datetime.now())
+                .values(status="暂停", updated_at=datetime.now(timezone.utc))
             )
             await session.commit()
 
@@ -2263,7 +2261,7 @@ class SimulationService:
             await session.execute(
                 update(SimulationProject)
                 .where(SimulationProject.project_id == project_id)
-                .values(status="运行中", updated_at=datetime.now())
+                .values(status="运行中", updated_at=datetime.now(timezone.utc))
             )
             await session.commit()
 
@@ -2306,12 +2304,12 @@ class SimulationService:
         async for session in db_config.get_session():
             project = await session.get(SimulationProject, project_id)
             project.status = "已终止"
-            project.completed_at = datetime.now()
+            project.completed_at = datetime.now(timezone.utc)
             if project.started_at:
                 project.duration_seconds = int(
-                    (datetime.now() - project.started_at).total_seconds()
+                    (datetime.now(timezone.utc) - project.started_at).total_seconds()
                 )
-            project.updated_at = datetime.now()
+            project.updated_at = datetime.now(timezone.utc)
             await session.commit()
 
         self._stop_flags.pop(project_id, None)
@@ -2355,7 +2353,7 @@ class SimulationService:
             agents = result.scalars().all()
             for agent in agents:
                 agent.current_total_power = agent.initial_total_power
-                agent.updated_at = datetime.now()
+                agent.updated_at = datetime.now(timezone.utc)
 
             # 批量删除运行数据（单条SQL代替逐行SELECT+DELETE）
             await session.execute(delete(ActionRecord).where(ActionRecord.project_id == project_id))
@@ -2377,7 +2375,7 @@ class SimulationService:
             project.started_at = None
             project.completed_at = None
             project.duration_seconds = None
-            project.updated_at = datetime.now()
+            project.updated_at = datetime.now(timezone.utc)
             await session.commit()
 
         self._stop_flags.pop(project_id, None)

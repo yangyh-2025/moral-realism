@@ -534,6 +534,47 @@ async def reset_simulation(project_id: int):
     return result
 
 
+@router.get("/running-status")
+async def get_running_status():
+    """
+    获取所有运行中/暂停项目的实时状态摘要
+
+    返回每个活跃项目的进度信息和全局LLM并发使用量。
+    用于前端多项目监控面板。
+    """
+    from app.core.llm_concurrency import get_global_llm_concurrency
+
+    result = await project_service.get_projects(
+        page=1, size=100, sort="updated_at_desc"
+    )
+    all_projects = result.get("items", [])
+
+    active_statuses = {"运行中", "暂停"}
+    active_projects = [
+        {
+            "project_id": p.get("project_id"),
+            "project_name": p.get("project_name", ""),
+            "status": p.get("status", ""),
+            "current_round": p.get("current_round", 0),
+            "total_rounds": p.get("total_rounds", 0),
+            "scene_source": p.get("scene_source", ""),
+        }
+        for p in all_projects
+        if p.get("status") in active_statuses
+    ]
+
+    global_llm = get_global_llm_concurrency()
+    concurrency = {
+        "used": global_llm.used,
+        "total": global_llm.total,
+    }
+
+    return {
+        "projects": active_projects,
+        "global_concurrency": concurrency,
+    }
+
+
 @router.get("/{project_id}/round/{round_num}", response_model=RoundDetailResponse)
 async def get_round_detail(project_id: int, round_num: int):
     """

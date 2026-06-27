@@ -7,7 +7,7 @@ import io
 import json
 import shutil
 import zipfile
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -306,6 +306,13 @@ class ProjectService:
         return buf.read()
 
     @staticmethod
+    def _ensure_utc(dt):
+        """Attach UTC timezone to a naive datetime (SQLite returns naive datetimes)."""
+        if dt is not None and dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt
+
+    @staticmethod
     def _project_to_dict(project: SimulationProject) -> dict:
         """将 SimulationProject ORM 对象转为字典"""
         return {
@@ -318,11 +325,11 @@ class ProjectService:
             "status": project.status,
             "respect_sov_threshold": project.respect_sov_threshold,
             "leader_threshold": project.leader_threshold,
-            "started_at": project.started_at,
-            "completed_at": project.completed_at,
+            "started_at": ProjectService._ensure_utc(project.started_at),
+            "completed_at": ProjectService._ensure_utc(project.completed_at),
             "duration_seconds": project.duration_seconds,
-            "created_at": project.created_at,
-            "updated_at": project.updated_at,
+            "created_at": ProjectService._ensure_utc(project.created_at),
+            "updated_at": ProjectService._ensure_utc(project.updated_at),
         }
 
     @staticmethod

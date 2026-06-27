@@ -62,6 +62,12 @@ const routes = [
     component: () => import('../views/LLMCallLog.vue'),
     meta: { title: 'LLM 调用记录' },
   },
+  {
+    path: '/dashboard',
+    name: 'MultiSimDashboard',
+    component: () => import('../views/MultiSimDashboard.vue'),
+    meta: { title: '多项目监控面板' },
+  },
 ]
 
 const router = createRouter({

@@ -4,7 +4,7 @@
 """
 
 from typing import List, Optional, Dict, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 from loguru import logger
 
 from app.services.project_service import project_service
@@ -50,8 +50,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": True,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 2,
@@ -60,8 +60,8 @@ class SceneService:
                     "total_rounds": 32,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 3,
@@ -70,8 +70,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 4,
@@ -80,8 +80,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 5,
@@ -90,8 +90,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 6,
@@ -100,8 +100,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 7,
@@ -110,8 +110,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 8,
@@ -120,8 +120,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 9,
@@ -130,8 +130,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 # ═══════════════════════════════════════════════════════════
                 # 场景10-18：场景1变体（1913欧洲 — 单变量领导类型实验）
@@ -143,8 +143,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 11,
@@ -153,8 +153,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 12,
@@ -163,8 +163,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 13,
@@ -173,8 +173,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 14,
@@ -183,8 +183,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 15,
@@ -193,8 +193,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 16,
@@ -203,8 +203,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 17,
@@ -213,8 +213,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 18,
@@ -223,8 +223,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 # ═══════════════════════════════════════════════════════════
                 # 场景19-27：场景2变体（1938欧洲 — 单变量领导类型实验）
@@ -236,8 +236,8 @@ class SceneService:
                     "total_rounds": 32,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 20,
@@ -246,8 +246,8 @@ class SceneService:
                     "total_rounds": 32,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 21,
@@ -256,8 +256,8 @@ class SceneService:
                     "total_rounds": 32,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 22,
@@ -266,8 +266,8 @@ class SceneService:
                     "total_rounds": 32,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 23,
@@ -276,8 +276,8 @@ class SceneService:
                     "total_rounds": 32,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 24,
@@ -286,8 +286,8 @@ class SceneService:
                     "total_rounds": 32,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 25,
@@ -296,8 +296,8 @@ class SceneService:
                     "total_rounds": 32,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 26,
@@ -306,8 +306,8 @@ class SceneService:
                     "total_rounds": 32,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 27,
@@ -316,8 +316,8 @@ class SceneService:
                     "total_rounds": 32,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 # ═══════════════════════════════════════════════════════════
                 # 场景28-33：场景3变体（1946欧洲 — 单变量领导类型实验）
@@ -329,8 +329,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 29,
@@ -339,8 +339,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 30,
@@ -349,8 +349,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 31,
@@ -359,8 +359,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 32,
@@ -369,8 +369,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
                 {
                     "scene_id": 33,
@@ -379,8 +379,8 @@ class SceneService:
                     "total_rounds": 50,
                     "agent_config_json": '{"agents": []}',
                     "is_default": False,
-                    "created_at": datetime.now(),
-                    "updated_at": datetime.now()
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc)
                 },
             ]
 

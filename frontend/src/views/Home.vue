@@ -81,6 +81,41 @@
     </el-row>
 
     <!-- 快速操作分隔线 -->
+    <el-divider>已创建项目</el-divider>
+
+    <div style="margin-bottom:12px; display:flex; gap:8px; align-items:center;">
+      <el-button type="primary" @click="batchStart" :disabled="selectedIds.length === 0" :loading="batchStarting">
+        批量启动 ({{ selectedIds.length }})
+      </el-button>
+      <el-button @click="goToDashboard">多项目监控面板</el-button>
+      <el-button @click="loadProjects" :loading="projectsLoading" size="small">
+        <el-icon><Refresh /></el-icon> 刷新
+      </el-button>
+    </div>
+
+    <el-checkbox-group v-model="selectedIds">
+      <el-row :gutter="16">
+        <el-col v-for="project in projects" :key="project.project_id" :xs="24" :sm="12" :md="8" :lg="6">
+          <el-card class="project-mini-card" shadow="hover" @click="goToDashboardForProject(project.project_id)">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <el-checkbox :value="project.project_id" @click.stop />
+              <span class="project-mini-name">{{ project.project_name }}</span>
+              <el-tag :type="statusTagType(project.status)" size="small" style="margin-left:auto;">
+                {{ project.status }}
+              </el-tag>
+            </div>
+            <div class="project-mini-meta">
+              <span>{{ project.scene_source }}</span>
+              <span v-if="project.current_round">R{{ project.current_round }}/{{ project.total_rounds }}</span>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </el-checkbox-group>
+
+    <el-empty v-if="projects.length === 0 && !projectsLoading" description="暂无项目" :image-size="60" style="margin-top:20px;" />
+
+    <!-- 快速操作分隔线 -->
     <el-divider>快速操作</el-divider>
 
     <!-- 快速操作区域 -->
@@ -154,13 +189,19 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Refresh } from '@element-plus/icons-vue'
 import { getPresetScenes, createProjectFromScene as createProjectFromSceneAPI } from '@/api/presetScene'
+import { getProjects, startSimulation, resetSimulation } from '@/api/simulation'
 
 // 获取路由实例
 const router = useRouter()
 
 // 响应式数据定义
 const presetScenes = ref([])       // 预置场景列表
+const projects = ref([])           // 已创建项目列表
+const projectsLoading = ref(false)
+const batchStarting = ref(false)
+const selectedIds = ref([])        // 批量启动选中的项目 ID
 const loading = ref(false)           // 加载状态
 const detailDialogVisible = ref(false) // 场景详情对话框显示状态
 const selectedScene = ref(null)      // 当前选中的场景
@@ -170,7 +211,59 @@ const selectedScene = ref(null)      // 当前选中的场景
  */
 onMounted(async () => {
   await loadPresetScenes()
+  await loadProjects()
 })
+
+async function loadProjects() {
+  projectsLoading.value = true
+  try {
+    const response = await getProjects({ size: 100, sort: 'updated_at_desc' })
+    projects.value = response.items || []
+  } catch (error) {
+    console.error('加载项目列表失败:', error)
+  } finally {
+    projectsLoading.value = false
+  }
+}
+
+function statusTagType(status) {
+  const map = { '未启动': 'info', '运行中': 'success', '暂停': 'warning', '已完成': 'success', '已终止': 'danger', '错误': 'danger' }
+  return map[status] || 'info'
+}
+
+async function batchStart() {
+  if (selectedIds.value.length === 0) return
+  batchStarting.value = true
+  let success = 0, fail = 0
+  for (const id of selectedIds.value) {
+    const p = projects.value.find(p => p.project_id === id)
+    if (!p) continue
+    if (p.status === '运行中') { success++; continue }
+    if (p.status === '已完成' || p.status === '已终止') {
+      try { await resetSimulation(id) } catch (e) { /* ignore */ }
+    }
+    try {
+      await startSimulation(id)
+      success++
+    } catch (e) {
+      fail++
+      console.error(`启动项目 ${id} 失败:`, e)
+    }
+  }
+  if (success > 0) ElMessage.success(`成功启动 ${success} 个项目`)
+  if (fail > 0) ElMessage.warning(`${fail} 个项目启动失败`)
+  batchStarting.value = false
+  selectedIds.value = []
+  await loadProjects()
+}
+
+function goToDashboard() {
+  router.push({ name: 'MultiSimDashboard' })
+}
+
+function goToDashboardForProject(projectId) {
+  router.push({ name: 'SimulationConsole', query: { projectId } })
+}
 
 /**
  * 加载预置场景列表
@@ -302,5 +395,32 @@ function goToBehaviorSet() {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+}
+
+/* 已创建项目迷你卡片 */
+.project-mini-card {
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.project-mini-card:hover {
+  border-color: #409eff;
+}
+
+.project-mini-name {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.project-mini-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: #909399;
+  margin-top: 6px;
 }
 </style>

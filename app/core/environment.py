@@ -6,7 +6,7 @@ Simulation Environment Module
 """
 
 from typing import Dict, List, Optional, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from loguru import logger
@@ -65,8 +65,8 @@ class SimulationEnvironment:
         self.status = SimulationStatus.NOT_STARTED
         self.current_round = 0
         self.total_rounds = 0
-        self.created_at = datetime.now()
-        self.updated_at = datetime.now()
+        self.created_at = datetime.now(timezone.utc)
+        self.updated_at = datetime.now(timezone.utc)
 
         # 信息池
         self.info_pool = {
@@ -111,7 +111,7 @@ class SimulationEnvironment:
                 agent = AgentBase(**agent_config)
                 self.add_agent(agent)
 
-            self.updated_at = datetime.now()
+            self.updated_at = datetime.now(timezone.utc)
             return True
 
         except Exception as e:
@@ -145,7 +145,7 @@ class SimulationEnvironment:
                 agent = AgentBase(**agent_config)
                 self.add_agent(agent)
 
-            self.updated_at = datetime.now()
+            self.updated_at = datetime.now(timezone.utc)
             return True
 
         except Exception as e:
@@ -185,7 +185,7 @@ class SimulationEnvironment:
                 change_rate=0.0
             )
 
-            self.updated_at = datetime.now()
+            self.updated_at = datetime.now(timezone.utc)
             return True
 
         except Exception as e:
@@ -210,7 +210,7 @@ class SimulationEnvironment:
             del self.info_pool["agents"][agent_id]
             del self.info_pool["power_history"][agent_id]
 
-            self.updated_at = datetime.now()
+            self.updated_at = datetime.now(timezone.utc)
             return True
 
         except Exception as e:
@@ -304,9 +304,9 @@ class SimulationEnvironment:
         Args:
             record: 历史记录字典
         """
-        record["timestamp"] = datetime.now().isoformat()
+        record["timestamp"] = datetime.now(timezone.utc).isoformat()
         self.info_pool["history"].append(record)
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
 
     def get_history(self, round_num: Optional[int] = None) -> List[Dict[str, Any]]:
         """
@@ -353,11 +353,11 @@ class SimulationEnvironment:
             "end_power": end_power,
             "change_value": change_value,
             "change_rate": change_rate,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
 
         self.info_pool["power_history"][agent_id].append(history_entry)
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
 
     def get_power_history(
         self,
@@ -418,9 +418,9 @@ class SimulationEnvironment:
         self.info_pool["follower_relations"][round_num] = {
             "round_num": round_num,
             "relations": relations,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
 
     def get_follower_relations(
         self,
@@ -454,9 +454,9 @@ class SimulationEnvironment:
         Args:
             order_info: 秩序信息字典
         """
-        order_info["timestamp"] = datetime.now().isoformat()
+        order_info["timestamp"] = datetime.now(timezone.utc).isoformat()
         self.info_pool["order_history"].append(order_info)
-        self.updated_at = datetime.now()
+        self.updated_at = datetime.now(timezone.utc)
 
     def get_order_history(self, round_num: Optional[int] = None) -> List[Dict[str, Any]]:
         """
@@ -492,7 +492,7 @@ class SimulationEnvironment:
 
             self.status = SimulationStatus.RUNNING
             self.current_round = 1
-            self.updated_at = datetime.now()
+            self.updated_at = datetime.now(timezone.utc)
             return True
 
         except Exception as e:
@@ -511,7 +511,7 @@ class SimulationEnvironment:
                 raise ValueError(f"当前状态 {self.status.value} 不允许暂停仿真")
 
             self.status = SimulationStatus.PAUSED
-            self.updated_at = datetime.now()
+            self.updated_at = datetime.now(timezone.utc)
             return True
 
         except Exception as e:
@@ -530,7 +530,7 @@ class SimulationEnvironment:
                 raise ValueError(f"当前状态 {self.status.value} 不允许继续仿真")
 
             self.status = SimulationStatus.RUNNING
-            self.updated_at = datetime.now()
+            self.updated_at = datetime.now(timezone.utc)
             return True
 
         except Exception as e:
@@ -549,7 +549,7 @@ class SimulationEnvironment:
                 raise ValueError(f"当前状态 {self.status.value} 不允许终止仿真")
 
             self.status = SimulationStatus.TERMINATED
-            self.updated_at = datetime.now()
+            self.updated_at = datetime.now(timezone.utc)
             return True
 
         except Exception as e:
@@ -568,7 +568,7 @@ class SimulationEnvironment:
                 raise ValueError(f"当前状态 {self.status.value} 不允许完成仿真")
 
             self.status = SimulationStatus.COMPLETED
-            self.updated_at = datetime.now()
+            self.updated_at = datetime.now(timezone.utc)
             return True
 
         except Exception as e:
@@ -610,7 +610,7 @@ class SimulationEnvironment:
                     change_rate=0.0
                 )
 
-            self.updated_at = datetime.now()
+            self.updated_at = datetime.now(timezone.utc)
             return True
 
         except Exception as e:
@@ -632,7 +632,7 @@ class SimulationEnvironment:
                 raise ValueError(f"已达到最大轮次 {self.total_rounds}，无法继续前进")
 
             self.current_round += 1
-            self.updated_at = datetime.now()
+            self.updated_at = datetime.now(timezone.utc)
             return True
 
         except Exception as e:

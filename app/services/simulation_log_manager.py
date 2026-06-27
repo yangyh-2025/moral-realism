@@ -7,7 +7,7 @@ import os
 import json
 import asyncio
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 from loguru import logger
 
@@ -74,7 +74,7 @@ class SimulationLogManager:
 
     def _get_timestamp(self) -> str:
         """获取唯一时间戳"""
-        return datetime.now().isoformat()
+        return datetime.now(timezone.utc).isoformat()
 
     async def _write_log(self, log_type: str, data: Dict[str, Any]):
         """

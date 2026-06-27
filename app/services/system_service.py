@@ -27,12 +27,13 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "llm_timeout": int(os.getenv("LLM_TIMEOUT", "60")),
     "llm_max_retries": int(os.getenv("LLM_MAX_RETRIES", "3")),
     "simulation_concurrency": int(os.getenv("SIMULATION_CONCURRENCY", "5")),
+    "llm_global_concurrency": int(os.getenv("LLM_GLOBAL_CONCURRENCY", "500")),
     "log_level": os.getenv("LOG_LEVEL", "INFO"),
     "default_scene_id": 1,
 }
 
 # 数值型配置项的解析规则
-_INT_KEYS = {"llm_timeout", "llm_max_retries", "simulation_concurrency", "default_scene_id"}
+_INT_KEYS = {"llm_timeout", "llm_max_retries", "simulation_concurrency", "default_scene_id", "llm_global_concurrency"}
 
 
 def _coerce_value(key: str, raw: Any) -> Any:
